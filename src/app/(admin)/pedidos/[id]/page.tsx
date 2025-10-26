@@ -1,13 +1,16 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
-export default async function PedidoPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;  // ← Tipagem como Promise
-}) {
-  const { id } = await params;  // ← Await aqui!
+// Define o tipo de props recebidas pelo componente
+type PedidoPageProps = {
+  params: Promise<{ id: string }>;
+};
 
+export default async function PedidoPage({ params }: PedidoPageProps) {
+  // Aguarda a resolução da Promise para obter o id
+  const { id } = await params;
+
+  // Busca o pedido no banco de dados
   const pedido = await prisma.pedido.findUnique({
     where: { id },
     include: {
@@ -18,8 +21,9 @@ export default async function PedidoPage({
       },
       cliente: true,
     },
-  }) as any;  // ← Remove erros de tipagem (ou use tipos personalizados depois)
+  });
 
+  // Se o pedido não existir, mostra a página 404
   if (!pedido) {
     notFound();
   }
@@ -34,7 +38,7 @@ export default async function PedidoPage({
 
         <h2 className="text-lg font-semibold mt-6 mb-2">Itens:</h2>
         <ul className="space-y-2">
-          {pedido.itens.map((item: any) => (
+          {pedido.itens.map((item) => (
             <li key={item.id} className="flex justify-between">
               <span>{item.quantidade}x {item.produto.nome}</span>
               <span>R$ {(item.preco * item.quantidade).toFixed(2)}</span>

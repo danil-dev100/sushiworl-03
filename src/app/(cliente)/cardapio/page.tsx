@@ -1,163 +1,90 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import Image from 'next/image';
+import { parseCardapio, getCategorias, Produto } from '@/lib/parseCardapio';
 import ProductCard from '@/components/cliente/ProductCard';
-import { categories, getProductsByCategory, Product, products } from '@/lib/products';
+import { useState } from 'react';
 
 export default function CardapioPage() {
-  const [selectedCategory, setSelectedCategory] = useState('Destaques');
+  const produtos = parseCardapio();
+  const categorias = getCategorias();
+  const [carrinho, setCarrinho] = useState<Produto[]>([]);
 
-  const filteredProducts = useMemo(() => {
-    return getProductsByCategory(selectedCategory);
-  }, [selectedCategory]);
-
-  const handleAddToCart = (product: Product) => {
-    // TODO: Implement cart functionality
-    console.log('Adding to cart:', product);
-  };
-
-  const menuJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Menu',
-    name: 'Cardápio SushiWorld',
-    description: 'Cardápio completo de sushi fresco e pratos orientais',
-    url: 'https://sushiworld.pt/produtos',
-    provider: {
-      '@type': 'LocalBusiness',
-      name: 'SushiWorld Delivery',
-      address: {
-        '@type': 'PostalAddress',
-        addressCountry: 'PT',
-        addressRegion: 'Lisboa',
-        addressLocality: 'Santa Iria'
-      }
-    },
-    hasMenuSection: categories.map(category => ({
-      '@type': 'MenuSection',
-      name: category,
-      hasMenuItem: getProductsByCategory(category).map(product => ({
-        '@type': 'MenuItem',
-        name: product.name,
-        description: product.description,
-        offers: {
-          '@type': 'Offer',
-          price: product.price.replace('€', ''),
-          priceCurrency: 'EUR'
-        }
-      }))
-    }))
+  const handleAddToCart = (produto: Produto) => {
+    console.log('✅ Adicionando ao carrinho:', produto.nome);
+    setCarrinho(prev => [...prev, produto]);
+    
+    const carrinhoAtual = JSON.parse(localStorage.getItem('carrinho') || '[]');
+    localStorage.setItem('carrinho', JSON.stringify([...carrinhoAtual, produto]));
   };
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(menuJsonLd) }}
-      />
-
-      <div className="min-h-screen bg-[#f5f1e9] pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-[#333333] mb-4">
-              Nosso Cardápio 🍱
-            </h1>
-            <p className="text-lg text-[#555555]">
-              Descubra nossas deliciosas opções de sushi e pratos orientais
-            </p>
-          </div>
-
-          {/* Category Filters */}
-          <div className="mb-8">
-            <div className="flex flex-wrap justify-center gap-2 overflow-x-auto pb-2">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-6 py-3 rounded-full font-medium transition-all duration-200 whitespace-nowrap ${
-                    selectedCategory === category
-                      ? 'bg-[#FF6B00] text-white shadow-lg'
-                      : 'bg-white text-[#333333] hover:bg-[#ff8126] hover:text-white border border-gray-200'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
+    <main className="min-h-screen bg-[#f5f1e9]">
+      {/* Hero Section */}
+      <section className="bg-[#FF6B00] text-white py-12 mb-8">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Nosso Cardápio
+          </h1>
+          <p className="text-lg md:text-xl max-w-2xl mx-auto">
+            Descubra sabores autênticos da culinária japonesa, preparados com ingredientes frescos e de qualidade
+          </p>
+          
+          {carrinho.length > 0 && (
+            <div className="mt-4 inline-block bg-white text-[#FF6B00] px-4 py-2 rounded-full font-semibold">
+              🛒 {carrinho.length} {carrinho.length === 1 ? 'item' : 'itens'} no carrinho
             </div>
-          </div>
+          )}
+        </div>
+      </section>
 
-          {/* Products Grid */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-[#333333] mb-6 text-center">
-              {selectedCategory}
-            </h2>
+      {/* Produtos por Categoria */}
+      <div className="container mx-auto px-4 pb-16">
+        {categorias.map((categoria) => {
+          const produtosCategoria = produtos.filter(
+            (p) => p.categoria === categoria
+          );
 
-            {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <div key={product.id} className="border rounded-lg shadow-sm p-4 text-center transition-all hover:shadow-md bg-white">
-                    <Image
-                      src={`/produtos.webp/${product.id}.webp`}
-                      alt={product.name}
-                      width={300}
-                      height={300}
-                      className="mx-auto rounded-md object-cover"
-                      loading="lazy"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/produtos.webp/placeholder.webp';
-                      }}
-                    />
-                    <h3 className="mt-2 text-lg font-semibold text-[#333333]">{product.name}</h3>
-                    <p className="text-sm text-[#555555]">{product.description}</p>
-                    <p className="text-lg font-bold text-[#FF6B00] mt-1">{product.price}</p>
-                    <button
-                      className="mt-3 bg-[#FF6B00] text-white font-medium px-4 py-2 rounded-md hover:bg-[#ff8126] transition-all"
-                      onClick={() => handleAddToCart(product)}
-                      aria-label={`Adicionar ${product.name} ao carrinho`}
-                    >
-                      Adicionar ao carrinho
-                    </button>
-                  </div>
+          if (produtosCategoria.length === 0) return null;
+
+          return (
+            <section key={categoria} id={categoria.toLowerCase()} className="mb-16">
+              <div className="mb-8">
+                <h2 className="text-3xl md:text-4xl font-bold text-[#333333] mb-2">
+                  {categoria}
+                </h2>
+                <div className="w-24 h-1 bg-[#FF6B00]"></div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {produtosCategoria.map((produto) => (
+                  <ProductCard
+                    key={produto.id}
+                    produto={produto}
+                    onAddToCart={handleAddToCart}
+                  />
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-[#555555] text-lg">
-                  Nenhum produto encontrado nesta categoria.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Call to Action */}
-          <div className="text-center bg-white rounded-lg shadow-md p-8">
-            <h3 className="text-2xl font-bold text-[#333333] mb-4">
-              Não encontrou o que procura?
-            </h3>
-            <p className="text-[#555555] mb-6">
-              Entre em contato conosco para sugestões personalizadas ou pedidos especiais.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="tel:+351934841148"
-                className="inline-block bg-[#FF6B00] hover:bg-[#ff8126] text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
-              >
-                📞 Ligar Agora
-              </a>
-              <a
-                href="https://wa.me/351934841148"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200"
-              >
-                💬 WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
+            </section>
+          );
+        })}
       </div>
-    </>
+
+      {/* Menu de Navegação Rápida */}
+      <nav className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 hidden lg:block max-h-96 overflow-y-auto z-50">
+        <h3 className="font-bold text-[#333333] mb-2 text-sm">Categorias</h3>
+        <ul className="space-y-1">
+          {categorias.map((cat) => (
+            <li key={cat}>
+              <a
+                href={`#${cat.toLowerCase()}`}
+                className="text-sm text-gray-600 hover:text-[#FF6B00] transition-colors block py-1"
+              >
+                {cat}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </main>
   );
 }

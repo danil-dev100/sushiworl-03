@@ -11,166 +11,86 @@ Futomaki
 Hot roll 
 Combinados
 
-COMBINADOS
-GUNKAN MIX 10 PEÇAS - 2 - Salmão 2 - Salmão Braseado 2 - Salmão Morango 2 - Salmão Phila 2- Salmão queijo brie
-
-HOT MIX 22 PEÇAS - 8- Uramaki Salmão philadephia 5-hot phila, 5 hot crispy, 2-camarão tempura 2- mini crepe de legumes
-
-
-MINI WORLD 15 PEÇAS - 8-Uramaki Salmão Crispy 2-nigiri salmão 5-Sashimi Salmão
-
-VEGGIE 20 PEÇAS - 8 - Hossomaki morango e manga 8 - Uramaki manga,morango e rúcula 4 - Futomaki Veggie
-
-
-TRADICIONAL 24 PEÇAS - 4 - Hossomaki atum 4 - Hossomaki pepino 1 - Nigiri Atum 1 - Nigiri Salmão 4 - Uramaki Atum pepino 4 - Uramaki Salmão pepino 3- Sashimi de Atum 3- Sashimi de Salmão
-
-FUSION WORLD 24 PEÇAS - 4 - Hossomaki Salmão 4 - Hossomaki Manga 4 - Uramaki Salmão Phila Manga 4 - Uramaki Salmão Phila Morango 4 - Uramaki especial ebi Salmão 4 - Futomaki California
-
-
-HOT ROLL 20 PEÇAS - 5 - Hot phila morando 5 - Hot phila manga 5 - Hot maionese e crispy 5 - Hot phila cebolinho
-
-SPECIAL SALMON 20 PEÇAS - 6 - Sashimi salmão 4 - Nigiri Salmão 4 - Gunkan Salmão 6 - Salmão Neta Phila  (COLOCAR OPÇÃO DE BRASEADO +1 euro)
-
-
-SALMON MIX 24 PEÇAS - 4- sashimi de salmão, 2- gunkan phila morango, 2- nigiri de salmão, 8- hossomaki de salmão, 4- hot phila, 4 hot crispy
-
-EAT SUSHI 34 PEÇAS - 8 - Uramaki Salmão Phila 8 - Uramaki Especial Ebi Salmão 8 - Hossomaki Salmão 10 - Hot Roll Phila
-
-
-
-SPECIAL HOT 40 PEÇAS – 10 hot phila- 10 hot crispy ,6 - Gyosas frango e legumes 4 - Tempura de camarão 6 - Crepes de legumes 4 - Camarão batata
-
-WORLD 50 PEÇAS - 8- Sashimi Salmão 8-Futomaki Califórnia 8-uramaki salmão crispy 8- Hossomaki de salmão 8-Hossomaki de atum 6-nigiri de salmão 4-Gunkan de Salmão
-
-TROPICAL 60 PEÇAS - 8-uramaki califórnia tradicional 8-uramaki phila morango 8-uramaki salmão picante 8-uramaki ebi especial salmão 8-hossomaki de salmão 8-hossomaki de pepino 8-hossomaki delícias 4-futamaki califórnia
-
-WORLD PREMIUM 50 PEÇAS - 6- Sashimi Salmão 6 - Sashimi Atum 6- Sashimi Peixe Branco 4 - Uramaki Salmão Phila manga 4 - Uramaki Salmão Phila Morango 2 - Nigiri Salmão 2 - Nigiri Salmão Braseado 2 - Atum 2- Gunkan Salmão 2-Gunkan Morango 2 -Gunkan Massago 4-Hossomaki Atum 4-Hossomaki Salmão 4- Futomaki Califórnia
-
-WORLD MIX 50 PEÇAS - 8- Hot roll Phila , 8 Uramaki salmão Crispy, 8- Uramaki califórnia , 8- Hossomaki de pepino , 4- Nigiri Salmão, 4- Gunkan Salmão , 8- Futomaki Califórnia, 2- Ebi fry Salmão braseado.
-
-ENTRADAS
-
-EBI FRY SALMÃO 6 PEÇAS - Camarão tempura, enrolado no Salmão.
-
-SALMÃO NETA PHILA 6 PEÇAS - Fatia de Salmão enrolado com queijo philadelphia.
-
-KIMUCHI DE SALMÃO 200G - Cubos de salmão temperado com molho kimuchi, alho francês, semente de sésema, cebolinho e tougarachi
-
-CREPE DE LEGUMES 4 PEÇAS - Mini crepes de legumes
-
-TEMPURA DE CAMARÃO 4 PEÇAS - Camarão Panado e frito
-
-GYOSAS DE CAMARÃO 4 PEÇAS
-
-GYOSAS DE FRANGO 4 PEÇAS
-
-TEMAKI
-TEMAKI VEGGIE - Cone enrolado com frutas da estação
-
-TEMAKI SALMÃO PHILA - Peixe cortado em cubos e enrolado tipo cone.
-
-TEMAKI CALIFÓRNIA - Peixe cortado em cubos, manga, pepino e enrolado tipo cone.
-
-TEMAKI SALMÃO - Peixe cortado em cubos e enrolado tipo cone.
-
-TEMAKI ATUM - Peixe cortado em cubos e enrolado tipo cone.
-
-TEMAKI HOT - Cone de salmão ,panado e frito, com queijo creme, maionese japonesa e cebola frita.
-
-
-HOT ROLL 10 PEÇAS
-HOT SALMÃO, MORANGO E MANGA - Rolo de sushi, panado e frito com queijo creme, morango e manga
-
-HOT SALMÃO - Rolo de sushi, panado e frito
-
-HOT CAMARÃO TEMPURA PHILA - Rolo de sushi, panado e frito com camarão tempura e queijo creme
-
-HOT SALMÃO PHILA - Rolo de sushi, panado e frito com queijo creme
-
-HOT ATUM - Rolo de sushi panado e frito
-
-HOT SALMÃO CRISPY - Rolo de sushi, panado e frito com maionese e cebola frita
-
-SUSHI DOG 1 UNI - Hossomaki de salmão panado e frito, com cubos de salmão por cima com molho de maionese e queijo creme
-
-POKE BOWL
-
-POKE HAVAIANO - Arroz de sushi,Maionese, salmão, morango e Goma Wakame
-
-POKE ESPECIAL DE SALMÃO - Arroz de sushi,maionese,salmão,manga ,goma wakame,amêndoas e tomate cereja.
-
-POKE DE ABACATE - Arroz de sushi,Maionese, salmão e abacate
-
-POKE TRADICIONAL - Arroz de sushi, Maionese, atum, abacate,pepino,cebola roxa,cebolinha.
-
-POKE DE SALMÃO - Arroz de sushi,Maionese,cebola roxa, pepino e salmão
-
-POKE VEGGIE - Arroz de sushi, Maionese, Morango,manga,pepino,rúcula e abacate
-
-NIGIRI 4 PEÇAS
-NIGIRI SALMÃO
-
-NIGIRI ATUM 
-
-NIGIRI VEGGIE
-
-
-
-SASHIMI
-
-SASHIMI DE SALMÃO 5/10 - Fatias de Salmão
-
-SASHIMI DE ATUM 5/10 - Fatias de atum
-
-SASHIMI MIX 15/20 - Fatias de peixe variadas
-
-SASHIMI PEIXE BRANCO 5/10 - Fatias de peixe branco
-
-SAKEMAKI - Rolo de arroz com a Alga por Fora ( Salmão) ( TODOS COM OPÇÃO DE BRASEAR 0.50)
-
-
-HOSSOMAKI 8 PEÇAS
-
-KAPPAMAKI - Rolo de arroz com a Alga por Fora ( pepino)
-
-TEMPURAMAKI - Rolo de arroz com a Alga por Fora ( camarão tempura)
-
-EBIMAKI - Rolo de arroz com a Alga por Fora ( Camarão)
-
-TEKKAMAKI - Rolo de arroz com a Alga por Fora ( Atum)
-
-AVOCADOMAKI - Rolo de arroz com alga por fora (Abacate)
-
-FUTOMAKI 5 PEÇAS
-
-FUTOMAKI VEGGIE - ARROZ DE SUSHI, MORANGO, MANGA E PEPINO
-
-FUTOMAKI CALIFÓRNIA - ARROZ DE SUSHI, SALMÃO, MANGA E PEPINO  
-
-FUTOMAKI SALMÃO, ABACATE E CAMARÃO - ARROZ DE SUSHI, SALMÃO, CAMARÃO COZIDO E ABACATE
-
-FUTOMAKI ATUM ABACATE - ARROZ DE SUSHI, ATUM E ABACATE
-
-FUTO AKI ATUM PEPINO - ARROZ DE SUSHI, ATUM E PEPINO
-URAMAKI 8 PEÇAS
-URAMAKI VEGGIE - Rolo com Arroz por Fora ( frutas da estação)
-
-
-URAMAKI ATUM RÚCULA - Rolo com Arroz por Fora ( atum e rúcula)
-URAMAKI ATUM ABACATE - Rolo com Arroz por Fora ( Atum e abacate)
-URAMAKI PHILADELPHIA - Rolo com Arroz por Fora ( salmão e queijo creme)
-URAMAKI SALMÃO MORANGO PHILA - Rolo com Arroz por Fora ( salmão, morango e queijo creme)
-URAMAKI SALMÃO MANGA PHILA - Rolo com Arroz por Fora ( salmão e manga)
-URAMAKI SALMÃO CRISPY - Rolo com Arroz por Fora ( salmão e cebola frita)
-URAMAKI SALMÃO ABACATE - Rolo com Arroz por Fora ( salmão e Abacate)
-URAMAKI ESPECIAL EBI SALMÃO - Rolo com Arroz por Fora ( salmão e camarão tempura)
-URAMAKI EBI RÚCULA - Rolo com Arroz por Fora ( camarão tempura e rúcula)
-URAMAKI CALIFÓRNIA - Rolo com Arroz por Fora ( salmão,pepino e manga)
-URAMAKI ATUM PICANTE - Rolo com Arroz por Fora ( atum, pepino e molho especial)
-GUNKAN SALMÃO PHILADELPHIA
-GUNKAN SALMÃO PHILA MORANGO
-GUNKAN SALMÃO 
-GUNKAN SALMÃO PHILA MARACUJÁ
-GUNKAN SALMÃO QUEIJO BRIE BRASEADO
-GUNKAN SALMÃO MASSAGO (TODOS COM OPÇÃO DE BRASEAR 0.50)
-
+# No terminal, na raiz do projeto (SUSHIWORLD_3/)
+cat > docs/descrição-cardapio.txt << 'EOF'
+# CARDÁPIO SUSHIWORLD - PORTUGAL
+# Formato: Categoria|ID|Nome|Descrição|Preço
+
+## ENTRADAS
+Entradas|16|Ebi Fry Salmão 6 Peças|Camarão tempura, enrolado no Salmão|7.80
+Entradas|17|Salmão Neta Phila 6 Peças|Fatia de Salmão enrolado com queijo philadelphia|6.90
+Entradas|18|Kimuchi de Salmão 200g|Cubos de salmão temperado com molho kimuchi, alho francês, semente de sésamo, cebolinho e tougarashi|14.90
+Entradas|19|Crepe de Legumes 4 Peças|Mini crepes de legumes|3.70
+Entradas|20|Tempura de Camarão 4 Peças|Camarão Panado e frito|4.50
+Entradas|21|Gyosas de Camarão 4 Peças|Gyosas recheadas de camarão|6.10
+Entradas|22|Gyosas de Frango 4 Peças|Gyosas recheadas de frango|4.10
+
+## TEMAKI
+Temaki|23|Temaki Veggie|Cone enrolado com frutas da estação|5.20
+Temaki|24|Temaki Salmão Phila|Peixe cortado em cubos com philadelphia e enrolado tipo cone|6.60
+Temaki|25|Temaki Califórnia|Peixe cortado em cubos, manga, pepino e enrolado tipo cone|6.20
+Temaki|26|Temaki Salmão|Peixe cortado em cubos e enrolado tipo cone|6.50
+Temaki|27|Temaki Atum|Peixe cortado em cubos e enrolado tipo cone|6.90
+Temaki|28|Temaki Hot|Cone de salmão, panado e frito, com queijo creme, maionese japonesa e cebola frita|8.90
+
+## HOSSOMAKI
+Hossomaki|49|Sakemaki|Rolo de arroz com a alga por fora (Salmão)|4.40
+Hossomaki|50|Kappamaki|Rolo de arroz com a alga por fora (Pepino)|3.20
+Hossomaki|51|Tempuramaki|Rolo de arroz com a alga por fora (Camarão tempura)|4.90
+Hossomaki|52|Ebimaki|Rolo de arroz com a alga por fora (Camarão)|4.90
+Hossomaki|53|Tekkamaki|Rolo de arroz com a alga por fora (Atum)|4.90
+Hossomaki|54|Avocadomaki|Rolo de arroz com alga por fora (Abacate)|3.50
+
+## SASHIMI
+Sashimi|45|Sashimi de Salmão 5/10 Peças|Fatias de Salmão|6.10/8.50
+Sashimi|46|Sashimi de Atum 5/10 Peças|Fatias de atum|6.30/8.90
+Sashimi|47|Sashimi Mix 15/20 Peças|Fatias de peixe variadas|10.90/15.90
+Sashimi|48|Sashimi Peixe Branco 5/10 Peças|Fatias de peixe branco|5.90/7.90
+
+## POKE
+Poke|36|Poke Hawaiano|Arroz de sushi, maionese, salmão, morango e Goma Wakame|12.90
+Poke|37|Poke Especial de Salmão|Arroz de sushi, maionese, salmão, manga, goma wakame, amêndoas e tomate cereja|15.90
+Poke|38|Poke de Abacate|Arroz de sushi, maionese, salmão e abacate|13.90
+Poke|39|Poke Tradicional|Arroz de sushi, maionese, atum, abacate, pepino, cebola roxa, cebolinha|15.90
+Poke|40|Poke de Salmão|Arroz de sushi, maionese, cebola roxa, pepino e salmão|12.90
+Poke|41|Poke Veggie|Arroz de sushi, maionese, morango, manga, pepino, rúcula e abacate|11.50
+
+## GUNKAN
+Gunkan|75|Gunkan Salmão Phila Maracujá|Gunkan de salmão com philadelphia e maracujá|6.50
+Gunkan|76|Gunkan Salmão Queijo Brie Braseado|Gunkan de salmão com queijo brie braseado|6.60
+Gunkan|77|Gunkan Salmão Massago|Gunkan de salmão com massago|8.00
+
+## NIGIRI
+Nigiri|42|Nigiri Salmão 4 Peças|Bolinho de arroz coberto com salmão|4.00
+Nigiri|43|Nigiri Atum 4 Peças|Bolinho de arroz coberto com atum|4.50
+Nigiri|44|Nigiri Veggie 4 Peças|Bolinho de arroz coberto com vegetais|3.80
+
+## FUTOMAKI
+Futomaki|55|Futomaki Veggie|Arroz de sushi, morango, manga e pepino|3.90
+Futomaki|56|Futomaki Califórnia|Arroz de sushi, salmão, manga e pepino|4.10
+Futomaki|57|Futomaki Salmão, Abacate e Camarão|Arroz de sushi, salmão, camarão cozido e abacate|5.90
+Futomaki|58|Futomaki Atum Abacate|Arroz de sushi, atum e abacate|5.90
+Futomaki|59|Futomaki Atum Pepino|Arroz de sushi, atum e pepino|5.50
+
+## HOT ROLL
+Hot Roll|29|Hot Salmão, Morango e Manga|Rolo de sushi, panado e frito com queijo creme, morango e manga|6.35
+Hot Roll|30|Hot Salmão|Rolo de sushi, panado e frito|6.00
+Hot Roll|31|Hot Camarão Tempura Phila|Rolo de sushi, panado e frito com camarão tempura e queijo creme|7.90
+Hot Roll|32|Hot Salmão Phila|Rolo de sushi, panado e frito com queijo creme|6.20
+Hot Roll|33|Hot Atum|Rolo de sushi panado e frito|6.70
+Hot Roll|34|Hot Salmão Crispy|Rolo de sushi, panado e frito com maionese e cebola frita|6.35
+Hot Roll|35|Sushi Dog 1 Uni|Hossomaki de salmão panado e frito, com cubos de salmão por cima com molho de maionese e queijo creme|12.00
+
+## COMBINADOS
+Combinados|1|Gunkan Mix 10 Peças|2- Salmão, 2- Salmão Braseado, 2- Salmão Morango, 2- Salmão Phila, 2- Salmão queijo brie|14.90
+Combinados|2|Hot Mix 22 Peças|8- Uramaki Salmão philadelphia, 5- hot phila, 5- hot crispy, 2- camarão tempura, 2- mini crepe de legumes|16.50
+Combinados|3|Mini World 15 Peças|8- Uramaki Salmão Crispy, 2- nigiri salmão, 5- Sashimi Salmão|13.90
+Combinados|4|Veggie 20 Peças|8- Hossomaki morango e manga, 8- Uramaki manga, morango e rúcula, 4- Futomaki Veggie|13.90
+Combinados|8|Special Salmon 20 Peças|6- Sashimi salmão, 4- Nigiri Salmão, 4- Gunkan Salmão, 6- Salmão Neta Phila (opção de brasear +1€)|18.90
+Combinados|9|Salmão Mix 24 Peças|4- sashimi de salmão, 2- gunkan phila morango, 2- nigiri de salmão, 8- hossomaki de salmão, 4- hot phila, 4- hot crispy|19.50
+Combinados|10|Eat Sushi 34 Peças|8- Uramaki Salmão Phila, 8- Uramaki Especial Ebi Salmão, 8- Hossomaki Salmão, 10- Hot Roll Phila|23.90
+Combinados|11|Special Hot 40 Peças|10- hot phila, 10- hot crispy, 6- Gyosas frango e legumes, 4- Tempura de camarão, 6- Crepes de legumes, 4- Camarão batata|31.90
+Combinados|12|World 50 Peças|8- Sashimi Salmão, 8- Futomaki Califórnia, 8- uramaki salmão crispy, 8- Hossomaki de salmão, 8- Hossomaki de atum, 6- Nigiri de salmão, 4- Gunkan de Salmão|33.90
+Combinados|13|Tropical 60 Peças|8- uramaki california tradicional, 8- uramaki phila morango, 8- uramaki salmão picante, 8- uramaki ebi especial salmão, 8- hossomaki de salmão, 8- hossomaki de pepino, 8- hossomaki delícias, 4- futomaki california|43.90
+Combinados|14|World Premium 50 Peças|6- Sashimi Salmão, 6- Sashimi Atum, 6- Sashimi Peixe Branco, 4- Uramaki Salmão Phila manga, 4- Uramaki Salmão Phila Morango, 2- Nigiri Salmão, 2- Nigiri Salmão Braseado, 2- Atum, 2- Gunkan Salmão, 2- Gunkan Morango, 2- Gunkan Massago, 4- Hossomaki Atum, 4- Hossomaki Salmão, 4- Futomaki California|34.50
+Combinados|15|World Mix 50 Peças|8- Hot roll Phila, 8- Uramaki salmão Crispy, 8- Uramaki califórnia, 8- Hossomaki de pepino, 4- Nigiri Salmão, 4- Gunkan Salmão, 8- Futomaki Califórnia, 2- Ebi fry Salmão braseado|32.90

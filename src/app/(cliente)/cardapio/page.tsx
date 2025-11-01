@@ -1,13 +1,31 @@
 'use client';
 
-import { parseCardapio, getCategorias, Produto } from '@/lib/parseCardapio';
 import ProductCard from '@/components/cliente/ProductCard';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Produto } from '@/lib/parseCardapio';
 
 export default function CardapioPage() {
-  const produtos = parseCardapio();
-  const categorias = getCategorias();
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [categorias, setCategorias] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   const [carrinho, setCarrinho] = useState<Produto[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const response = await fetch('/api/cardapio');
+        const data = await response.json();
+        setProdutos(data.produtos);
+        setCategorias(data.categorias);
+      } catch (error) {
+        console.error('Erro ao carregar cardápio:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   const handleAddToCart = (produto: Produto) => {
     console.log('✅ Adicionando ao carrinho:', produto.nome);
@@ -31,6 +49,17 @@ export default function CardapioPage() {
     handleAddToCart(produto);
   };
 
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#f5f1e9] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00] mx-auto mb-4"></div>
+          <p className="text-[#333333]">Carregando cardápio...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#f5f1e9]">
       {/* Hero Section */}
@@ -42,7 +71,7 @@ export default function CardapioPage() {
           <p className="text-lg md:text-xl max-w-2xl mx-auto">
             Descubra sabores autênticos da culinária japonesa, preparados com ingredientes frescos e de qualidade
           </p>
-          
+
           {carrinho.length > 0 && (
             <div className="mt-4 inline-block bg-white text-[#FF6B00] px-4 py-2 rounded-full font-semibold">
               🛒 {carrinho.length} {carrinho.length === 1 ? 'item' : 'itens'} no carrinho

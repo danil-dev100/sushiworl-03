@@ -1,3 +1,5 @@
+"use server";
+
 import fs from 'fs';
 import path from 'path';
 
@@ -14,9 +16,9 @@ export interface Produto {
  * Parse do arquivo descrição-cardapio.txt
  * Retorna array de produtos organizados
  */
-export function parseCardapio(): Produto[] {
+export async function parseCardapio(): Promise<Produto[]> {
   const filePath = path.join(process.cwd(), 'docs', 'descrição-cardapio.txt');
-  
+
   if (!fs.existsSync(filePath)) {
     console.error('❌ Arquivo descrição-cardapio.txt não encontrado em:', filePath);
     return [];
@@ -52,8 +54,8 @@ export function parseCardapio(): Produto[] {
 /**
  * Retorna produtos filtrados por categoria
  */
-export function getProdutosPorCategoria(categoria: string): Produto[] {
-  const todosProdutos = parseCardapio();
+export async function getProdutosPorCategoria(categoria: string): Promise<Produto[]> {
+  const todosProdutos = await parseCardapio();
   return todosProdutos.filter(
     (p) => p.categoria.toLowerCase() === categoria.toLowerCase()
   );
@@ -62,8 +64,8 @@ export function getProdutosPorCategoria(categoria: string): Produto[] {
 /**
  * Retorna todas as categorias únicas na ordem definida
  */
-export function getCategorias(): string[] {
-  const produtos = parseCardapio();
+export async function getCategorias(): Promise<string[]> {
+  const produtos = await parseCardapio();
   const categorias = [...new Set(produtos.map((p) => p.categoria))];
 
   const ordemCategorias = [
@@ -71,7 +73,7 @@ export function getCategorias(): string[] {
     'Temaki',
     'Hossomaki',
     'Sashimi',
-    'Poke',
+    'Poke Bowl',
     'Gunkan',
     'Uramaki',
     'Nigiri',
@@ -90,7 +92,7 @@ export function getCategorias(): string[] {
 /**
  * Retorna um produto específico pelo ID
  */
-export function getProdutoPorId(id: string): Produto | undefined {
-  const produtos = parseCardapio();
+export async function getProdutoPorId(id: string): Promise<Produto | undefined> {
+  const produtos = await parseCardapio();
   return produtos.find((p) => p.id === id);
 }

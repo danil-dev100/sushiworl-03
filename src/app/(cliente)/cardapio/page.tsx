@@ -12,9 +12,23 @@ export default function CardapioPage() {
   const handleAddToCart = (produto: Produto) => {
     console.log('✅ Adicionando ao carrinho:', produto.nome);
     setCarrinho(prev => [...prev, produto]);
-    
+
     const carrinhoAtual = JSON.parse(localStorage.getItem('carrinho') || '[]');
     localStorage.setItem('carrinho', JSON.stringify([...carrinhoAtual, produto]));
+  };
+
+  // Adapter function to convert Produto to Product
+  const handleAddToCartAdapter = (product: any) => {
+    // Convert Product to Produto format if needed
+    const produto: Produto = {
+      id: product.id,
+      categoria: product.category || '',
+      nome: product.name,
+      descricao: product.description,
+      preco: product.price,
+      imagemUrl: product.image
+    };
+    handleAddToCart(produto);
   };
 
   return (
@@ -59,8 +73,15 @@ export default function CardapioPage() {
                 {produtosCategoria.map((produto) => (
                   <ProductCard
                     key={produto.id}
-                    produto={produto}
-                    onAddToCart={handleAddToCart}
+                    product={{
+                      id: parseInt(produto.id),
+                      name: produto.nome,
+                      description: produto.descricao,
+                      price: produto.preco,
+                      category: produto.categoria,
+                      image: produto.imagemUrl
+                    }}
+                    onAddToCart={handleAddToCartAdapter}
                   />
                 ))}
               </div>

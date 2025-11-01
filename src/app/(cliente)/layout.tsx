@@ -1,17 +1,19 @@
-import React from "react";
-import Header from "@/components/cliente/Header";
-import Footer from "@/components/cliente/Footer";
+// /src/app/layout.tsx
+export const metadata = {
+  title: 'SushiWorld Delivery',
+  description: 'O melhor sushi de Santa Iria entregue na sua casa',
+}
 
-export default function ClientLayout({
+export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
-    <>
-      <Header />
-      <main>{children}</main>
-      <Footer />
-    </>
-  );
+    <html lang="pt">
+      <body className="antialiased">
+        {children}
+      </body>
+    </html>
+  )
 }

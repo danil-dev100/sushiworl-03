@@ -226,7 +226,7 @@ function parseProducts(): Product[] {
           description: price ? description.replace(/\s*\d+(?:\.\d+)?\s*€?$/, '').trim() : description,
           price: price || 'Preço sob consulta',
           category: currentCategory,
-          image: `/${id}.webp`
+          image: `/produtos/${id}.webp`
         });
 
         id++;

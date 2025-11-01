@@ -68,7 +68,7 @@ EBI FRY SALMÃO 6 PEÇAS - Camarão tempura, enrolado no Salmão.
 
 SALMÃO NETA PHILA 6 PEÇAS - Fatia de Salmão enrolado com queijo philadelphia.
 
-KIMUCHI DE SALMÃO 200G - Cubos de salmão temperado com molho kimuchi, alho francês, semente de sésema, cebolinho e tougarachi
+KIMUCHI DE SALMÃO 200G - Cubos de salmão temperado com molho kimuchi, alho francês, semente de sésema, cebolinho e tougarashi
 
 CREPE DE LEGUMES 4 PEÇAS - Mini crepes de legumes
 

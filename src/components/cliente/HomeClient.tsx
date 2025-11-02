@@ -114,9 +114,11 @@ export default function HomeClient() {
                 <div className="flex justify-center">
                   <div className="w-full max-w-sm">
                     <ProductCard
-                      product={favoriteProduct}
-                      onAddToCart={handleAddToCart}
-                      showFavorite={true}
+                      name={favoriteProduct.name}
+                      description={favoriteProduct.description}
+                      price={favoriteProduct.price}
+                      imageUrl={favoriteProduct.image}
+                      sku={favoriteProduct.id.toString()}
                     />
                   </div>
                 </div>
@@ -128,8 +130,11 @@ export default function HomeClient() {
               {products.map((product) => (
                 <ProductCard
                   key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
+                  name={product.name}
+                  description={product.description}
+                  price={product.price}
+                  imageUrl={product.image}
+                  sku={product.id.toString()}
                 />
               ))}
             </div>

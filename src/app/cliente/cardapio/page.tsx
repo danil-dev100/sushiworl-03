@@ -102,15 +102,11 @@ export default function CardapioPage() {
                 {produtosCategoria.map((produto) => (
                   <ProductCard
                     key={produto.id}
-                    product={{
-                      id: parseInt(produto.id),
-                      name: produto.nome,
-                      description: produto.descricao,
-                      price: produto.preco,
-                      category: produto.categoria,
-                      image: produto.imagemUrl
-                    }}
-                    onAddToCart={handleAddToCartAdapter}
+                    name={produto.nome}
+                    description={produto.descricao}
+                    price={produto.preco}
+                    imageUrl={produto.imagemUrl}
+                    sku={produto.id}
                   />
                 ))}
               </div>

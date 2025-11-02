@@ -1,65 +1,67 @@
 'use client';
 
-import React from 'react';
 import Image from 'next/image';
-import { Product } from '@/lib/products';
+import { sanitizeHtml } from '@/lib/security';
 
 interface ProductCardProps {
-  product: Product;
-  onAddToCart?: (product: Product) => void;
-  showFavorite?: boolean;
+  name: string;
+  description: string;
+  price: string;
+  discountPrice?: string;
+  imageUrl: string;
+  sku: string;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, showFavorite = false }) => {
+export default function ProductCard({
+  name,
+  description,
+  price,
+  discountPrice,
+  imageUrl,
+  sku
+}: ProductCardProps) {
   const handleAddToCart = () => {
-    if (onAddToCart) {
-      onAddToCart(product);
-    }
+    console.log('Adicionando produto:', sku);
   };
 
+  const altText = `${name} - ${description}`;
+
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group">
-      <div className="relative aspect-square">
+    <div className="flex flex-col group bg-white/50 dark:bg-black/20 rounded-xl p-4 shadow-sm hover:shadow-lg transition-shadow duration-300">
+      <div className="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg mb-4 overflow-hidden transform group-hover:scale-105 transition-transform duration-300">
         <Image
-          src={`/produtos/${product.id}.webp`}
-          alt={product.name}
+          src={imageUrl}
+          alt={altText}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
-        {showFavorite && (
-          <button className="absolute top-2 right-2 p-2 bg-white/80 rounded-full hover:bg-white transition-colors">
-            ❤️
-          </button>
-        )}
       </div>
-
-      <div className="p-4">
-        <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2">
-          {product.name}
+      <div className="flex flex-col flex-grow">
+        <h3 className="text-price dark:text-background-light text-lg font-bold">
+          {sanitizeHtml(name)}
         </h3>
-
-        <p className="text-gray-600 text-sm mb-3 line-clamp-3">
-          {product.description}
-        </p>
-
-        <div className="flex items-center justify-between">
-          <span className="text-xl font-bold text-orange-600">
-            {product.price}
-          </span>
-
-          <button
-            onClick={handleAddToCart}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-            aria-label={`Adicionar ${product.name} ao carrinho`}
-          >
-            <span>+</span>
-            <span className="hidden sm:inline">Adicionar</span>
-          </button>
+        <p
+          className="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow"
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
+        />
+        <div className="flex items-center gap-2">
+          <p className="text-price dark:text-background-light text-lg font-bold">
+            {price}
+          </p>
+          {discountPrice && (
+            <p className="text-price-discount text-sm font-normal line-through">
+              {discountPrice}
+            </p>
+          )}
         </div>
       </div>
+      <button
+        onClick={handleAddToCart}
+        className="mt-4 w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity"
+      >
+        Adicionar
+      </button>
     </div>
   );
-};
-
-export default ProductCard;
+}

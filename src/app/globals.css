@@ -150,4 +150,13 @@
   body {
     @apply bg-background text-foreground;
   }
+/* Scroll suave para toda a aplicação */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Material Symbols Outlined */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
 }

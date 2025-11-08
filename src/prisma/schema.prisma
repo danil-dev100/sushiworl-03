@@ -2,50 +2,107 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+provider = "postgresql"
+url = env("DATABASE_URL")
 }
 
 model User {
   id        String   @id @default(cuid())
-  name      String
   email     String   @unique
+  name      String
   phone     String?
+  role      Role     @default(CUSTOMER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   orders Order[]
+}
 
-  @@map("users")
+model Product {
+  id            String   @id @default(cuid())
+  sku           String   @unique
+  name          String
+  description   String?
+  price         Float
+  discountPrice Float?
+  category      String
+  imageUrl      String?
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orderItems OrderItem[]
 }
 
 model Order {
-  id        String   @id @default(cuid())
-  userId    String
-  total     Float
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  userId         String?
+  customerName   String
+  customerEmail  String
+  customerPhone  String
+  deliveryAddress Json?
+  total          Float
+  status         OrderStatus @default(PENDING)
+  paymentMethod  PaymentMethod @default(CREDIT_CARD)
+  changeFor      Float?
+  couponCode     String?
+  observations   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items  OrderItem[]
-
-  @@map("orders")
+  user       User?       @relation(fields: [userId], references: [id])
+  orderItems OrderItem[]
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  productId Int
-  name      String
-  price     Float
-  quantity  Int     @default(1)
+  id          String  @id @default(cuid())
+  orderId     String
+  productId   String
+  quantity    Int     @default(1)
+  priceAtTime Float
 
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
 
-  @@map("order_items")
+model Settings {
+id String @id @default(cuid())
+companyName String
+billingName String?
+nif String
+address String?
+phone String?
+openingHours Json?
+vatRate Float
+vatType VatType
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+}
+
+enum Role {
+ADMIN
+MANAGER
+CUSTOMER
+}
+
+enum OrderStatus {
+PENDING
+CONFIRMED
+CANCELLED
+DELIVERING
+DELIVERED
+}
+
+enum PaymentMethod {
+CREDIT_CARD
+CASH
+}
+
+enum VatType {
+INCLUSIVE
+EXCLUSIVE
 }

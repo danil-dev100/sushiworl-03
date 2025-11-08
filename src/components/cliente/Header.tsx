@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Menu, X, ShoppingCart, User } from 'lucide-react';
+import { Menu, X, ShoppingCart } from 'lucide-react';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -43,19 +43,13 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Right side - Cart and User */}
+          {/* Right side - Cart */}
           <div className="flex items-center space-x-4">
             <button
               className="p-2 text-gray-700 hover:text-orange-600 transition-colors duration-200"
               aria-label="Carrinho de compras"
             >
               <ShoppingCart className="h-6 w-6" />
-            </button>
-            <button
-              className="p-2 text-gray-700 hover:text-orange-600 transition-colors duration-200"
-              aria-label="Conta do usuário"
-            >
-              <User className="h-6 w-6" />
             </button>
 
             {/* Mobile menu button */}

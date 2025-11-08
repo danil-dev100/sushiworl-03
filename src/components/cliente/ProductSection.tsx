@@ -17,6 +17,10 @@ interface ProductSectionProps {
 export default function ProductSection({ title, products }: ProductSectionProps) {
   const sectionId = title.toLowerCase().replace(/\s+/g, '-');
 
+  if (!products || products.length === 0) {
+    return null;
+  }
+
   return (
     <section id={sectionId}>
       <h2 className="text-primary text-2xl font-bold tracking-tight pb-6">{title}</h2>

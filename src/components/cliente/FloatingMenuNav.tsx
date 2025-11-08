@@ -1,10 +1,14 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 interface FloatingMenuNavProps {
   categories: string[];
 }
 
 export default function FloatingMenuNav({ categories }: FloatingMenuNavProps) {
+  const [isVisible, setIsVisible] = useState(false);
+
   const getIconName = (category: string) => {
     const iconMap: { [key: string]: string } = {
       'Destaques': 'spark',
@@ -28,8 +32,23 @@ export default function FloatingMenuNav({ categories }: FloatingMenuNavProps) {
     }
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsVisible(window.scrollY > 200);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Verifica a posição inicial
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (!isVisible) {
+    return null;
+  }
+
   return (
-    <aside className="sticky top-[73px] h-[calc(100vh-73px)] w-64 hidden lg:block py-8 pr-8 shrink-0">
+    <aside className="fixed top-[73px] left-0 h-[calc(100vh-73px)] w-64 hidden lg:block py-8 pr-8 shrink-0 z-40">
       <div className="flex flex-col gap-2">
         {categories.map((category) => {
           const sectionId = category.toLowerCase().replace(/\s+/g, '-');

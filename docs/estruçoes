@@ -1,0 +1,649 @@
+Estrutura para o Site para restaurante Sushi 
+nome fantasia: SushiWorld 
+nome para fatura:Guilherme Alberto Rocha Ricardo 
+nif: 295949201 
+cor de fundo do site: #f5f1e9 
+cor do botão de compra: #FF6B00 
+cor da letra do botão de compra:#ffffff 
+cor da letra do site:##FF6B00 
+cor do preço do produto:#333333 
+cor do preço de desconto "exemplo de 22,00 € por 15,00 € , coloque uma linha no meio do 
+preço antigo para o cliente entender que agora esta mais barato" :#bfbfbf 
+Irei envia a logo com fundo transparente 
+TOPO 
+Menu do site desktop Mobile 
+Inicio, Cardápio, catering "usar esse link para redirecionar 
+https://chefguilhermericardo.sushiworld.pt , Contato,Login ,Carrinho " ícone de um carrinho na 
+cor laranja na mesma cor do botão de compra, mostrar a quantidade de item no carrinho 
+enquanto o cliente faz pedido". 
+Menu do site Mobile 
+fazer com o ícone em formato de hamburger na cor laranja a mesma da cor do botão de 
+compra, adicionar um ícone clicavel no canto inferior direito redondo do carrinho em cor laranja 
+mostrando a quantidade quando o cliente adiciona algum item,   clicavel no canto inferior direito 
+Rodapé do site 
+Politica de privacidade, Politica de Reembolso e Devolução, Sobre Nos, Livro de Reclamações" 
+adicionar o link a seguir:https://www.livroreclamacoes.pt/Inicio ". 
+Pagina 
+Inicio desktop 
+seção 1 
+banner com texto h1 
+escrito de forma pequena 12px o seguinte texto: Alergias alimentares ou necessidades 
+dietéticas especiais: Antes de realizar o seu pedido, por favor contate diretamente o 
+restaurante. 
+seção 2 
+Mais vendidos 
+adicionar 9 produtos de forma automática os produtos que de fato foi o mais pedido e os que o 
+admin indicar também. 
+seção 3 
+DESTAQUES 
+Adicionar de forma aleatória 6 produtos que muda sempre que o cliente entra no site 
+Observações para Desktop 
+o menu fica fixo no topo da pagina mostrando mostrando 3 produtos por dobra da pagina, 
+adicionar um menu móvel que acompanha a rolagem da pagina com os seguinte nomes: 
+Destaques, Combinados, Hots, Entradas, Poke Bowl, Gunkan, Sashimi, Nigiri, Makis, Temaki, 
+siga a mesma ordem. "irei enviar uma foto com o modelo de referencia como tem que ficar". 
+Observações para Mobile 
+mostrar 1 produto por linha e ajustando de forma automática a responsividade o tamanho da 
+dela, e para tablete mostrar 2 produto por linha. 
+Pagina cardápio 
+Cardápio 
+adicionar todas as seções: Destaques, Combinados, Hots, Entradas, Poke Bowl, Gunkan, 
+Sashimi, Nigiri, Makis, Temaki. 
+siga a mesma ordem. "e pra criar no mesmo modelo mencionado acima" 
+adicione um emogi antes de cada nome de seção "exemplo, 
+�
+�
+ COMBINADOS". 
+vou enviar um PDF contendo o nome de cada produto e suas descrições e preços, cada menu 
+terá um numero nele use esse numero como sku, vou enviar um PDF com as imagens dos 
+produtos, cada imagem o nome e o numero do produto que se tornou o sku, "exemplo numero 
+1-GUNKAN MIX 10 PEÇAS a foto dele seria a numero 1 e o SKU do produto seria 01. 
+Observações para Desktop 
+no me lateral flutuante faça que quando o cliente clicar no nome vá direto para a seção 
+respetiva do produto. 
+Pagina catering 
+catering 
+Usar o link para redirecionar para o subdomínio do site 
+https://chefguilhermericardo.sushiworld.pt 
+Pagina Contato 
+Contato 
+Adicionar o endereço somente como SANTA IRIA 
+Nome: SUSHIWORLD 
+telefone: +351 934 841 148 
+e-mail: pedidosushiworld@gmail.com 
+e informar que só atendemos Delivery 
+Carrinho 
+Página de Carrinho – O que implementar: 
+Listar todos os itens do pedido com: 
+Nome, imagem, quantidade, preço unitário e total por item. 
+Botão para remover ou alterar quantidade. 
+Mostrar subtotal, taxas (entrega, serviço) e total final em euros (€). 
+Disparar evento de visualização de carrinho para: 
+Google Analytics 4 (view_cart) 
+Facebook Pixel (ViewContent ou InitiateCheckout) 
+Google Ads (se configurado) 
+→ Incluindo valor total e ID dos produtos. 
+Exibir Order Bump (se houver regra ativa para os itens do carrinho): 
+Checkbox com item complementar e preço (ex: "Adicionar molho por €2,50"). 
+Botão claro para "Ir para o Checkout" — só habilitado se houver pelo menos um item. 
+(Opcional) Campo para cupom de desconto com botão "Aplicar". 
+Checkout – O que fazer: 
+1. Dados do cliente (obrigatórios) 
+Nome 
+✅
+ 
+Sobrenome 
+✅
+ 
+E-mail 
+✅
+ 
+Telefone 
+✅
+ 
+Endereço completo (rua, nº, bairro, cidade, código postal) 
+✅
+ 
+2. NIF (opcional) 
+Campo visível, mas não obrigatório. 
+3. Forma de pagamento 
+Opções: Cartão ou Dinheiro 
+Se escolher Dinheiro: 
+→ Aparece campo "Valor entregue" 
+→ Não é obrigatório preencher (cliente pode deixar em branco) 
+→ Se preenchido, o sistema calcula e exibe o troco (ex: "Troco: €3,50") 
+→ Se não preenchido, mostra apenas: "Pagamento em dinheiro" 
+4. Detalhes do pedido 
+Cupom de desconto: campo para digitar código (com botão "Aplicar") 
+Observações: textarea para o cliente escrever (ex: "Sem cebola, por favor") 
+5. Order Bump 
+Se houver order bump ativo para os itens do carrinho: 
+→ Exibe antes do botão finalizar 
+→ Checkbox: "Adicionar [item] por €X,XX" 
+6. Botão final 
+"Finalizar Pedido" (só habilitado quando todos os campos obrigatórios estiverem preenchidos) 
+depois de o cliente clicar no botão pra finaliza pedido usar um popup, uma ao finalizar o pedido 
+(aguardando confirmação) e outra caso o pedido seja recusado — ambas claras, profissionais 
+e alinhadas com a experiência do cliente: 
+✅
+ Pedido Recebido – Aguardando Confirmação 
+Pedido Recebido! 
+�
+�
+ Seu pedido está aguardando confirmação do restaurante. 
+Você receberá uma notificação assim que for aceito ou recusado. 
+�
+�
+ Um e-mail de confirmação foi enviado para seuemail@exemplo.com . 
+�
+�
+ Obrigado por escolher nosso restaurante! 
+❌
+ Pedido Não Confirmado 
+Lamentamos, mas não podemos aceitar seu pedido no momento. 
+Devido à alta demanda, atingimos nossa capacidade máxima de atendimento. 
+�
+�
+ Agradecemos muito seu interesse e esperamos poder servi-lo em breve! 
+�
+�
+ Dica: Tente novamente em alguns minutos — novos horários podem abrir! 
+✅
+ Use a primeira imediatamente após o cliente clicar em "Finalizar Pedido". 
+❌
+ Substitua pela segunda quando o restaurante recusar o pedido (via painel ou sistema 
+automático). 
+Página de Obrigado 
+Página de Obrigado – O que implementar: 
+Mostrar mensagem de confirmação ao cliente (ex: "Obrigado! Seu pedido foi confirmado."). 
+Disparar automaticamente o evento de compra concluída para: 
+Google Ads (via tag ou API) 
+Facebook Pixel (e/ou Conversão API) 
+Google Analytics 4 
+Qualquer outra plataforma de anúncios ou analytics configurada 
+Incluir os dados reais da compra: valor total, ID do pedido e moeda (€). 
+Usar o gclid/fbclid original capturado na primeira visita para atribuição correta. 
+Evitar disparos duplicados — a página só deve registrar a conversão uma vez por pedido. 
+Login 
+o cliente pode fazer o pedido e na hora de finalizar o pedido ele e direcionado para fazer o 
+castro e quando ele finalizar o cadastro quando o cliente clicar em finalizar cadastro já use os 
+dados para finalizar o pedido já fica salvo automático para a próxima seção, se houver um 
+clique no login já identifica se e um usuário cliente ou usuário administrador, se for 
+administrador vai para o painel de administração, se for cliente fica no site. 
+PANEL DE ADIMINISTRAÇAO 
+ADIMIM 
+senha para o primeiro acesso, usuário: suhi123, senha:123suhi assim que o admin lograr no 
+seu primeiro acesso pedir para cadastrar nome de usuário e senha e o coloque como 
+administrador, lembre-se de não deixar visível as senhas e usuários dos clientes e nem dos 
+administradores. 
+o administrador pode adicionar gerente de conta e gerar um usuário e senha para o primeiro 
+acesso, depois que o gerente logar na primeira vez faça ele criar uma nova senha, o 
+administrador quando adicionar um gerente de a ele a opção de o que ele esta autorizado a ver 
+e a alterar, acesso básico, o gerente so tem acesso a aceitar cancelar e receber e imprimir 
+pedido, acesso intermediário, o gerente tem acesso a aceitar cancelar e receber e imprimir 
+pedido e alterar pedido, e acesso total onde ele tem acesso a todo o painel do administrador só 
+não tem autorização para editar e imprimir nada na área financeira, nem dados dos clientes 
+ficando a sim autorizado a imprimir somente pedidos. 
+O QUE DEVE CONTER NO PAINEL DO ADMINISTRADOR. 
+Pagina de configurações da empresa 
+nome da empresa 
+nome para faturação 
+"se o administrador adicionar os dois nomes diferente pergunte se e pra adicionar os dois nome 
+na fatura, se ele colocar não então adicione so o nome de faturação." 
+NIF 
+Endereço 
+telefone 
+Dias e horários de atendimento 
+"quando o administrador adicionar o horário de atendimento use esse horário para autorizar o 
+usuário a fazer pedidos no site, quando o usuário entrar no site e for fora do dia e hora de 
+atendimento informar com uma mensagem no topo da pagina dizendo que esta fechado e diga 
+quando abre e que horas. 
+adicionar impressora térmica 
+"pergunte se a impressora e via cabo ou bluetooth, pergunte o tamanho do papel, ajuste 
+automático a impressão para cada tipo de papel e se for bluetooht pergunte se quer conectar 
+agora ou depois, se ele marcar depois assim que ele receber o primeiro pedido e for imprimir 
+peça pra conectar a impressora". 
+IVA 
+"Como funciona o IVA no sistema 
+1. Campos que você precisa no cadastro da empresa 
+Taxa de IVA (%): exemplo → 13 
+Tipo de IVA: duas opções possíveis: 
+inclusive → já está dentro do preço 
+exclusive → deve ser somado ao preço 
+2. Fórmulas que o sistema deve aplicar 
+Caso exclusive (IVA somado ao preço) 
+Produto sem IVA: 100,00 
+IVA = Preço * (Taxa / 100) 
+Total = Preço + IVA 
+Exemplo: 
+IVA = 100 * 0.13 = 13 
+Total = 100 + 13 = 113 
+Caso inclusive (IVA já incluído no preço) 
+Produto com IVA: 100,00 (já tem imposto dentro) 
+IVA = Preço - (Preço / (1 + Taxa/100)) 
+Total = Preço (não muda) 
+Exemplo: 
+IVA = 100 - (100 / 1.13) = 11,50 
+Total = 100 
+3. Exibição na fatura 
+Sempre mostrar o Produto e o Total. 
+Mostrar a linha “IVA” com o cálculo, mas: 
+No modo exclusive, ele soma ao total. 
+No modo inclusive, ele só aparece como informação, sem alterar o total. 
+PAGINA DE PEDIDOS do restaurante 
+PAGINA DE PEDIDOS COM BOTAO EM VERDE DE ACEITAR PEDIDO, VERMELHO 
+CANSELAR PEDIDO, E LARANJA IMPRIMIR PEDIDO. 
+Quando clicar em aceitar o estatos muda para pedido aceito, e o botão de cancelar fica 
+invisível ficando so o botão de imprimir pedido, se a pessoa clicar encima do pedido abre a 
+descrição do pedido, se a pessoa clicar em cancelar o pedido o cliente recebe a mensagem, 
+desculpa devido ao elevado numero de pedidos não podemos te atender agora, o cliente so 
+recebe a mensagem se for dentro do horário de atendimento. 
+O que Deve conter no pedido impresso 
+Nome Fantasia em destaque (maior e mais visível) 
+Nome Fiscal (Razão Social) logo abaixo, menor 
+NIF, itens do pedido, total, forma de pagamento, notas do cliente e agradecimento 
+Exemplo de Fatura com IVA incluído no preço 
+Produto A → 100,00 € 
+IVA (13%) incluído → 11,50 € 
+Total a pagar → 100,00 € 
+�
+�
+ O que acontece aqui: 
+O IVA está visível (fica escrito quanto é). 
+O Total não muda — continua o mesmo valor do produto. 
+Ou seja, o imposto já estava dentro do preço, e na fatura ele só aparece como informação 
+descritiva, para que o cliente saiba quanto daquele valor é imposto. 
+�
+�
+ Resumindo para o sistema: 
+Modo inclusivo: IVA = (Preço total) - (Preço total / (1 + taxa)). 
+Esse valor é mostrado na linha “IVA” da fatura, mas não é somado ao Total (fica só como 
+detalhe). 
+Alerta de pedidos 
+criar um numero único para cada pedido gerado 
+configuração do menu 
+pre-visualizar e testar pedido 
+duplicar 
+remover 
+visibilidade, esconder, mostrar 
+Disponibilidade, adicionar opção de selecionar itens fora de estoque, ate amanha ou 
+indeterminado ou ate….com data especifica 
+configurações de item, adicionar opção de selecionar itens como 
+Quente 
+Halal 
+Vegan 
+Sem laticínios 
+Vegetariano 
+Cru 
+Não contém gluten 
+Sem nozes 
+Ingredientes- adicionar um campo para ate 2000 palavras 
+alérgenos- 
+Leite 
+Frutos de casca rija 
+Ovos 
+Amendoins 
+Peixe 
+Trigo 
+Marisco 
+Sojabeans 
+aditivos - adicionar um campo para ate 2000 palavras 
+valores nutricionais- adicionar um campo para adicionar a quantidade 
+Por serviço 
+Por 100g 
+Total de calorias (kcal) 
+Carboidrato (g) 
+Gordura total (g) 
+Proteína (g) 
+Açúcar (g) 
+Sal (g) 
+Grupo principal- onde posso criar o nome de vários grupos 
+categoria- com uma caixa para escrever a descrição da categoria com ate 150 palavras 
+SKU do produto 
+tag do produto 
+nome do produto com ate 100 palavras, preço, descrição com ate 300 palavras 
+imagem do produto para os formatos PNG, JPEG, WEBP. 
+Histórico de impressão 
+Data e hora 
+ID do pedido 
+Status 
+Impressora 
+Modelo 
+Modelos 
+onde o pode criar o modelo do que vai na fatura ou para a cozinha 
+Adicionais & Complementos 
+Por exemplo. coberturas extras, escolha o tipo- CAMPO PARA ATE 80 PALAVRAS, coloque se 
+e obrigatório ou opcional, se for opcional devera ser obrigatório a seleção no carrinho adicionar 
+um campo para quantidade mínima e máxima e se o cliente pode Adicionar várias vezes, se for 
+obrigatório adicionar uma seleção Adicionar várias vezes. 
+adicionar escolha- com nome- para 80 palavras- preço- e um campo para pre seleção caso o 
+restaure opte para o item aparecer com pre selecionado no menu por exemplo: a maioria dos 
+seus clientes tende a escolher este item, você pode "pre selecionar" como opção padrão. 
+deixe um botão abaixo onde pode adicionar quantos Adicionais & Complementos o restaurante 
+quiser. 
+Ajustar preços 
+Aplicar para: 
+Todos (itens do menu + opções e complementos) 
+Itens do menu 
+Escolhas e complementos 
+preços adicionar dois campos- para selecionar- Aumento com %, aumento com valor, Diminuir 
+com %, diminuir com valor, e ou outro campo onde posso preencher o valor numérico 
+Imagem para rede social caso selecione que sim peça para adicionar a imagem e descrição de 
+como ira aparecer quando compartilhado nas redes sociais, caso ele não selecione nada use 
+as que você já tem. 
+deixe uma opção para poder baixar todo o menu com opção de PDF ou csv 
+todos os complementos devem ter a opção de selecionar no site ou no carrinho, se for no site 
+quando o cliente clicar no produto abre um popap para ele selecionar o que ele quer escolher 
+depois de selecionado o popap fecha para o cliente continuar a compra, caso o admim opte no 
+carrinho será obrigatório o cliente selecionar para finalizar a compra 
+CONFIGURAÇOES DO SITE 
+campo para adicionar banner do site e maneira que quando adicionado aqui já vai direto para a 
+pagina inicial do site para os formatos PNG, JPEG, WEBP, deixe disponível ate 4 banners e a 
+seleção se ele quer que fique estático ou alternado. 
+adicionar popap com opção de adicionar imagem ou texto com botão, caso seja imagem 
+coloque o batao embaixo da imagem, deixe o restaurante escrever o que ele quer que seja 
+escrito no botão e a cor e se e para uma pagina do site se a seleção for sim mostre as opções 
+das paginas disponíveis no domínio caso a seleção for não deixe o adicionar um link, deixe 
+uma dessas duas opções como obrigatório, não deixe salvar sem selecionar uma das duas. 
+MARKETING 
+uma pagina de Promoções pré-fabricadas onde mostra todas as promoções vigentes ativas ou 
+inativas com 
+Estado- coloque um campo para ativa ou desativar 
+Nome 
+Cupom 
+Usado 
+Criado para 
+coloque um ícone de olho para que quando eu coloque o rato encima eu consiga ver toda a 
+promoções. 
+Nova promoção 
+com 
+Estado 
+Nome 
+Cupom 
+Usado 
+Criado 
+Associado a 
+com opção de duplicar ou excluir 
+um botão de adicionar promoção e visualizar promoção 
+coloque um ícone de olho para que quando eu coloque o rato encima eu consiga ver toda a 
+promoções. 
+Primeira compra de promoção- abrir um campo para selecionar sim ou não, caso ele selecione 
+sim abra um campo para o titulo com ate 35 palavra, uma descrição com ate 100 palavras, e 
+adicionar imagem de fundo, depois adicione um campo para ele colocar o valor do desconto 
+deixe ele selecionar se e em valor fixo ou porcentagem, deixe ele colocar Valor pedido mínimo: 
+Defina um valor mínimo de pedido (recomendado), e faça o desconto no checkout. 
+permita criar ofertas inteligentes que aparecem em etapas específicas do funil: 
+Up-sell → Na escolha do item 
+Oferece versão premium do produto selecionado. 
+Ex: "Troque por +€3,50" 
+Order Bump → Pré-checkout (antes de pagar) 
+Adiciona item complementar barato com checkbox. 
+Ex: "Adicione molho por €2,50" 
+Down-sell → Após remoção de item caro ou hesitação 
+Sugere alternativa mais barata. 
+Ex: "Não quer o prato de €22? Leve este por €12,90" 
+Cada oferta deve ter: gatilho (item/categoria), mensagem, preço promocional e etapa de 
+exibição 
+Configurar Regras de Exibição 
+Para cada oferta, definir: 
+Item ou categoria gatilho: Qual produto ou grupo ativa a sugestão? 
+(ex: ao adicionar qualquer "hambúrguer", mostrar um order bump de batata frita) 
+Itens sugeridos: Quais produtos podem ser oferecidos? 
+Preço promocional: Valor adicional ou substituto (ex: +€3,00, ou €16,90 no lugar de €22,50). 
+Mensagem personalizada: Texto exibido ao cliente. 
+Condições opcionais: 
+Horário do dia (ex: só no jantar, das 19h às 23h) 
+Disponibilidade (só se o item estiver em estoque) 
+Limite de uso por pedido 
+Prioridade e Exibição 
+Definir a ordem de prioridade caso múltiplas ofertas sejam aplicáveis. 
+Escolher se a oferta é obrigatória (checkbox) ou opcional (botão "sim/não"). 
+Exemplos Práticos no App/Website (em euros) 
+Order Bump 
+Você adicionou Pizza Calabresa. 
+Adicione um refrigerante 1,5L por apenas €3,90! 
+[ ] Sim, quero! 
+Up-sell 
+Você escolheu Hambúrguer Clássico. 
+Quer deixá-lo premium com queijo brie e bacon por +€4,50? 
+[ Trocar ] [ Manter original ] 
+Down-sell 
+Você removeu o Sushi Combo Família (€32,00). 
+Que tal o Combo Individual por €14,90? 
+[ Adicionar ] [ Não, obrigado ] 
+Email Marketing 
+automação de emails, integrado ao site e O módulo deve incluir: 
+Uma interface visual de funil de emails, onde eu arrasto e conecto 'nós' (como no N8N) para 
+definir sequências: ex. nó 'gatilho (novo pedido)' → nó 'delay 2 dias' → nó 'envie email promo' 
+→ nó 'se abriu, envie próximo'. 
+Triggers automáticos: Ao concluir pedido, envie email transacional com detalhes (itens, total, 
+entrega). Para usuários logados: se entram e saem sem ação, fluxo para 'volte ao site'; se 
+adicionam produto mas não compram, email de carrinho abandonado; se iniciam pedido mas 
+não concluem, lembrete similar. 
+Editor de Emails: No nó de 'envie email' ou em uma seção dedicada, use um editor rico (como 
+Quill.js) para formatações: negrito, itálico, tamanho de fonte, inserção de links simples, botões 
+personalizados (com texto, cor, etc.). Para botões, opção de linkar para página específica do 
+site (ex: /menu) promoções ou produto via SKU/nome (ex: gere URL como 
+/produto?sku=ABC123, consultando DB de produtos). 
+Envio em massa com intervalos anti-spam: configure delays randômicos (ex. 1-5 min entre 
+emails) e limites (ex. 100/hora) para evitar bloqueio do Google. 
+Rastreamento de métricas: contagem de envios/recebidos, unsubscribes, taxa de abertura (via 
+pixel), taxa de entrega (bounces), cliques em links de vendas, e conversões (ex. pedido após 
+clique). 
+Customizações: remetente personalizado (ex. 'Restaurante XYZ contato@meudominio.com'), e 
+rodapé com link pequeno de unsubscribe: 'Cancelar inscrição: clique aqui'. 
+Storage: Salve emails enviados só por 30 dias default (auto-delete via cron); mantenha reports 
+de performance indefinidamente, mas com opção no admin para setar retenção (1-12 meses) e 
+deletar manualmente por mês. Delete só emails, nunca dados de clientes. 
+Tudo self-hosted no meu domínio, sem serviços externos pagos. Use Node.js para backend, 
+Vue.js para UI admin, MongoDB para DB, e Nodemailer para emails. 
+Integre ao sistema de pedidos: ex. ao confirmar pedido, adicione email ao funil e envie 
+confirmação imediata. 
+Relatorios Marketing 
+aqui será onde aparecera todo o relatório das ofertas, promoções, do order bump, down-sell, 
+up-sell, visitantes no site, quantidade de visitantes com dia hora semana e mês ou 
+personalizado, visitantes por pagina, adição ao carrinho, carrinho abandonado, finalização de 
+compra, primeira compra, cac, ltv, de onde veio o click, faça em gráficos de barra de linha e de 
+pizza para melhor entendimento, mostre em % no canto superior de cada seção do painel se 
+esta aumentando colocar em verde se esta caindo colocar em vermelho. 
+Gerador de utm onde já posso selecionar a pagina que quero usar e colocara onde sera o 
+anuncio ou se vou colocar em rede social 
+Integrações 
+Integrações – O que fazer: 
+1. Webhooks 
+Receber: Aceite webhooks externos (ex: pedidos de marketplaces). 
+Enviar: Dispare webhooks em eventos (ex: pedido.confirmado). 
+Permita várias URLs com seleção de eventos por URL. 
+2. Facebook 
+Múltiplos Pixels: Adicione vários Facebook Pixel IDs. 
+Múltiplas CAPIs: Configure várias chaves de Conversão API (para diferentes contas/anúncios). 
+Catálogo do Facebook: Sincronize produtos com um ou mais catálogos. 
+3. Google 
+Google Ads: 
+Adicione vários IDs de conversão (pixel ou API). 
+Google Analytics 4: 
+Suporte a vários Measurement IDs (ex: GA4 principal + GA4 de parceiro). 
+Google Tag Manager: 
+Injete vários containers (IDs separados por vírgula ou lista). 
+Merchant Center: 
+Envie feed para vários Merchant Centers (por país ou conta). 
+Catálogo do Google: 
+Sincronize com vários perfis do Google Business (se aplicável). 
+4. Outras Plataformas 
+API REST pública: Com autenticação por token, para integração com ERPs, CRMs, etc. 
+Webhooks genéricos: Cadastre quantas URLs quiser, com eventos personalizáveis por 
+integração. 
+Lista expansível para adicionar vários IDs/chaves por plataforma. 
+Ative/desative cada instância individualmente. 
+Visualize status de envio (ex: “último evento enviado há 2 min”). 
+Rastreamento Avançado com gclid e Eventos – O que fazer: 
+1. Captura de parâmetros UTM e gclid 
+Salve automaticamente gclid (Google Ads), fbclid (Facebook) e outros parâmetros de URL no 
+primeiro clique. 
+Armazene associado ao dispositivo ou sessão do usuário (via cookie ou ID anônimo). 
+2. Rastreamento de eventos completos 
+Dispare os seguintes eventos com o gclid/fbclid original para as plataformas configuradas: 
+EVENTO 
+QUANDO DISPARAR 
+ENVIAR PARA 
+page_view 
+Qualquer página carregada 
+GA4, Facebook, Google Ads 
+sign_up 
+Usuário se cadastra 
+Facebook CAPI, Google Ads API 
+begin_checkout 
+Clica em "Ir para pagamento" 
+Facebook CAPI, Google Ads API 
+add_to_cart 
+Adiciona item ao carrinho 
+Facebook Pixel, GA4 
+view_cart 
+Acessa a página do carrinho 
+GA4, Google Ads 
+purchase 
+Confirma pagamento (página de obrigado) 
+Todas as plataformas 
+cart_abandonment 
+Sai do carrinho sem comprar (via timeout ou navegação) 
+Facebook CAPI, Google Ads API 
+3. Retorno com o gclid/fbclid original 
+Ao disparar eventos, reutilize o gclid/fbclid capturado na primeira visita (mesmo dias depois), 
+usando match de usuário por cookie ou ID anônimo. 
+Isso garante atribuição correta nas campanhas. 
+4. Suporte a múltiplas contas 
+Cada evento é enviado para todos os Pixels, GA4s, APIs de Ads cadastrados (vários por 
+plataforma). 
+5. Configuração no painel 
+Ative/desative cada evento por plataforma. 
+Visualize se o gclid está sendo capturado corretamente. 
+Teste eventos com botão “Enviar evento de teste”. 
+✅
+ Resultado: Atribuição precisa de conversões, recuperação de carrinhos e otimização de 
+campanhas com dados reais — mesmo com múltiplas contas de anúncios. 
+Pronto. Isso fecha o ciclo de atribuição completa do clique à conversão. 
+vou também enviar as imagens dos produtos por ordem numérica e um arquivo com a descrição e 
+nome dos produtos que também tem um numero, exemplo foto 01 e para o produto 01 assim 
+sucessivamente, e vou enviar uma imagem para a referencia da pagina cardapio 
+adicione seção de cadastrar produto o: Back-end – O que implementar: 
+Permita que o administrador cadastre "opções personalizáveis" por item do cardápio. 
+Para cada produto (ex: Nigiri), ele pode adicionar uma ou mais opções extras. 
+Cada opção tem: 
+Nome (ex: "Braseado") 
+Valor adicional (ex: €2,50) 
+Status (ativa/inativa) 
+Armazene no banco de dados vinculado ao produto, não ao pedido. 
+Front-end – O que implementar: 
+Ao clicar em "Adicionar ao pedido" de um item com opções extras, 
+→ Abra um popup/modal listando as opções disponíveis. 
+No popup: 
+Mostre o nome do item principal (ex: Nigiri) 
+Liste as opções com checkbox ou botão de seleção única (se for só uma opção, como "Braseado") 
+Mostre o valor adicional ao lado (ex: "+ €2,50") 
+Inclua botões: "Adicionar sem opção" e "Adicionar com opção" 
+Exemplo de mensagem no popup: 
+Deseja adicionar Braseado por +€2,50? 
+[ ] Sim, quero! 
+[ Adicionar sem braseado ] [ Adicionar com braseado ] 
+Ao confirmar, o item vai para o carrinho com: 
+Nome original + nome da opção (ex: "Nigiri (Braseado)") 
+Preço atualizado (preço base + valor extra). e também adicione a: Popup de Cookies (no rodapé) – 
+O que implementar: 
+Exibir um banner fixo no rodapé da página (em todas as páginas, inclusive política de privacidade) 
+até o usuário decidir. 
+Mensagem clara, por exemplo: 
+Este site usa cookies para melhorar sua experiência. Ao continuar, você aceita nossa Política de 
+Privacidade e o uso de cookies. 
+Dois botões obrigatórios: 
+✅
+ "Aceitar" → Fecha o popup e ativa todos os cookies (analytics, ads, etc.). 
+❌
+ "Recusar" → Fecha o popup. 
+Link para a Política de Privacidade dentro da mensagem (texto clicável). 
+Salvar a escolha do usuário (em cookie 
+ 
+ 
+depois que o site tiver pronto vou enviar dois arquivos um com as fotos dos produtos por ordem 
+numérica e outro com os nomes dos produtos por ordem numérica também e com as descrições e 
+preços dos produtos, por exemplo produto 1 com foto 1, use o numero deles para gerar o sku de 
+cada um. adicione tambem Área de Entrega Personalizada – O que fazer: 
+✅
+ 1. No painel administrativo: 
+Use um mapa gratuito (ex: OpenStreetMap com Leaflet.js – não precisa pagar, diferente do Google 
+Maps para uso avançado). 
+Permita ao dono do restaurante: 
+Desenhar múltiplos polígonos na mesma região (ex: bairro A, bairro B, parte alta do bairro C). 
+Cada polígono é uma área de entrega independente. 
+Cada área é exibida em cores diferentes no mapa (automático). 
+Para cada área, ele preenche: 
+Nome (ex: "Centro – Rua Principal") 
+Tipo de entrega: 
+☑
+ Grátis 
+☑
+ Valor fixo (ex: €3,50) 
+Se escolher "Grátis": 
+→ Campo opcional: "Valor mínimo do pedido para frete grátis" 
+→ Se deixar em branco, o frete é grátis sem limite. 
+✅
+ 2. Na hora do pedido (front-end): 
+Cliente digita endereço completo (não só CEP). 
+Sistema converte endereço em coordenadas (use Nominatim, serviço gratuito do OpenStreetMap). 
+Verifica em qual polígono o endereço está: 
+Se estiver em uma área válida: 
+Mostra o valor do frete (ou "Frete grátis"). 
+Se for frete grátis com valor mínimo: 
+→ Mostra: "Frete grátis acima de €20" 
+→ Bloqueia finalização se o pedido for menor e o frete não for aplicável. 
+Se não estiver em nenhuma área: 
+→ Mensagem: "Não entregamos neste endereço." 
+✅
+ 3. Sem custo mensal: 
+OpenStreetMap + Leaflet + Nominatim são gratuitos para uso normal (até milhares de 
+consultas/dia). 
+Nada de taxa por entrega ou por desenho de área. 
+�
+�
+ Exemplo de configuração no painel: 
+ÁREA 
+COR 
+TIPO 
+VALOR 
+MÍNIMO PARA FRETE GRÁTIS 
+Centro 
+Azul 
+Grátis 
+— 
+€15,00 
+Zona Sul 
+Verde 
+Pago 
+€4,00 
+— 
+Morro Alto 
+Vermelho 
+Grátis 
+— 
+(em branco = sem limite) adicione tambem Mensagem Dinâmica de Frete Grátis – O que fazer: 
+✅
+ 1. Regra no back-end (painel admin): 
+Se o administrador marcar "Frete grátis" em uma área de entrega: 
+Com valor mínimo: ex: €20 
+Sem valor mínimo: deixa o campo em branco → frete grátis para qualquer valor. 
+✅
+ 2. Comportamento no site (front-end): 
+Caso A – Frete grátis com valor mínimo definido (ex: €20): 
+Enquanto o subtotal do carrinho < €20: 
+→ Mostra no topo: "Faltam €X,XX para você ganhar frete grátis!" 
+Quando o subtotal ≥ €20: 
+→ Substitui por: "Parabéns! Você acaba de ganhar frete grátis!" 
+Caso B – Frete grátis sem valor mínimo (campo vazio): 
+Assim que o cliente adicionar o primeiro item ao carrinho: 
+→ Mostra imediatamente: "Parabéns! Você acaba de ganhar frete grátis!" 
+→ A mensagem permanece até o fim do pedido. 
+✅
+ 3. Detalhes técnicos: 
+A mensagem aparece em destaque no topo (barra fixa ou destacada). 
+Atualiza em tempo real ao adicionar/remover itens. 
+Só aparece se o endereço de entrega estiver em uma zona com frete grátis. 
+ 

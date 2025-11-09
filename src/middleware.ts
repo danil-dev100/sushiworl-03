@@ -1,13 +1,44 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-// This function can be marked `async` if using `await` inside
-export function middleware(request: NextRequest) {
-  // Route protection logic will be added here later
-  return NextResponse.next()
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Verificar se é uma rota admin
+  if (pathname.startsWith('/admin') || pathname.startsWith('/(admin)')) {
+    // Obter token do usuário
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    // Se não estiver autenticado, redirecionar para login
+    if (!token) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Verificar se é admin ou manager
+    const role = token.role as string;
+    if (!['ADMIN', 'MANAGER'].includes(role)) {
+      // Se for cliente tentando acessar admin, redirecionar para home
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    // Se for primeiro login, redirecionar para troca de senha
+    if (token.firstLogin && !pathname.includes('/trocar-senha')) {
+      return NextResponse.redirect(new URL('/admin/trocar-senha', request.url));
+    }
+  }
+
+  return NextResponse.next();
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
-  matcher: '/admin/:path*',
-}
+  matcher: [
+    '/admin/:path*',
+    '/(admin)/:path*',
+  ],
+};

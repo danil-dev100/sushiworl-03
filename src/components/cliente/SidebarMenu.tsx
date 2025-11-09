@@ -2,9 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Sparkles, Eye, Flame, MoreHorizontal, Salad, Wine, Fish, RiceB
-
-owl, Waves, IceCream, Plus } from 'lucide-react';
+import { Sparkles, Eye, Flame, MoreHorizontal, Salad, Wine, Fish, RiceBowl, Waves, IceCream, Plus } from 'lucide-react';
 
 interface Category {
   id: string;

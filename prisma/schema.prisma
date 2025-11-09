@@ -1,0 +1,637 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USUÁRIOS E AUTENTICAÇÃO
+// ============================================
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  phone         String?
+  password      String?  // Hash da senha (apenas para admin/managers)
+  role          Role     @default(CUSTOMER)
+  managerLevel  ManagerLevel? // Nível de acesso para gerentes
+  
+  // Tracking de marketing (apenas para clientes)
+  gclid         String?
+  fbclid        String?
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+  utmTerm       String?
+  utmContent    String?
+  
+  // Estatísticas do cliente
+  totalSpent    Float    @default(0)
+  orderCount    Int      @default(0)
+  
+  // Controle
+  firstLogin    Boolean  @default(true) // Para forçar troca de senha
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  orders        Order[]
+  emailCampaignLogs EmailCampaignLog[]
+}
+
+// ============================================
+// PRODUTOS
+// ============================================
+
+model Product {
+  id              String   @id @default(cuid())
+  sku             String   @unique
+  name            String   @db.VarChar(100)
+  description     String?  @db.VarChar(300)
+  price           Float
+  discountPrice   Float?
+  category        String
+  imageUrl        String
+  ogImageUrl      String?  // Imagem para redes sociais
+  ogDescription   String?  // Descrição para redes sociais
+  
+  // Status e visibilidade
+  status          ProductStatus @default(AVAILABLE)
+  isVisible       Boolean  @default(true)
+  isFeatured      Boolean  @default(false) // Para "Destaques"
+  isTopSeller     Boolean  @default(false) // Para "Mais Vendidos"
+  
+  // Disponibilidade
+  availableUntil  DateTime? // Data específica de disponibilidade
+  outOfStock      Boolean  @default(false)
+  
+  // Configurações do produto
+  isHot           Boolean  @default(false)
+  isHalal         Boolean  @default(false)
+  isVegan         Boolean  @default(false)
+  isVegetarian    Boolean  @default(false)
+  isDairyFree     Boolean  @default(false)
+  isRaw           Boolean  @default(false)
+  isGlutenFree    Boolean  @default(false)
+  isNutFree       Boolean  @default(false)
+  
+  // Informações detalhadas
+  ingredients     String?  @db.Text // Até 2000 caracteres
+  additives       String?  @db.Text // Até 2000 caracteres
+  allergens       String[] // Array de alérgenos
+  tags            String[] // Tags do produto
+  
+  // Valores nutricionais
+  nutritionPer    NutritionPer? // Por serviço ou por 100g
+  calories        Float?
+  carbs           Float?
+  totalFat        Float?
+  protein         Float?
+  sugar           Float?
+  salt            Float?
+  
+  // Metadados
+  orderCount      Int      @default(0) // Para calcular "mais vendidos"
+  viewCount       Int      @default(0) // Para analytics
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  orderItems      OrderItem[]
+  productOptions  ProductOption[]
+  promotionItems  PromotionItem[]
+}
+
+model ProductOption {
+  id          String   @id @default(cuid())
+  productId   String
+  
+  name        String   @db.VarChar(80)
+  type        OptionType // REQUIRED ou OPTIONAL
+  description String?  @db.VarChar(150)
+  
+  // Configurações
+  minSelection Int     @default(0)
+  maxSelection Int     @default(1)
+  allowMultiple Boolean @default(false)
+  displayAt   DisplayAt @default(CART) // SITE ou CART
+  
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  choices     ProductOptionChoice[]
+}
+
+model ProductOptionChoice {
+  id          String   @id @default(cuid())
+  optionId    String
+  
+  name        String   @db.VarChar(80)
+  price       Float    @default(0) // Valor adicional
+  isDefault   Boolean  @default(false) // Pré-selecionado
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  option      ProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// PEDIDOS
+// ============================================
+
+model Order {
+  id              String    @id @default(cuid())
+  orderNumber     Int       @unique @default(autoincrement()) // Número único sequencial
+  userId          String?   
+  
+  // Dados do cliente
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  customerNif     String?
+  
+  // Endereço de entrega
+  deliveryAddress Json // {street, number, neighborhood, city, postalCode, coordinates}
+  deliveryAreaId  String?
+  deliveryFee     Float    @default(0)
+  
+  // Valores
+  subtotal        Float
+  discount        Float    @default(0)
+  vatAmount       Float    @default(0)
+  total           Float
+  
+  // Pagamento
+  status          OrderStatus @default(PENDING)
+  paymentMethod   PaymentMethod @default(CASH)
+  changeFor       Float?
+  
+  // Promoções
+  couponCode      String?
+  promotionId     String?
+  
+  // Observações
+  observations    String?  @db.Text
+  
+  // Tracking
+  gclid           String?
+  fbclid          String?
+  utmSource       String?
+  
+  // Controle
+  acceptedAt      DateTime?
+  cancelledAt     DateTime?
+  deliveredAt     DateTime?
+  printedAt       DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User?     @relation(fields: [userId], references: [id])
+  deliveryArea    DeliveryArea? @relation(fields: [deliveryAreaId], references: [id])
+  promotion       Promotion? @relation(fields: [promotionId], references: [id])
+  orderItems      OrderItem[]
+  printHistory    PrintHistory[]
+  
+  @@index([orderNumber])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  productId     String
+  
+  name          String   // Nome do produto no momento
+  quantity      Int
+  priceAtTime   Float
+  
+  // Opções selecionadas (JSON com as escolhas)
+  selectedOptions Json?
+  
+  createdAt     DateTime @default(now())
+  
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Product  @relation(fields: [productId], references: [id])
+}
+
+model PrintHistory {
+  id          String   @id @default(cuid())
+  orderId     String
+  
+  printerName String?
+  paperSize   String?  // 58mm, 80mm
+  status      PrintStatus @default(SUCCESS)
+  errorMessage String?
+  
+  printedAt   DateTime @default(now())
+  
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// ÁREAS DE ENTREGA
+// ============================================
+
+model DeliveryArea {
+  id              String   @id @default(cuid())
+  name            String
+  
+  // Polígono (array de coordenadas)
+  polygon         Json // [[lat, lng], [lat, lng], ...]
+  color           String   @default("#3B82F6") // Cor no mapa
+  
+  // Configuração de entrega
+  deliveryType    DeliveryType
+  deliveryFee     Float    @default(0)
+  minOrderValue   Float?   // Valor mínimo para frete grátis
+  
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  orders          Order[]
+}
+
+// ============================================
+// PROMOÇÕES E MARKETING
+// ============================================
+
+model Promotion {
+  id              String   @id @default(cuid())
+  name            String
+  code            String?  @unique // Código do cupom (se aplicável)
+  type            PromotionType
+  
+  // Configuração do desconto
+  discountType    DiscountType // FIXED ou PERCENTAGE
+  discountValue   Float
+  minOrderValue   Float?
+  
+  // Configuração de exibição
+  title           String?  @db.VarChar(35)
+  description     String?  @db.VarChar(100)
+  imageUrl        String?
+  
+  // Regras de aplicação
+  triggerType     TriggerType? // PRODUCT, CATEGORY, CART
+  triggerValue    String?  // ID do produto/categoria
+  
+  // Up-sell/Down-sell específico
+  suggestedProductId String?
+  displayMessage  String?  @db.Text
+  
+  // Controle
+  isActive        Boolean  @default(true)
+  isFirstPurchaseOnly Boolean @default(false)
+  
+  // Limites
+  usageLimit      Int?     // Limite total de usos
+  usageCount      Int      @default(0)
+  
+  // Validade
+  validFrom       DateTime?
+  validUntil      DateTime?
+  
+  // Horário (opcional)
+  timeRestriction Json? // {startHour, endHour}
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  orders          Order[]
+  promotionItems  PromotionItem[]
+}
+
+model PromotionItem {
+  id          String   @id @default(cuid())
+  promotionId String
+  productId   String
+  
+  sortOrder   Int      @default(0)
+  
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@unique([promotionId, productId])
+}
+
+// ============================================
+// EMAIL MARKETING
+// ============================================
+
+model EmailCampaign {
+  id          String   @id @default(cuid())
+  name        String
+  subject     String
+  
+  // Conteúdo
+  htmlContent String   @db.Text
+  textContent String?  @db.Text
+  
+  // Tipo e trigger
+  type        EmailType
+  trigger     EmailTrigger?
+  
+  // Configurações
+  fromName    String   @default("SushiWorld")
+  fromEmail   String   @default("pedidosushiworld@gmail.com")
+  
+  // Controle
+  isActive    Boolean  @default(true)
+  
+  // Estatísticas
+  sentCount   Int      @default(0)
+  openCount   Int      @default(0)
+  clickCount  Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  logs        EmailCampaignLog[]
+}
+
+model EmailCampaignLog {
+  id          String   @id @default(cuid())
+  campaignId  String
+  userId      String?
+  
+  email       String
+  status      EmailStatus
+  
+  sentAt      DateTime @default(now())
+  openedAt    DateTime?
+  clickedAt   DateTime?
+  
+  campaign    EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id])
+  
+  @@index([email])
+  @@index([sentAt])
+}
+
+// ============================================
+// ANALYTICS
+// ============================================
+
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  
+  // Evento
+  eventName   String   // page_view, add_to_cart, purchase, etc.
+  eventData   Json?    // Dados adicionais do evento
+  
+  // Tracking
+  sessionId   String?
+  userId      String?
+  gclid       String?
+  fbclid      String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  
+  // Página
+  pageUrl     String?
+  referrer    String?
+  
+  // Device
+  userAgent   String?
+  ipAddress   String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([eventName])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+// ============================================
+// INTEGRAÇÕES
+// ============================================
+
+model Integration {
+  id          String   @id @default(cuid())
+  
+  platform    IntegrationPlatform
+  type        String   // pixel, capi, analytics, etc.
+  
+  // Credenciais
+  apiKey      String?
+  apiSecret   String?
+  pixelId     String?
+  measurementId String?
+  
+  // Configuração
+  config      Json?    // Configurações específicas
+  
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([platform, type, pixelId])
+}
+
+model Webhook {
+  id          String   @id @default(cuid())
+  
+  name        String
+  url         String
+  method      String   @default("POST") // POST, GET, PUT
+  
+  // Eventos que disparam o webhook
+  events      String[] // order.created, order.confirmed, etc.
+  
+  // Headers customizados
+  headers     Json?
+  
+  // Controle
+  isActive    Boolean  @default(true)
+  
+  // Estatísticas
+  lastTriggeredAt DateTime?
+  successCount Int     @default(0)
+  failureCount Int     @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// CONFIGURAÇÕES
+// ============================================
+
+model Settings {
+  id            String   @id @default(cuid())
+  
+  // Empresa
+  companyName   String
+  billingName   String?
+  nif           String
+  address       String?
+  phone         String?
+  email         String?
+  
+  // Horários de atendimento
+  openingHours  Json?   // {monday: {open: "11:00", close: "23:00", closed: false}, ...}
+  
+  // IVA
+  vatRate       Float    @default(13)
+  vatType       VatType  @default(INCLUSIVE)
+  
+  // Impressora
+  printerType   String?  // USB, BLUETOOTH
+  printerName   String?
+  paperSize     String?  // 58mm, 80mm
+  
+  // Banners do site
+  banners       Json?    // Array de URLs
+  bannerMode    BannerMode @default(STATIC)
+  
+  // Popup promocional
+  popupEnabled  Boolean  @default(false)
+  popupConfig   Json?    // {type, imageUrl, text, buttonText, buttonColor, link}
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Role {
+  ADMIN
+  MANAGER
+  CUSTOMER
+}
+
+enum ManagerLevel {
+  BASIC           // Apenas aceitar/cancelar/imprimir pedidos
+  INTERMEDIATE    // + Alterar pedidos
+  FULL            // Acesso total exceto financeiro e dados de clientes
+}
+
+enum ProductStatus {
+  AVAILABLE
+  OUT_OF_STOCK
+  DISCONTINUED
+}
+
+enum NutritionPer {
+  SERVING
+  PER_100G
+}
+
+enum OptionType {
+  REQUIRED
+  OPTIONAL
+}
+
+enum DisplayAt {
+  SITE
+  CART
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  PREPARING
+  DELIVERING
+  DELIVERED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  CASH
+}
+
+enum PrintStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum DeliveryType {
+  FREE
+  PAID
+}
+
+enum PromotionType {
+  COUPON          // Cupom de desconto
+  FIRST_PURCHASE  // Primeira compra
+  ORDER_BUMP      // Adicional no checkout
+  UP_SELL         // Upgrade de produto
+  DOWN_SELL       // Alternativa mais barata
+}
+
+enum DiscountType {
+  FIXED
+  PERCENTAGE
+}
+
+enum TriggerType {
+  PRODUCT
+  CATEGORY
+  CART
+  CART_VALUE
+}
+
+enum EmailType {
+  TRANSACTIONAL   // Confirmação de pedido
+  MARKETING       // Campanhas
+  AUTOMATION      // Carrinho abandonado, etc.
+}
+
+enum EmailTrigger {
+  ORDER_CONFIRMED
+  ORDER_CANCELLED
+  CART_ABANDONED
+  FIRST_PURCHASE
+  WELCOME
+}
+
+enum EmailStatus {
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  FAILED
+}
+
+enum IntegrationPlatform {
+  FACEBOOK
+  GOOGLE_ADS
+  GOOGLE_ANALYTICS
+  GOOGLE_TAG_MANAGER
+  CUSTOM
+}
+
+enum VatType {
+  INCLUSIVE
+  EXCLUSIVE
+}
+
+enum BannerMode {
+  STATIC
+  CAROUSEL
+}

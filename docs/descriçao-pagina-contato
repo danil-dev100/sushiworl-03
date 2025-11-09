@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html class="light" lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contato - SushiWorld</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#ff6b00",
+            "background-light": "#f5f1e9",
+            "background-dark": "#23170f",
+            "text-main": "#333333",
+          },
+          fontFamily: {
+            "display": ["Plus Jakarta Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-text-main dark:text-background-light">
+<div class="relative flex min-h-screen w-full flex-col">
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e5e0d8] dark:border-[#3a2c20] px-6 lg:px-10 py-3 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+<div class="flex items-center gap-4 text-text-main dark:text-background-light">
+<a class="flex items-center gap-4" href="#">
+<div class="text-primary text-2xl">
+<svg class="size-8" fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"></path>
+</svg>
+</div>
+<h2 class="text-text-main dark:text-background-light text-xl font-bold tracking-tight">SushiWorld</h2>
+</a>
+</div>
+<div class="flex flex-1 justify-end items-center gap-6">
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-text-main dark:text-background-light text-sm font-medium hover:text-primary" href="#">Inicio</a>
+<a class="text-text-main dark:text-background-light text-sm font-medium hover:text-primary" href="#">Cardápio</a>
+<a class="text-text-main dark:text-background-light text-sm font-medium hover:text-primary" href="https://chefguilhermericardo.sushiworld.pt" target="_blank">Catering</a>
+<a class="text-primary dark:text-primary text-sm font-bold" href="#">Contato</a>
+</nav>
+<div class="flex items-center gap-3">
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity">
+<span>Login</span>
+</button>
+<button class="relative flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary/20 text-primary gap-2 text-sm font-bold min-w-0 px-2.5 hover:bg-primary/30 transition-colors">
+<span class="material-symbols-outlined text-primary">shopping_cart</span>
+<span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-xs font-bold">3</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow flex flex-col w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
+<div class="flex-grow">
+<h1 class="text-4xl md:text-5xl font-extrabold text-primary text-center mb-8 md:mb-12">
+        Fale Conosco
+      </h1>
+<div class="bg-white dark:bg-background-dark/50 rounded-xl shadow-lg p-8 md:p-12 w-full mb-8 md:mb-12">
+<div class="flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
+<div class="flex-shrink-0">
+<span class="material-symbols-outlined text-primary !text-7xl md:!text-8xl">
+              delivery_dining
+            </span>
+</div>
+<div>
+<h2 class="text-2xl md:text-3xl font-bold text-primary mb-2">
+              Atendimento Exclusivo por Delivery
+            </h2>
+<p class="text-text-main dark:text-background-light/90">
+              Para garantir a máxima qualidade e frescura dos nossos pratos, operamos exclusivamente com entregas. Faça o seu pedido e receba o melhor do SushiWorld no conforto da sua casa.
+            </p>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+<div class="bg-white dark:bg-background-dark/50 rounded-xl shadow-lg p-6 flex items-center gap-4">
+<span class="material-symbols-outlined text-primary !text-3xl">storefront</span>
+<div>
+<h3 class="text-lg font-bold text-text-main dark:text-background-light">Nome</h3>
+<p class="text-text-main dark:text-background-light/90">SushiWorld</p>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark/50 rounded-xl shadow-lg p-6 flex items-center gap-4">
+<span class="material-symbols-outlined text-primary !text-3xl">call</span>
+<div>
+<h3 class="text-lg font-bold text-text-main dark:text-background-light">Telefone</h3>
+<a class="text-text-main dark:text-background-light/90 hover:text-primary transition-colors" href="tel:+351000000000">+351 000 000 000</a>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark/50 rounded-xl shadow-lg p-6 flex items-center gap-4">
+<span class="material-symbols-outlined text-primary !text-3xl">email</span>
+<div>
+<h3 class="text-lg font-bold text-text-main dark:text-background-light">E-mail</h3>
+<a class="text-text-main dark:text-background-light/90 hover:text-primary transition-colors" href="mailto:contato@sushiworld.pt">contato@sushiworld.pt</a>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark/50 rounded-xl shadow-lg p-6 flex items-center gap-4">
+<span class="material-symbols-outlined text-primary !text-3xl">map</span>
+<div>
+<h3 class="text-lg font-bold text-text-main dark:text-background-light">Área de Entrega</h3>
+<p class="text-text-main dark:text-background-light/90">Consulte as zonas de entrega disponíveis</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<div class="sticky bottom-0 w-full p-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-t border-[#e5e0d8] dark:border-[#3a2c20]">
+<a class="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 md:h-14 px-6 bg-primary text-white text-base md:text-lg font-bold hover:opacity-90 transition-opacity" href="#">
+        Ver Cardápio e Fazer Pedido
+      </a>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html class="light" lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SushiWorld - O Melhor Sushi da Cidade</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF6B00",
+                        "background-light": "#f5f1e9",
+                        "background-dark": "#23170f",
+                        "price": "#333333",
+                        "price-discount": "#bfbfbf"
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-price dark:text-background-light">
+<div class="relative flex min-h-screen w-full flex-col">
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e5e0d8] dark:border-[#3a2c20] px-6 lg:px-10 py-3 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+<div class="flex items-center gap-4 text-price dark:text-background-light">
+<div class="text-primary text-2xl">
+<svg class="size-8" fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"></path>
+</svg>
+</div>
+<h2 class="text-price dark:text-background-light text-xl font-bold tracking-tight">SushiWorld</h2>
+</div>
+<div class="flex flex-1 justify-end items-center gap-6">
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-price dark:text-background-light text-sm font-medium hover:text-primary" href="#">Inicio</a>
+<a class="text-price dark:text-background-light text-sm font-medium hover:text-primary" href="#">Cardápio</a>
+<a class="text-price dark:text-background-light text-sm font-medium hover:text-primary" href="https://chefguilhermericardo.sushiworld.pt" target="_blank">Catering</a>
+<a class="text-price dark:text-background-light text-sm font-medium hover:text-primary" href="#">Contato</a>
+</nav>
+<div class="flex items-center gap-3">
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity">
+<span>Login</span>
+</button>
+<button class="relative flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary/20 text-primary gap-2 text-sm font-bold min-w-0 px-2.5 hover:bg-primary/30 transition-colors">
+<span class="material-symbols-outlined text-primary">shopping_cart</span>
+<span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-xs font-bold">3</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex-1">
+<section class="relative w-full min-h-[calc(100vh-73px)] flex flex-col items-center justify-center bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBNzMX6lMna6nX8TjJy5jY_Kv-JczpymR3HD2gGTMwfjEinIlR9ziFO_zQV8AKcSbYx7BEsgrBWBOob-nNOaeEvjrEm8TeNmtAA6oPavzl-eLCGbkwcG_4lWfdccNsy0jWWql6Dj1lU-q9Jxwc2RN0B4GkYX93CFfR-YK7uWhLBAASkyFwY5K3FR_0bx5w_AcA95n3eywQvECREh3WvaQEj1-KUh7BC_f8z0zde_LUz5k83DP9ryssaU6GFpGrZLUcnYnhKfENfyDc');">
+<div class="absolute inset-0 bg-background-light/80 dark:bg-background-dark/80"></div>
+<div class="relative z-10 text-center p-6">
+<h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-primary tracking-tight">SushiWorld: O Sabor do Japão na Sua Casa</h1>
+</div>
+<div class="absolute bottom-4 left-0 right-0 p-4">
+<p class="text-primary text-center text-xs md:text-sm font-medium">Alergias alimentares ou necessidades dietéticas especiais: Antes de realizar o seu pedido, por favor contate diretamente o restaurante.</p>
+</div>
+</section>
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
+<aside class="sticky top-[73px] h-[calc(100vh-73px)] w-64 hidden lg:block py-8 pr-8 shrink-0">
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/20 dark:bg-primary/30" href="#destaques">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1, 'wght' 400;">spark</span>
+<p class="text-primary text-sm font-medium">Destaques</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20" href="#combinados">
+<span class="material-symbols-outlined text-price dark:text-background-light">visibility</span>
+<p class="text-price dark:text-background-light text-sm font-medium">Combinados</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20" href="#hots">
+<span class="material-symbols-outlined text-price dark:text-background-light">local_fire_department</span>
+<p class="text-price dark:text-background-light text-sm font-medium">Hots</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20" href="#entradas">
+<span class="material-symbols-outlined text-price dark:text-background-light">more_horiz</span>
+<p class="text-price dark:text-background-light text-sm font-medium">Entradas</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20" href="#poke">
+<span class="material-symbols-outlined text-price dark:text-background-light">ramen_dining</span>
+<p class="text-price dark:text-background-light text-sm font-medium">Poke Bowl</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20" href="#gunkan">
+<span class="material-symbols-outlined text-price dark:text-background-light">wine_bar</span>
+<p class="text-price dark:text-background-light text-sm font-medium">Gunkan</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20" href="#sashimi">
+<span class="material-symbols-outlined text-price dark:text-background-light">set_meal</span>
+<p class="text-price dark:text-background-light text-sm font-medium">Sashimi</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20" href="#nigiri">
+<span class="material-symbols-outlined text-price dark:text-background-light">rice_bowl</span>
+<p class="text-price dark:text-background-light text-sm font-medium">Nigiri</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20" href="#makis">
+<span class="material-symbols-outlined text-price dark:text-background-light">sailing</span>
+<p class="text-price dark:text-background-light text-sm font-medium">Makis</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20" href="#temaki">
+<span class="material-symbols-outlined text-price dark:text-background-light">icecream</span>
+<p class="text-price dark:text-background-light text-sm font-medium">Temaki</p>
+</a>
+</div>
+</aside>
+<main class="flex-1 py-8">
+<section id="mais-vendidos">
+<h2 class="text-primary text-2xl font-bold tracking-tight pb-6">Mais Vendidos</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="flex flex-col group bg-white/50 dark:bg-black/20 rounded-xl p-4 shadow-sm hover:shadow-lg transition-shadow duration-300">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg mb-4 overflow-hidden transform group-hover:scale-105 transition-transform duration-300" data-alt="Sushi Combo with various pieces" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA1Vbc1_aFilwql5BEeye-NmVdDTFHSuKBkcJ8qRKVVovRKeE3TAzPojj9k6oAOphnL9HPRKAVXk7yP2dy80Si-Id-wwUjKqSDl7aZlQem4wYXUNVFWh_Y1ShXBZBUnPfFLNotjcPor4LzHRufQXVJI33XCub9SSVEYUtbtt2In5HihnIhzvwBfrRtCpKSGZgCyN-E6CPY2yCFcrhtUsrbZ3ugFLBeAXXu9J2bzVbJtTwNLFy7BiKuWF7_lj0tFh0-bQ0OId8ClKMQ');"></div>
+<div class="flex flex-col flex-grow">
+<h3 class="text-price dark:text-background-light text-lg font-bold">Sushi Combo 1</h3>
+<p class="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow">24 peças variadas do chef.</p>
+<div class="flex items-center gap-2">
+<p class="text-price dark:text-background-light text-lg font-bold">€15.99</p>
+<p class="text-price-discount text-sm font-normal line-through">€18.00</p>
+</div>
+</div>
+<button class="mt-4 w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity">Adicionar</button>
+</div>
+<div class="flex flex-col group bg-white/50 dark:bg-black/20 rounded-xl p-4 shadow-sm hover:shadow-lg transition-shadow duration-300">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg mb-4 overflow-hidden transform group-hover:scale-105 transition-transform duration-300" data-alt="Hot Roll Philadelphia" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA0zU5rE3-oDs7eJ4UrenQB7fnShbz71IaYZoxW1og3ijsyb-yOBoDE5HKZr41XbrgcH7Xjp44Jp2N_5UKK-_AbOPhMdatzXELjnoWj40XsgR_J88WeOEQefiCa05-nD1pZHfrfoL1kYhuKXrkjEBJL35nz6IcNJjmtOsb8Fxl7576LFDjavtjdjZlXlX3qZa5uzfDO-j28KzE26uwJnSz-VPvutLCODgwAe3PgyxnaGCEdSrgAZNCjI5wRa5LO--jCmRPBFg-ydTU');"></div>
+<div class="flex flex-col flex-grow">
+<h3 class="text-price dark:text-background-light text-lg font-bold">Hot Roll Philadelphia</h3>
+<p class="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow">Roll crocante com salmão e cream cheese.</p>
+<div class="flex items-center gap-2">
+<p class="text-price dark:text-background-light text-lg font-bold">€8.50</p>
+<p class="text-price-discount text-sm font-normal line-through">€10.00</p>
+</div>
+</div>
+<button class="mt-4 w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity">Adicionar</button>
+</div>
+<div class="flex flex-col group bg-white/50 dark:bg-black/20 rounded-xl p-4 shadow-sm hover:shadow-lg transition-shadow duration-300">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg mb-4 overflow-hidden transform group-hover:scale-105 transition-transform duration-300" data-alt="Salmon Sashimi slices" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBi59EEAk3QK0uJOiAnu1AOMwbcQQO-wPAfVzVC1SANyf0-WD79XMWgBBnJSfsM3SVg_NthkTQqFmKWmQ2U7GK_WXzJ_btgvo-7j2GU4wOERN3bnFP3VQblZsG6TSKlIWMFYXjsnXjG2KdwVQLobkGMqbt24QHpp96eKBO37lM5TOatnlu-fxF3qEJNpzjZOYEGncmvOEhUAxOJ-QxS79aAabVN0bY2Y82EVOmsz3GYYKDLwHlQ3YtKFBFNP2mu-3b1a8u_J8W7HpU');"></div>
+<div class="flex flex-col flex-grow">
+<h3 class="text-price dark:text-background-light text-lg font-bold">Sashimi de Salmão</h3>
+<p class="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow">5 fatias frescas de salmão premium.</p>
+<p class="text-price dark:text-background-light text-lg font-bold">€12.00</p>
+</div>
+<button class="mt-4 w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity">Adicionar</button>
+</div>
+</div>
+</section>
+<section class="mt-12" id="destaques">
+<h2 class="text-primary text-2xl font-bold tracking-tight pb-6">Destaques</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="flex flex-col group bg-white/50 dark:bg-black/20 rounded-xl p-4 shadow-sm hover:shadow-lg transition-shadow duration-300">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg mb-4 overflow-hidden transform group-hover:scale-105 transition-transform duration-300" data-alt="Ebiten rolls" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAzvRmfMtBWCPOeM5IOxqLaz_LNDniKlpae-QjdlQCAmF3LvllLNuZLIErk6_U-PdXnmSshN_Qz8vqfnWSp-ZSuFufjLrkxCbrzQNGMiKKWUBtmZTJR49jIPKyQG5C6YbtDjyMuY83qh_uiX1UHhVf69TiqNzXW6ZOg1OVRMJP9i_vz-hx8LanltZ3JuSuuULchmqWeeCUlqv5OMo1u5TaamQBF_cbYgJBddURimmiuDjjaeGdGAh6XQwBIguRqH8zxOKa1O7QR-Fk');"></div>
+<div class="flex flex-col flex-grow">
+<h3 class="text-price dark:text-background-light text-lg font-bold">Ebiten Roll</h3>
+<p class="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow">Roll de camarão panado e abacate.</p>
+<p class="text-price dark:text-background-light text-lg font-bold">€9.50</p>
+</div>
+<button class="mt-4 w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity">Adicionar</button>
+</div>
+<div class="flex flex-col group bg-white/50 dark:bg-black/20 rounded-xl p-4 shadow-sm hover:shadow-lg transition-shadow duration-300">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg mb-4 overflow-hidden transform group-hover:scale-105 transition-transform duration-300" data-alt="Uramaki selection" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBQrGLmRYLCS48mw9osKHQY8cRJqX_Viua_yO1j3lpFFbN87CXS-4B_3k0echZiFjRVEqvgOtovXl438-AIBgFEOJCmKGy_zYpQp8WQRzHoFEZglG5ZQM-z-FUxdJ45d8C1D_q821k46DJ1UR7jqbPBXGySW4zmn8tMrMX_mwuJbaPHIhtgzPezAEqDR5MNq6xs-a6pX7_qX-LQSQr5DnbsZYu7J0XqEdVp_8_cH6hKvb5gh7Krj-M4umtQygY6CdP1L2qZfXiKdOQ');"></div>
+<div class="flex flex-col flex-grow">
+<h3 class="text-price dark:text-background-light text-lg font-bold">Uramaki Especial da Casa</h3>
+<p class="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow">Criação do chef com peixe branco e molho especial.</p>
+<div class="flex items-center gap-2">
+<p class="text-price dark:text-background-light text-lg font-bold">€13.00</p>
+<p class="text-price-discount text-sm font-normal line-through">€15.00</p>
+</div>
+</div>
+<button class="mt-4 w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity">Adicionar</button>
+</div>
+<div class="flex flex-col group bg-white/50 dark:bg-black/20 rounded-xl p-4 shadow-sm hover:shadow-lg transition-shadow duration-300">
+<div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg mb-4 overflow-hidden transform group-hover:scale-105 transition-transform duration-300" data-alt="Spicy Tuna Roll" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBNzMX6lMna6nX8TjJy5jY_Kv-JczpymR3HD2gGTMwfjEinIlR9ziFO_zQV8AKcSbYx7BEsgrBWBOob-nNOaeEvjrEm8TeNmtAA6oPavzl-eLCGbkwcG_4lWfdccNsy0jWWql6Dj1lU-q9Jxwc2RN0B4GkYX93CFfR-YK7uWhLBAASkyFwY5K3FR_0bx5w_AcA95n3eywQvECREh3WvaQEj1-KUh7BC_f8z0zde_LUz5k83DP9ryssaU6GFpGrZLUcnYnhKfENfyDc');"></div>
+<div class="flex flex-col flex-grow">
+<h3 class="text-price dark:text-background-light text-lg font-bold">Spicy Tuna</h3>
+<p class="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow">Roll picante com atum e cebolinho.</p>
+<p class="text-price dark:text-background-light text-lg font-bold">€8.00</p>
+</div>
+<button class="mt-4 w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity">Adicionar</button>
+</div>
+</div>
+</section>
+<div class="mt-12 text-center py-6 bg-primary/20 rounded-lg">
+<p class="text-primary text-lg font-bold tracking-wide">Só trabalhamos com delivery</p>
+</div>
+</main>
+</div>
+</div>
+<footer class="w-full border-t border-solid border-[#e5e0d8] dark:border-[#3a2c20] bg-background-light dark:bg-background-dark text-price dark:text-background-light">
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-4">
+<div class="text-primary text-2xl">
+<svg class="size-8" fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"></path>
+</svg>
+</div>
+<span class="text-sm">© 2024 SushiWorld. Todos os direitos reservados.</span>
+</div>
+<nav class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
+<a class="text-sm hover:text-primary transition-colors" href="#">Politica de Privacidade</a>
+<a class="text-sm hover:text-primary transition-colors" href="#">FAQ</a>
+<a class="text-sm hover:text-primary transition-colors" href="#">Politica de Cookies</a>
+<a class="text-sm hover:text-primary transition-colors" href="https://www.livroreclamacoes.pt/Inicio" rel="noopener noreferrer" target="_blank">Livro de Reclamações</a>
+</nav>
+</div>
+</div>
+</footer>
+</div>
+
+</body></html>

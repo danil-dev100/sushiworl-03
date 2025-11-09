@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SushiWorld - Finalizar Pedido</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#FF6B00",
+            "background-light": "#f5f1e9",
+            "background-dark": "#23170f",
+            "text-light": "#333333",
+            "text-dark": "#f5f1e9",
+            "border-light": "#ead9cd",
+            "border-dark": "#5a4a3e"
+          },
+          fontFamily: {
+            "display": ["Plus Jakarta Sans", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      color: #333333;
+    }
+    .text-primary {
+      color: #FF6B00;
+    }
+    .bg-primary {
+      background-color: #FF6B00;
+    }
+    .bg-background-light {
+      background-color: #f5f1e9;
+    }
+    .text-white {
+      color: #ffffff;
+    }
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<div class="flex h-full grow flex-col">
+<div class="flex flex-1 justify-center px-4 py-10 sm:px-10 md:px-20 lg:px-40">
+<div class="flex max-w-[960px] flex-1 flex-col">
+<div class="flex flex-wrap justify-between gap-3 p-4">
+<h1 class="text-4xl font-black leading-tight tracking-[-0.033em] text-text-light dark:text-text-dark">Finalizar Pedido</h1>
+</div>
+<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
+<main class="col-span-1 flex flex-col gap-8 md:col-span-2">
+<div class="flex flex-col">
+<h2 class="px-4 pb-3 pt-5 text-[22px] font-bold leading-tight tracking-[-0.015em] text-text-light dark:text-text-dark">Seus Dados</h2>
+<div class="grid grid-cols-1 gap-4 px-4 py-3 sm:grid-cols-2">
+<label class="flex flex-col">
+<p class="pb-2 text-base font-medium leading-normal">Nome*</p>
+<input class="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-border-light bg-background-light p-[15px] text-base font-normal leading-normal placeholder-text-light/50 focus:border-primary focus:outline-0 focus:ring-0 dark:border-border-dark dark:bg-background-dark dark:placeholder-text-dark/50" placeholder="Digite seu nome" value=""/>
+</label>
+<label class="flex flex-col">
+<p class="pb-2 text-base font-medium leading-normal">Sobrenome*</p>
+<input class="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-border-light bg-background-light p-[15px] text-base font-normal leading-normal placeholder-text-light/50 focus:border-primary focus:outline-0 focus:ring-0 dark:border-border-dark dark:bg-background-dark dark:placeholder-text-dark/50" placeholder="Digite seu sobrenome" value=""/>
+</label>
+<label class="flex flex-col">
+<p class="pb-2 text-base font-medium leading-normal">E-mail*</p>
+<input class="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-border-light bg-background-light p-[15px] text-base font-normal leading-normal placeholder-text-light/50 focus:border-primary focus:outline-0 focus:ring-0 dark:border-border-dark dark:bg-background-dark dark:placeholder-text-dark/50" placeholder="seu.email@exemplo.com" value=""/>
+</label>
+<label class="flex flex-col">
+<p class="pb-2 text-base font-medium leading-normal">Telefone*</p>
+<input class="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-border-light bg-background-light p-[15px] text-base font-normal leading-normal placeholder-text-light/50 focus:border-primary focus:outline-0 focus:ring-0 dark:border-border-dark dark:bg-background-dark dark:placeholder-text-dark/50" placeholder="(XX) XXXXX-XXXX" value=""/>
+</label>
+<label class="flex flex-col sm:col-span-2">
+<p class="pb-2 text-base font-medium leading-normal">Endereço Completo*</p>
+<input class="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-border-light bg-background-light p-[15px] text-base font-normal leading-normal placeholder-text-light/50 focus:border-primary focus:outline-0 focus:ring-0 dark:border-border-dark dark:bg-background-dark dark:placeholder-text-dark/50" placeholder="Rua, Número, Bairro, Cidade" value=""/>
+</label>
+<label class="flex flex-col sm:col-span-2">
+<p class="pb-2 text-base font-medium leading-normal">NIF <span class="text-sm font-normal text-text-light/70 dark:text-text-dark/70">(Opcional)</span></p>
+<input class="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-border-light bg-background-light p-[15px] text-base font-normal leading-normal placeholder-text-light/50 focus:border-primary focus:outline-0 focus:ring-0 dark:border-border-dark dark:bg-background-dark dark:placeholder-text-dark/50" placeholder="Digite seu NIF" value=""/>
+</label>
+</div>
+</div>
+<div class="flex flex-col">
+<h2 class="px-4 pb-3 pt-5 text-[22px] font-bold leading-tight tracking-[-0.015em] text-text-light dark:text-text-dark">Forma de Pagamento</h2>
+<div class="space-y-4 px-4 py-3">
+<div class="flex flex-col gap-4 rounded-lg border border-primary p-4 ring-2 ring-primary/50 dark:border-primary">
+<div class="flex items-center gap-4">
+<input checked="" class="h-5 w-5 border-border-light text-primary focus:ring-primary dark:border-border-dark" id="payment-cash" name="payment-method" type="radio"/>
+<label class="flex-1 text-base font-medium" for="payment-cash">Dinheiro</label>
+</div>
+<div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-4">
+<label class="flex flex-1 flex-col">
+<p class="pb-2 text-base font-medium leading-normal">Valor entregue <span class="text-sm font-normal text-text-light/70 dark:text-text-dark/70">(Opcional)</span></p>
+<input class="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-border-light bg-background-light p-[15px] text-base font-normal leading-normal placeholder-text-light/50 focus:border-primary focus:outline-0 focus:ring-0 dark:border-border-dark dark:bg-background-dark dark:placeholder-text-dark/50" placeholder="Ex: €50,00"/>
+</label>
+<div class="flex h-14 items-center rounded-lg border border-border-light bg-background-light/50 px-4 dark:border-border-dark dark:bg-background-dark/50">
+<p class="text-base">Troco: <span class="font-bold">€10,20</span></p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 rounded-lg border border-border-light bg-background-light p-4 dark:border-border-dark dark:bg-background-dark">
+<input class="h-5 w-5 border-border-light text-primary focus:ring-primary dark:border-border-dark" id="payment-mbway" name="payment-method" type="radio"/>
+<label class="flex-1 text-base font-medium" for="payment-mbway">MBWay</label>
+</div>
+</div>
+</div>
+<div class="flex flex-col">
+<h2 class="px-4 pb-3 pt-5 text-[22px] font-bold leading-tight tracking-[-0.015em] text-text-light dark:text-text-dark">Detalhes do Pedido</h2>
+<div class="space-y-4 px-4 py-3">
+<div class="flex items-end gap-3">
+<label class="flex flex-1 flex-col">
+<p class="pb-2 text-base font-medium leading-normal">Cupom de Desconto</p>
+<input class="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-border-light bg-background-light p-[15px] text-base font-normal leading-normal placeholder-text-light/50 focus:border-primary focus:outline-0 focus:ring-0 dark:border-border-dark dark:bg-background-dark dark:placeholder-text-dark/50" placeholder="Insira seu cupom"/>
+</label>
+<button class="flex h-14 items-center justify-center rounded-lg bg-primary/20 px-6 text-base font-bold text-primary transition-colors hover:bg-primary/30 dark:bg-primary/30 dark:hover:bg-primary/40">Aplicar</button>
+</div>
+<label class="flex flex-col">
+<p class="pb-2 text-base font-medium leading-normal">Observações</p>
+<textarea class="form-textarea w-full resize-y rounded-lg border border-border-light bg-background-light p-4 text-base font-normal placeholder-text-light/50 focus:border-primary focus:outline-0 focus:ring-0 dark:border-border-dark dark:bg-background-dark dark:placeholder-text-dark/50" placeholder="Ex: Tirar a cebola, ponto da carne, etc." rows="4"></textarea>
+</label>
+</div>
+</div>
+<div class="flex flex-col gap-6 px-4 py-3">
+<div class="flex items-start gap-4 rounded-lg border-2 border-dashed border-primary/50 bg-primary/10 p-4 dark:bg-primary/20">
+<input class="form-checkbox mt-1 h-5 w-5 rounded border-border-light text-primary focus:ring-primary dark:border-border-dark" id="order-bump" type="checkbox"/>
+<label class="flex-1" for="order-bump">
+<p class="text-base font-bold text-text-light dark:text-text-dark">Sim, quero adicionar molho extra por €2,50!</p>
+</label>
+</div>
+<button class="h-14 w-full rounded-lg bg-primary text-lg font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">Finalizar Pedido</button>
+</div>
+</main>
+<aside class="col-span-1 hidden md:block">
+<div class="sticky top-10 rounded-xl border border-border-light bg-background-light p-6 shadow-sm dark:border-border-dark dark:bg-background-dark/50">
+<h3 class="text-xl font-bold">Resumo do Pedido</h3>
+<div class="mt-6 space-y-4 border-b border-border-light pb-4 dark:border-border-dark">
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<img alt="Combinado SushiWorld" class="h-14 w-14 rounded-md object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJCduwNKfLI8-f3y_C2Au66G5WT16VFNY57DhKBjs1DlvcHdW_8ObjAGdjiq1goxCasQmysZJ0TR4PnW1zhiktWM_pOg2x_EkdiklmzoMB2HSF44uPbRGNgQQctJ-4Hnvma5M1xdjS5NU88h7DoEaLvw280A_quauKGE3Lwkk5eID_I4zfaIPEHFNgIy5rsKGUPEoM3Qiwp10X9NVIrrwisjtuL6ic6IiQTBd8OvL4U1E0Ezldh29WmRvAi1iosWezYFVGWrTbOjE"/>
+<div class="flex flex-col">
+<span class="font-medium">2x Combinado SushiWorld</span>
+</div>
+</div>
+<span class="font-medium">€79,80</span>
+</div>
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<img alt="Coca-Cola" class="h-14 w-14 rounded-md object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmOpkGwGt1cykkweVuAAPmSgnHURXDi5e-UTVzQ6GLPz471Ddzj12GC0V6cmBRCqjAjHByxPXr1N_gRWHSLisjSADCD7SjrwSYvEtizo0yETrSPnsOJ--M6UqDWn__nmrahDlH0EYeXBqpQWZ-4T5HU6qT12tH76Klz9PNpywdpPXLyBawY-VoHbvVnsWcONU_zl2KFSq_RGRzFlnofv4L4t1OxI9GrtmtYKT6q8laixZAxA2kdFyicycCd7R3QLd8l7xbMM5EkfQ"/>
+<div class="flex flex-col">
+<span class="font-medium">1x Coca-Cola</span>
+</div>
+</div>
+<span class="font-medium">€2,50</span>
+</div>
+</div>
+<div class="mt-4 space-y-2">
+<div class="flex justify-between text-text-light/80 dark:text-text-dark/80">
+<span>Subtotal</span>
+<span>€82,30</span>
+</div>
+<div class="flex justify-between text-text-light/80 dark:text-text-dark/80">
+<span>Taxa de Entrega</span>
+<span>€5,00</span>
+</div>
+<div class="flex justify-between text-lg font-bold">
+<span>Total</span>
+<span>€87,30</span>
+</div>
+<div class="mt-2 flex justify-end text-sm text-text-light/70 dark:text-text-dark/70">
+<span>(Inclui €10,05 de IVA a 13%)</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/50 p-4" id="success-modal">
+<div class="flex w-full max-w-md flex-col items-center gap-4 rounded-xl bg-background-light p-8 text-center shadow-lg dark:bg-background-dark">
+<div class="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50">
+<span class="material-symbols-outlined text-4xl text-green-600 dark:text-green-400">check_circle</span>
+</div>
+<h2 class="text-2xl font-bold">Pedido Recebido!</h2>
+<p class="text-text-light/80 dark:text-text-dark/80">Seu pedido foi enviado com sucesso. Agora é só aguardar a confirmação do restaurante.</p>
+<button class="mt-4 h-12 w-full rounded-lg bg-primary font-bold text-white">Entendido</button>
+</div>
+</div>
+<div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/50 p-4" id="error-modal">
+<div class="flex w-full max-w-md flex-col items-center gap-4 rounded-xl bg-background-light p-8 text-center shadow-lg dark:bg-background-dark">
+<div class="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
+<span class="material-symbols-outlined text-4xl text-red-600 dark:text-red-400">error</span>
+</div>
+<h2 class="text-2xl font-bold">Ops! Pedido não confirmado.</h2>
+<p class="text-text-light/80 dark:text-text-dark/80">Não foi possível processar seu pedido no momento. Por favor, tente novamente ou entre em contato conosco.</p>
+<button class="mt-4 h-12 w-full rounded-lg bg-primary font-bold text-white">Tentar Novamente</button>
+</div>
+</div>
+</body></html>

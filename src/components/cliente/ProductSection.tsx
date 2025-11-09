@@ -5,37 +5,33 @@ interface Product {
   name: string;
   description: string;
   price: string;
+  discountPrice?: string;
   category: string;
   image: string;
 }
 
 interface ProductSectionProps {
-  title: string;
   products: Product[];
 }
 
-export default function ProductSection({ title, products }: ProductSectionProps) {
-  const sectionId = title.toLowerCase().replace(/\s+/g, '-');
-
+export default function ProductSection({ products }: ProductSectionProps) {
   if (!products || products.length === 0) {
     return null;
   }
 
   return (
-    <section id={sectionId}>
-      <h2 className="text-primary text-2xl font-bold tracking-tight pb-6">{title}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            name={product.name}
-            description={product.description}
-            price={product.price}
-            imageUrl={product.image}
-            sku={product.id.toString()}
-          />
-        ))}
-      </div>
-    </section>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {products.map((product) => (
+        <ProductCard
+          key={product.id}
+          name={product.name}
+          description={product.description}
+          price={product.price}
+          discountPrice={product.discountPrice}
+          imageUrl={product.image}
+          sku={product.id.toString()}
+        />
+      ))}
+    </div>
   );
 }

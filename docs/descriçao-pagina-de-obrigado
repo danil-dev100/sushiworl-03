@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html class="light" lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SushiWorld - Pedido Confirmado</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ff6a00",
+              "background-light": "#f5f1e9",
+              "background-dark": "#23170f",
+              "text-light": "#333333",
+              "text-dark": "#f5f1e9",
+              "card-light": "#ffffff",
+              "card-dark": "#3a2a1d",
+              "subtle-light": "#a16b45",
+              "subtle-dark": "#a1a1aa",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+</head>
+<body class="font-display">
+<div class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap px-4 sm:px-10 py-3 font-display">
+<div class="flex items-center gap-4 text-text-light dark:text-text-dark">
+<div class="size-6 text-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">SushiWorld</h2>
+</div>
+<div class="hidden md:flex flex-1 justify-end gap-8">
+<div class="flex items-center gap-9">
+<a class="text-sm font-medium leading-normal text-text-light dark:text-text-dark" href="#">Home</a>
+<a class="text-sm font-medium leading-normal text-text-light dark:text-text-dark" href="#">Menu</a>
+<a class="text-sm font-medium leading-normal text-text-light dark:text-text-dark" href="#">Delivery</a>
+<a class="text-sm font-medium leading-normal text-text-light dark:text-text-dark" href="#">My Orders</a>
+</div>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Contact Us</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDAhuUXLxXamCOB9zMBwu5iw0jgooOpU1PCdnEjv26CwYwOj49aQydxhPZDBAl8J89eogA85_k-9t5E5WH8lXf7JzrrAOarF1k3FqVok_o6wR9flPoyRCjVOv5LKimwxckLHHLQpH2-hzbLANkgAl1MhcMEb4Am6zrYH4kU8te8vn5hOWo_I9hQFm7zTE9fjdtbiVPSWR_iqT8UkEigRJa7uE0pVFPtymfQh23xDUki7Uwol4DutvSNRxiK4pW8Hj6QA0EPK-syKw8");'></div>
+</div>
+<button class="md:hidden p-2 text-text-light dark:text-text-dark">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<main class="flex flex-1 justify-center py-5 px-4 sm:px-6 md:px-8">
+<div class="layout-content-container flex flex-col w-full max-w-2xl flex-1 items-center justify-center">
+<div class="w-full bg-card-light dark:bg-card-dark rounded-xl shadow-lg p-6 sm:p-8 md:p-10 text-center flex flex-col gap-6">
+<div class="flex flex-col items-center">
+<div class="flex items-center justify-center size-16 bg-primary/20 rounded-full mb-4">
+<span class="material-symbols-outlined text-primary text-4xl">check_circle</span>
+</div>
+<h1 class="text-[#FF6B00] tracking-light text-3xl sm:text-4xl font-bold leading-tight px-4 pb-2 pt-2">Obrigado! Seu pedido foi confirmado.</h1>
+<p class="text-subtle-light dark:text-subtle-dark text-base font-normal leading-normal pt-2 px-4 text-center max-w-md">
+                                Você receberá um e-mail de confirmação em breve com todos os detalhes do seu pedido.
+                           </p>
+</div>
+<div class="border-t border-gray-200 dark:border-gray-700"></div>
+<div class="text-left w-full bg-background-light dark:bg-background-dark p-6 rounded-lg">
+<h4 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight tracking-[-0.015em] mb-4">Resumo da sua compra</h4>
+<p class="text-text-light dark:text-text-dark text-base font-normal leading-normal mb-6">Combo Especial, Hot Roll, Temaki Salmão e mais...</p>
+<div class="flex flex-col gap-3">
+<div class="flex justify-between gap-x-6 py-1">
+<p class="text-text-light dark:text-text-dark text-sm font-normal leading-normal">ID do Pedido</p>
+<p class="text-[#333333] dark:text-text-dark text-sm font-medium leading-normal text-right">SW-1234-5678</p>
+</div>
+<div class="flex justify-between gap-x-6 py-1">
+<p class="text-text-light dark:text-text-dark text-sm font-normal leading-normal">Valor Total</p>
+<p class="text-[#333333] dark:text-text-dark text-sm font-medium leading-normal text-right">€45,50</p>
+</div>
+</div>
+</div>
+<div class="mt-4 flex flex-col sm:flex-row gap-4 justify-center">
+<a class="flex min-w-[84px] max-w-xs cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] w-full sm:w-auto" href="#">
+<span class="truncate">Ver meus pedidos</span>
+</a>
+<a class="flex min-w-[84px] max-w-xs cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary/20 text-primary text-base font-bold leading-normal tracking-[0.015em] w-full sm:w-auto" href="#">
+<span class="truncate">Voltar à página inicial</span>
+</a>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+
+</body></html>

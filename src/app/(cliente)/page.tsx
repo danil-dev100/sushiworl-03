@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import HeroBanner from '@/components/cliente/HeroBanner';
-import FloatingMenuNav from '@/components/cliente/FloatingMenuNav';
+import SidebarMenu from '@/components/cliente/SidebarMenu';
 import ProductSection from '@/components/cliente/ProductSection';
 import DeliveryNotice from '@/components/cliente/DeliveryNotice';
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'SushiWorld: Sushi Delivery em Santa Iria | Peça Online',
     description: 'Peça o melhor sushi de Santa Iria no SushiWorld. Combinados, hots, sashimi e muito mais. Delivery rápido e saboroso.',
-    images: [{ url: 'https://sushiworld.pt/images/og-image.jpg' }], // Substitua por uma imagem real
+    images: [{ url: 'https://sushiworld.pt/images/og-image.jpg' }],
     url: 'https://sushiworld.pt',
     type: 'website',
   },
@@ -19,14 +19,14 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SushiWorld: Sushi Delivery em Santa Iria | Peça Online',
     description: 'Peça o melhor sushi de Santa Iria no SushiWorld. Combinados, hots, sashimi e muito mais.',
-    images: ['https://sushiworld.pt/images/twitter-image.jpg'], // Substitua por uma imagem real
+    images: ['https://sushiworld.pt/images/twitter-image.jpg'],
   },
   alternates: {
     canonical: 'https://sushiworld.pt',
   },
 };
 
-// Dados mockados conforme o HTML original
+// Dados mockados - TODO: buscar do banco de dados
 const maisVendidos = [
   {
     id: 1,
@@ -86,27 +86,28 @@ const destaques = [
 
 export default function HomePage() {
   return (
-    <div className="relative flex min-h-screen w-full flex-col">
-      {/* Header seria incluído via layout */}
+    <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">
       <div className="flex-1">
         <HeroBanner />
 
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
-          <FloatingMenuNav categories={['Destaques', 'Combinados', 'Hots', 'Entradas', 'Poke Bowl', 'Gunkan', 'Sashimi', 'Nigiri', 'Makis', 'Temaki']} />
+          <SidebarMenu />
 
           <main className="flex-1 py-8">
-            <ProductSection title="Mais Vendidos" products={maisVendidos} />
+            <section id="mais-vendidos">
+              <h2 className="text-[#FF6B00] text-2xl font-bold tracking-tight pb-6">Mais Vendidos</h2>
+              <ProductSection products={maisVendidos} />
+            </section>
 
-            <div className="mt-12">
-              <ProductSection title="Destaques" products={destaques} />
-            </div>
+            <section className="mt-12" id="destaques">
+              <h2 className="text-[#FF6B00] text-2xl font-bold tracking-tight pb-6">Destaques</h2>
+              <ProductSection products={destaques} />
+            </section>
 
             <DeliveryNotice />
           </main>
         </div>
       </div>
-
-      {/* Footer seria incluído via layout */}
 
       {/* Structured Data */}
       <script
@@ -122,8 +123,8 @@ export default function HomePage() {
               addressLocality: 'Santa Iria',
               addressCountry: 'PT',
             },
-            telephone: '+351 XXX XXX XXX', // Substitua pelo telefone real
-            email: 'info@sushiworld.pt', // Substitua pelo email real
+            telephone: '+351 934 841 148',
+            email: 'pedidosushiworld@gmail.com',
             url: 'https://sushiworld.pt',
             servesCuisine: 'Japanese',
             priceRange: '€€',

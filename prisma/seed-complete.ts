@@ -4,12 +4,10 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Iniciando seed do banco de dados...');
+  console.log('🌱 Iniciando seed completo do banco de dados...');
 
-  // Limpar dados existentes (cuidado em produção!)
+  // Limpar dados existentes
   console.log('🗑️  Limpando dados existentes...');
-  await prisma.emailCampaignLog.deleteMany();
-  await prisma.emailCampaign.deleteMany();
   await prisma.analyticsEvent.deleteMany();
   await prisma.webhook.deleteMany();
   await prisma.integration.deleteMany();
@@ -22,10 +20,11 @@ async function main() {
   await prisma.productOption.deleteMany();
   await prisma.product.deleteMany();
   await prisma.deliveryArea.deleteMany();
+  await prisma.emailCampaign.deleteMany();
   await prisma.settings.deleteMany();
   await prisma.user.deleteMany();
 
-  // 1. Criar usuário admin padrão
+  // 1. Criar usuário admin
   console.log('👤 Criando usuário admin...');
   const hashedPassword = await bcrypt.hash('123sushi', 10);
   
@@ -41,9 +40,9 @@ async function main() {
   });
   console.log(`✅ Admin criado: ${admin.email}`);
 
-  // 2. Criar configurações iniciais da empresa
+  // 2. Criar configurações da empresa
   console.log('⚙️  Criando configurações da empresa...');
-  const settings = await prisma.settings.create({
+  await prisma.settings.create({
     data: {
       companyName: 'SushiWorld',
       billingName: 'Guilherme Alberto Rocha Ricardo',
@@ -68,9 +67,9 @@ async function main() {
   });
   console.log('✅ Configurações criadas');
 
-  // 3. Criar área de entrega padrão (Santa Iria)
-  console.log('📍 Criando área de entrega padrão...');
-  const deliveryArea = await prisma.deliveryArea.create({
+  // 3. Criar área de entrega
+  console.log('📍 Criando área de entrega...');
+  await prisma.deliveryArea.create({
     data: {
       name: 'Santa Iria - Centro',
       polygon: [
@@ -90,24 +89,10 @@ async function main() {
   });
   console.log('✅ Área de entrega criada');
 
-  // 4. Criar produtos de exemplo (baseado no cardápio fornecido)
-  console.log('🍱 Criando produtos de exemplo...');
+  // 4. Criar todos os produtos do cardápio
+  console.log('🍱 Criando produtos do cardápio...');
 
-  const categories = [
-    'Entradas',
-    'Temaki',
-    'Hossomaki',
-    'Sashimi',
-    'Poke',
-    'Gunkan',
-    'Nigiri',
-    'Futomaki',
-    'Hot Roll',
-    'Combinados',
-  ];
-
-  // Todos os produtos do cardápio
-  const sampleProducts = [
+  const products = [
     // COMBINADOS
     { sku: '1', name: 'Gunkan Mix 10 Peças', description: '2- Salmão, 2- Salmão Braseado, 2- Salmão Morango, 2- Salmão Phila, 2- Salmão queijo brie', price: 14.90, category: 'Combinados', imageUrl: '/produtos.webp/1.webp', isTopSeller: true, isFeatured: true, allergens: ['Peixe', 'Leite'] },
     { sku: '2', name: 'Hot Mix 22 Peças', description: '8- Uramaki Salmão philadelphia, 5- hot phila, 5- hot crispy, 2- camarão tempura, 2- mini crepe de legumes', price: 16.50, category: 'Combinados', imageUrl: '/produtos.webp/2.webp', isTopSeller: true, isFeatured: true, allergens: ['Peixe', 'Marisco', 'Leite', 'Trigo'] },
@@ -188,7 +173,9 @@ async function main() {
     { sku: '77', name: 'Gunkan Salmão Massago', description: 'Gunkan de salmão com massago', price: 8.00, category: 'Gunkan', imageUrl: '/produtos.webp/77.webp', allergens: ['Peixe'] },
   ];
 
-  for (const productData of sampleProducts) {
+  console.log(`📦 Criando ${products.length} produtos...`);
+  
+  for (const productData of products) {
     await prisma.product.create({
       data: {
         ...productData,
@@ -198,7 +185,8 @@ async function main() {
       },
     });
   }
-  console.log(`✅ ${sampleProducts.length} produtos criados`);
+  
+  console.log(`✅ ${products.length} produtos criados com sucesso`);
 
   // 5. Criar opções extras (Braseado) para produtos específicos
   console.log('🔧 Criando opções extras...');
@@ -252,8 +240,8 @@ async function main() {
   
   console.log('✅ Opções extras criadas');
 
-  // 6. Criar promoção de exemplo
-  console.log('🎉 Criando promoção de exemplo...');
+  // 6. Criar promoção de primeira compra
+  console.log('🎉 Criando promoção...');
   await prisma.promotion.create({
     data: {
       name: 'Primeira Compra',
@@ -272,7 +260,7 @@ async function main() {
   });
   console.log('✅ Promoção criada');
 
-  // 7. Criar campanha de email de boas-vindas
+  // 7. Criar campanha de email
   console.log('📧 Criando campanha de email...');
   await prisma.emailCampaign.create({
     data: {
@@ -298,7 +286,14 @@ async function main() {
   console.log('✅ Campanha de email criada');
 
   console.log('');
-  console.log('✨ Seed concluído com sucesso!');
+  console.log('✨ Seed completo concluído com sucesso!');
+  console.log('');
+  console.log('📊 Resumo:');
+  console.log(`   - ${products.length} produtos criados`);
+  console.log(`   - ${productsWithBraseado.length} produtos com opção "Braseado"`);
+  console.log('   - 1 área de entrega configurada');
+  console.log('   - 1 promoção ativa');
+  console.log('   - 1 campanha de email');
   console.log('');
   console.log('📝 Credenciais de acesso:');
   console.log('   Email: admin@sushiworld.pt');

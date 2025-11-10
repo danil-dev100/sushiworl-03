@@ -39,3 +39,43 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env.local
+# SSH Keys e Certificados Privados (nunca commite chaves de acesso)
+id_dsa
+id_dsa.pub
+id_ecdsa
+id_ecdsa.pub
+id_ed25519
+id_ed25519.pub
+id_rsa
+id_rsa.pub
+*.p12
+*.pfx
+*.key
+*.crt
+*.csr
+*.pem  # Já tem, mas reforça
+
+# Configs Locais com Segredos (além de .env*)
+.nyc_output
+.coverage
+.nyc_output
+.eslintcache
+.prettierrc  # Se tiver plugins com tokens
+
+# Prisma Local (se usar DB local pra testes)
+prisma/dev.db
+prisma/migrations/  # Se migrations tiverem dados sensíveis (raro, mas seguro)
+
+# Caches e Temporários (podem vazar tokens de auth)
+.npm
+.cache
+.vscode/settings.json  # Pode ter paths com chaves
+.idea/  # Se usar VS Code ou IntelliJ
+
+# OS-Specific (Windows/Mac/Linux)
+Thumbs.db  # Windows thumbnails (pode ter previews de docs com senhas)
+.DS_Store  # Já tem, bom
+
+# Vercel Builds Locais (além de .vercel)
+.vercel/builds

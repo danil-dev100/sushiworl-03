@@ -27,10 +27,17 @@ export default function CheckoutPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
 
+  // TODO: Buscar taxa de IVA das configurações do banco de dados
+  const taxaIVA = 13; // Taxa de IVA em percentual (13% conforme especificado)
+  
   const subtotal = carrinhoMock.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const taxaEntrega = 5.00;
+  
+  // Calcular IVA incluído no subtotal (modo inclusive)
+  // Fórmula: IVA = Subtotal - (Subtotal / (1 + Taxa/100))
+  const ivaIncluido = subtotal - (subtotal / (1 + taxaIVA / 100));
+  
   const total = subtotal + taxaEntrega;
-  const iva = total * 0.13;
 
   const troco = valorEntregue ? parseFloat(valorEntregue) - total : 0;
 
@@ -169,17 +176,17 @@ export default function CheckoutPage() {
                           </div>
                         )}
                       </div>
-                      <div className={`flex items-center gap-4 rounded-lg border p-4 ${paymentMethod === 'card' ? 'border-[#FF6B00] ring-2 ring-[#FF6B00]/50' : 'border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f]'}`}>
+                      <div className={`flex items-center gap-4 rounded-lg border p-4 ${paymentMethod === 'mbway' ? 'border-[#FF6B00] ring-2 ring-[#FF6B00]/50' : 'border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f]'}`}>
                         <input
-                          checked={paymentMethod === 'card'}
-                          onChange={() => setPaymentMethod('card')}
+                          checked={paymentMethod === 'mbway'}
+                          onChange={() => setPaymentMethod('mbway')}
                           className="h-5 w-5 border-[#ead9cd] dark:border-[#5a4a3e] text-[#FF6B00] focus:ring-[#FF6B00]"
-                          id="payment-card"
+                          id="payment-mbway"
                           name="payment-method"
                           type="radio"
                         />
-                        <label className="flex-1 text-base font-medium cursor-pointer text-[#333333] dark:text-[#f5f1e9]" htmlFor="payment-card">
-                          Cartão
+                        <label className="flex-1 text-base font-medium cursor-pointer text-[#333333] dark:text-[#f5f1e9]" htmlFor="payment-mbway">
+                          MBWay
                         </label>
                       </div>
                     </div>
@@ -214,7 +221,7 @@ export default function CheckoutPage() {
                         </p>
                         <textarea
                           className="form-textarea w-full resize-y rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-4 text-base font-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
-                          placeholder="Ex: Tirar a cebola, ponto da carne, etc."
+                          placeholder="Ex: Sem wasabi, menos molho de soja, sem gengibre, sem cebolinho, etc."
                           rows={4}
                         />
                       </label>
@@ -281,12 +288,16 @@ export default function CheckoutPage() {
                         <span>Taxa de Entrega</span>
                         <span>€{taxaEntrega.toFixed(2)}</span>
                       </div>
+                      <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                        <span>IVA ({taxaIVA}% incluído)</span>
+                        <span>€{ivaIncluido.toFixed(2)}</span>
+                      </div>
                       <div className="flex justify-between text-lg font-bold text-[#333333] dark:text-[#f5f1e9]">
                         <span>Total</span>
                         <span>€{total.toFixed(2)}</span>
                       </div>
-                      <div className="mt-2 flex justify-end text-sm text-[#333333]/70 dark:text-[#f5f1e9]/70">
-                        <span>(Inclui €{iva.toFixed(2)} de IVA a 13%)</span>
+                      <div className="mt-2 flex justify-end text-xs text-[#333333]/70 dark:text-[#f5f1e9]/70">
+                        <span>(IVA incluído)</span>
                       </div>
                     </div>
                   </div>

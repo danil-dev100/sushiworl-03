@@ -54,11 +54,11 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <Image
-              src="/logo.webp"
+              src="/logo.webp/logo-nova-sushiworl-santa-iria-sem-fundo.webp"
               alt="SushiWorld"
               width={200}
               height={80}
-              className="h-16 w-auto"
+              className="h-20 w-auto object-contain"
               priority
             />
           </div>

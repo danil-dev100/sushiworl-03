@@ -90,6 +90,13 @@ export default function HomePage() {
       <div className="flex-1">
         <HeroBanner />
 
+        {/* Aviso sobre Alergias */}
+        <div className="w-full bg-[#f5f1e9] dark:bg-[#23170f] py-4 px-4">
+          <p className="text-[#FF6B00] text-center text-xs md:text-sm font-medium max-w-4xl mx-auto">
+            Alergias alimentares ou necessidades dietéticas especiais: Antes de realizar o seu pedido, por favor contate diretamente o restaurante.
+          </p>
+        </div>
+
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
           <SidebarMenu />
 

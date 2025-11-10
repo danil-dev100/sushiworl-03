@@ -38,8 +38,16 @@ export default function CarrinhoPage() {
     setItems(items.filter(item => item.id !== id));
   };
 
+  // TODO: Buscar taxa de IVA das configurações do banco de dados
+  const taxaIVA = 13; // Taxa de IVA em percentual (13% conforme especificado)
+  
   const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const taxaEntrega = 5.00;
+  
+  // Calcular IVA incluído no subtotal (modo inclusive)
+  // Fórmula: IVA = Subtotal - (Subtotal / (1 + Taxa/100))
+  const ivaIncluido = subtotal - (subtotal / (1 + taxaIVA / 100));
+  
   const total = subtotal + taxaEntrega;
 
   return (
@@ -148,10 +156,17 @@ export default function CarrinhoPage() {
                         <span>Taxa de Entrega</span>
                         <span>€{taxaEntrega.toFixed(2)}</span>
                       </div>
+                      <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                        <span>IVA ({taxaIVA}% incluído)</span>
+                        <span>€{ivaIncluido.toFixed(2)}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-lg font-bold text-[#333333] dark:text-[#f5f1e9] mb-6">
+                    <div className="flex justify-between text-lg font-bold text-[#333333] dark:text-[#f5f1e9] mb-2">
                       <span>Total</span>
                       <span>€{total.toFixed(2)}</span>
+                    </div>
+                    <div className="mb-6 flex justify-end text-xs text-[#333333]/70 dark:text-[#f5f1e9]/70">
+                      <span>(IVA incluído)</span>
                     </div>
                     <Link
                       href="/checkout"

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SushiWorld - Configurações da Empresa</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF6B00",
+                        "background-light": "#f5f1e9",
+                        "background-dark": "#23170f",
+                        "card-light": "#ffffff",
+                        "card-dark": "#2a1e14",
+                        "text-primary-light": "#333333",
+                        "text-primary-dark": "#f5f1e9",
+                        "text-secondary-light": "#a16b45",
+                        "text-secondary-dark": "#a16b45",
+                        "border-light": "#ead9cd",
+                        "border-dark": "#4a3c30",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="flex h-screen overflow-hidden">
+<aside class="flex w-24 flex-col items-center gap-10 border-r border-border-light bg-card-light p-4 dark:border-border-dark dark:bg-card-dark">
+<div class="aspect-square w-12 rounded-full bg-cover bg-center bg-no-repeat" data-alt="SushiWorld logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBfw1g69y4b5qB5nrPpsBNNkZyktDvfT2MnR5Lb03NB2q6VuatJh2pFkEGtr-q66z8XkJVfrDhT4ETUZA9V88hUG3XU020JqslgjhP1b6zD6O6rvpk9RxbON0yjYbxpay8jFMOUZQRSyscgnZfOF1yaBo9KkIpTGnZ1Hr9BDcLbdoF0707XHmJlGpZK7wMKD1eyr7igrS12vzvg8StwfUceAX-0rtGmQqwxg8z2AnNW7kU8eDVf21V8dETbuuc6724gT6EfJ5FYBcQ");'></div>
+<nav class="flex flex-col gap-6">
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">dashboard</span>
+<p class="text-xs font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">shopping_cart</span>
+<p class="text-xs font-medium leading-normal">Pedidos</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">menu_book</span>
+<p class="text-xs font-medium leading-normal">Cardápio</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">group</span>
+<p class="text-xs font-medium leading-normal">Clientes</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">bar_chart</span>
+<p class="text-xs font-medium leading-normal">Relatórios</p>
+</a>
+</nav>
+<div class="mt-auto flex flex-col items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-3xl">settings</span>
+<p class="text-xs font-bold leading-normal">Ajustes</p>
+</div>
+</aside>
+<main class="flex-1 overflow-y-auto p-6 lg:p-10">
+<div class="mx-auto flex max-w-4xl flex-col gap-6">
+<header class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+<h1 class="text-4xl font-black text-primary">Configurações da Empresa</h1>
+<button class="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-orange-600">
+<span class="material-symbols-outlined text-base">save</span>
+                        Salvar
+                    </button>
+</header>
+<div class="space-y-6">
+<div class="rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<details open="">
+<summary class="flex cursor-pointer list-none items-center justify-between">
+<h2 class="text-xl font-bold text-primary">Informações Básicas</h2>
+<span class="material-symbols-outlined text-text-secondary-light transition-transform duration-300 group-open:rotate-180 dark:text-text-secondary-dark">expand_more</span>
+</summary>
+<div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+<div>
+<label class="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark" for="nome-fantasia">Nome Fantasia</label>
+<input class="mt-1 block w-full rounded-lg border-border-light bg-background-light text-sm text-text-primary-light focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-text-primary-dark" id="nome-fantasia" type="text" value="SushiWorld"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark" for="nome-fatura">Nome para Fatura</label>
+<input class="mt-1 block w-full rounded-lg border-border-light bg-background-light text-sm text-text-primary-light focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-text-primary-dark" id="nome-fatura" type="text" value="SushiWorld Delícias Orientais Lda."/>
+</div>
+<div>
+<label class="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark" for="nif">NIF</label>
+<input class="mt-1 block w-full rounded-lg border-border-light bg-background-light text-sm text-text-primary-light focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-text-primary-dark" id="nif" type="text" value="PT123456789"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark" for="telefone">Telefone</label>
+<input class="mt-1 block w-full rounded-lg border-border-light bg-background-light text-sm text-text-primary-light focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-text-primary-dark" id="telefone" type="tel" value="+351 912 345 678"/>
+</div>
+<div class="sm:col-span-2">
+<label class="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark" for="email">E-mail</label>
+<input class="mt-1 block w-full rounded-lg border-border-light bg-background-light text-sm text-text-primary-light focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-text-primary-dark" id="email" type="email" value="contato@sushiworld.pt"/>
+</div>
+</div>
+</details>
+</div>
+<div class="rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<details>
+<summary class="flex cursor-pointer list-none items-center justify-between">
+<h2 class="text-xl font-bold text-primary">Horário de Funcionamento</h2>
+<span class="material-symbols-outlined text-text-secondary-light transition-transform duration-300 group-open:rotate-180 dark:text-text-secondary-dark">expand_more</span>
+</summary>
+<div class="mt-6 flow-root">
+<div class="-mx-6 -my-2 overflow-x-auto">
+<div class="inline-block min-w-full py-2 align-middle sm:px-6">
+<table class="min-w-full">
+<tbody class="divide-y divide-border-light dark:divide-border-dark">
+<tr class="text-sm">
+<td class="whitespace-nowrap py-4 pr-3 font-medium text-text-primary-light dark:text-text-primary-dark">Segunda-feira</td>
+<td class="whitespace-nowrap px-3 py-4"><input class="w-28 rounded-lg border-border-light bg-background-light text-center text-sm focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark" type="time" value="12:00"/></td>
+<td class="whitespace-nowrap px-3 py-4 text-center text-text-secondary-light dark:text-text-secondary-dark">-</td>
+<td class="whitespace-nowrap px-3 py-4"><input class="w-28 rounded-lg border-border-light bg-background-light text-center text-sm focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark" type="time" value="23:00"/></td>
+</tr>
+<tr class="text-sm">
+<td class="whitespace-nowrap py-4 pr-3 font-medium text-text-primary-light dark:text-text-primary-dark">Terça-feira</td>
+<td class="whitespace-nowrap px-3 py-4"><input class="w-28 rounded-lg border-border-light bg-background-light text-center text-sm focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark" type="time" value="12:00"/></td>
+<td class="whitespace-nowrap px-3 py-4 text-center text-text-secondary-light dark:text-text-secondary-dark">-</td>
+<td class="whitespace-nowrap px-3 py-4"><input class="w-28 rounded-lg border-border-light bg-background-light text-center text-sm focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark" type="time" value="23:00"/></td>
+</tr>
+<tr class="text-sm">
+<td class="whitespace-nowrap py-4 pr-3 font-medium text-text-primary-light dark:text-text-primary-dark">Quarta-feira</td>
+<td class="whitespace-nowrap px-3 py-4" colspan="3"><span class="font-medium text-text-secondary-light dark:text-text-secondary-dark">Fechado</span></td>
+</tr>
+<tr class="text-sm">
+<td class="whitespace-nowrap py-4 pr-3 font-medium text-text-primary-light dark:text-text-primary-dark">Quinta-feira</td>
+<td class="whitespace-nowrap px-3 py-4"><input class="w-28 rounded-lg border-border-light bg-background-light text-center text-sm focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark" type="time" value="12:00"/></td>
+<td class="whitespace-nowrap px-3 py-4 text-center text-text-secondary-light dark:text-text-secondary-dark">-</td>
+<td class="whitespace-nowrap px-3 py-4"><input class="w-28 rounded-lg border-border-light bg-background-light text-center text-sm focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark" type="time" value="23:00"/></td>
+</tr>
+<tr class="text-sm">
+<td class="whitespace-nowrap py-4 pr-3 font-medium text-text-primary-light dark:text-text-primary-dark">Sexta-feira</td>
+<td class="whitespace-nowrap px-3 py-4"><input class="w-28 rounded-lg border-border-light bg-background-light text-center text-sm focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark" type="time" value="12:00"/></td>
+<td class="whitespace-nowrap px-3 py-4 text-center text-text-secondary-light dark:text-text-secondary-dark">-</td>
+<td class="whitespace-nowrap px-3 py-4"><input class="w-28 rounded-lg border-border-light bg-background-light text-center text-sm focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark" type="time" value="00:00"/></td>
+</tr>
+<tr class="text-sm">
+<td class="whitespace-nowrap py-4 pr-3 font-medium text-text-primary-light dark:text-text-primary-dark">Sábado</td>
+<td class="whitespace-nowrap px-3 py-4"><input class="w-28 rounded-lg border-border-light bg-background-light text-center text-sm focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark" type="time" value="12:00"/></td>
+<td class="whitespace-nowrap px-3 py-4 text-center text-text-secondary-light dark:text-text-secondary-dark">-</td>
+<td class="whitespace-nowrap px-3 py-4"><input class="w-28 rounded-lg border-border-light bg-background-light text-center text-sm focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark" type="time" value="00:00"/></td>
+</tr>
+<tr class="text-sm">
+<td class="whitespace-nowrap py-4 pr-3 font-medium text-text-primary-light dark:text-text-primary-dark">Domingo</td>
+<td class="whitespace-nowrap px-3 py-4" colspan="3"><span class="font-medium text-text-secondary-light dark:text-text-secondary-dark">Fechado</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</details>
+</div>
+<div class="rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<details>
+<summary class="flex cursor-pointer list-none items-center justify-between">
+<h2 class="text-xl font-bold text-primary">Configurações de IVA</h2>
+<span class="material-symbols-outlined text-text-secondary-light transition-transform duration-300 group-open:rotate-180 dark:text-text-secondary-dark">expand_more</span>
+</summary>
+<div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+<div>
+<label class="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark" for="taxa-iva">Taxa de IVA (%)</label>
+<input class="mt-1 block w-full rounded-lg border-border-light bg-background-light text-sm text-text-primary-light focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-text-primary-dark" id="taxa-iva" type="number" value="23"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark" for="tipo-iva">Tipo</label>
+<select class="mt-1 block w-full rounded-lg border-border-light bg-background-light text-sm text-text-primary-light focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-text-primary-dark" id="tipo-iva">
+<option>Inclusivo</option>
+<option selected="">Exclusivo</option>
+</select>
+</div>
+</div>
+</details>
+</div>
+</div>
+<div class="mt-4 flex justify-end">
+<button class="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-orange-600">
+<span class="material-symbols-outlined text-base">save</span>
+                        Salvar
+                    </button>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

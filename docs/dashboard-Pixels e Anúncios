@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SushiWorld - Pixels e Anúncios</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF6B00",
+                        "background-light": "#f5f1e9",
+                        "background-dark": "#23170f",
+                        "card-light": "#ffffff",
+                        "card-dark": "#2a1e14",
+                        "text-primary-light": "#333333",
+                        "text-primary-dark": "#f5f1e9",
+                        "text-secondary-light": "#a16b45",
+                        "text-secondary-dark": "#a16b45",
+                        "border-light": "#ead9cd",
+                        "border-dark": "#4a3c30",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="flex h-screen overflow-hidden">
+<aside class="flex w-24 flex-col items-center gap-10 border-r border-border-light bg-card-light p-4 dark:border-border-dark dark:bg-card-dark">
+<div class="aspect-square w-12 rounded-full bg-cover bg-center bg-no-repeat" data-alt="SushiWorld logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBfw1g69y4b5qB5nrPpsBNNkZyktDvfT2MnR5Lb03NB2q6VuatJh2pFkEGtr-q66z8XkJVfrDhT4ETUZA9V88hUG3XU020JqslgjhP1b6zD6O6rvpk9RxbON0yjYbxpay8jFMOUZQRSyscgnZfOF1yaBo9KkIpTGnZ1Hr9BDcLbdoF0707XHmJlGpZK7wMKD1eyr7igrS12vzvg8StwfUceAX-0rtGmQqwxg8z2AnNW7kU8eDVf21V8dETbuuc6724gT6EfJ5FYBcQ");'></div>
+<nav class="flex flex-col gap-6">
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">dashboard</span>
+<p class="text-xs font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">shopping_cart</span>
+<p class="text-xs font-medium leading-normal">Pedidos</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">menu_book</span>
+<p class="text-xs font-medium leading-normal">Cardápio</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">sell</span>
+<p class="text-xs font-medium leading-normal">Promoções</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">bar_chart</span>
+<p class="text-xs font-medium leading-normal">Relatórios</p>
+</a>
+</nav>
+<div class="mt-auto flex flex-col items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-3xl">settings</span>
+<p class="text-xs font-bold leading-normal">Ajustes</p>
+</div>
+</aside>
+<main class="flex-1 overflow-y-auto p-6 lg:p-10">
+<div class="mx-auto flex max-w-7xl flex-col gap-8">
+<header>
+<h1 class="text-4xl font-black text-primary">Pixels e Anúncios</h1>
+</header>
+<div x-data="{ activeTab: 'meta' }">
+<div class="border-b border-border-light dark:border-border-dark">
+<nav aria-label="Tabs" class="-mb-px flex space-x-6">
+<button :class="{ 'border-primary text-primary': activeTab === 'meta', 'border-transparent text-text-secondary-light hover:text-primary hover:border-primary/50 dark:text-text-secondary-dark dark:hover:text-primary': activeTab !== 'meta' }" @click="activeTab = 'meta'" class="whitespace-nowrap border-b-2 px-1 py-4 text-sm font-semibold">
+                        Meta (Facebook)
+                    </button>
+<button :class="{ 'border-primary text-primary': activeTab === 'google', 'border-transparent text-text-secondary-light hover:text-primary hover:border-primary/50 dark:text-text-secondary-dark dark:hover:text-primary': activeTab !== 'google' }" @click="activeTab = 'google'" class="whitespace-nowrap border-b-2 px-1 py-4 text-sm font-semibold">
+                        Google
+                    </button>
+<button :class="{ 'border-primary text-primary': activeTab === 'tiktok', 'border-transparent text-text-secondary-light hover:text-primary hover:border-primary/50 dark:text-text-secondary-dark dark:hover:text-primary': activeTab !== 'tiktok' }" @click="activeTab = 'tiktok'" class="whitespace-nowrap border-b-2 px-1 py-4 text-sm font-semibold">
+                        TikTok
+                    </button>
+</nav>
+</div>
+<div class="pt-8">
+<div class="grid grid-cols-1 gap-8 lg:grid-cols-3" x-show="activeTab === 'meta'">
+<div class="space-y-8 lg:col-span-2">
+<div class="rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<h2 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">Pixel do Facebook</h2>
+<p class="mt-1 text-sm text-text-secondary-light dark:text-text-secondary-dark">Adicione os IDs dos seus pixels do Facebook para rastrear eventos.</p>
+<div class="mt-4 space-y-3">
+<div class="flex items-center gap-3">
+<input class="w-full rounded-md border-border-light bg-background-light text-text-primary-light placeholder:text-text-secondary-light focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-text-primary-dark" placeholder="Insira o ID do Pixel" type="text" value="1234567890123456"/>
+<button class="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-white transition-colors hover:bg-primary/90">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+</div>
+<div class="flex items-center gap-3">
+<input class="w-full rounded-md border-border-light bg-background-light text-text-primary-light placeholder:text-text-secondary-light focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-text-primary-dark" placeholder="Insira o ID do Pixel" type="text"/>
+<button class="flex h-10 w-10 items-center justify-center rounded-md bg-gray-300 text-gray-500 transition-colors hover:bg-gray-400 dark:bg-border-dark dark:text-text-secondary-dark dark:hover:bg-border-dark/80">
+<span class="material-symbols-outlined text-2xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+<div class="rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<h2 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">Conversão API (CAPI)</h2>
+<p class="mt-1 text-sm text-text-secondary-light dark:text-text-secondary-dark">Configure o envio de eventos do lado do servidor para maior precisão.</p>
+<div class="mt-4 space-y-3">
+<div class="flex items-center gap-3">
+<input class="w-full rounded-md border-border-light bg-background-light text-text-primary-light placeholder:text-text-secondary-light focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-background-dark dark:text-text-primary-dark" placeholder="Insira o Token de Acesso" type="text" value="EAA..."/>
+<button class="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-white transition-colors hover:bg-primary/90">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<h2 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">Catálogo de Produtos</h2>
+<p class="mt-1 text-sm text-text-secondary-light dark:text-text-secondary-dark">Mantenha seu catálogo do Facebook atualizado com seus produtos.</p>
+<div class="mt-4 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+<button class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90">Sincronizar Catálogo Agora</button>
+<div class="text-sm">
+<p class="text-text-primary-light dark:text-text-primary-dark">Última sincronização: 24/07/2024 10:30</p>
+<p class="flex items-center gap-1.5 text-green-600"><span class="material-symbols-outlined text-base">check_circle</span> Concluída com sucesso</p>
+</div>
+</div>
+</div>
+</div>
+<div class="rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark lg:col-span-1">
+<h2 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">Status e Teste</h2>
+<p class="mt-1 text-sm text-text-secondary-light dark:text-text-secondary-dark">Log de eventos em tempo real e ferramenta de teste.</p>
+<div class="mt-4 h-72 space-y-2 overflow-y-auto rounded-md bg-background-light p-3 font-mono text-xs dark:bg-background-dark">
+<p class="flex items-center gap-2"><span class="text-green-500">[OK]</span><span class="text-text-primary-light dark:text-text-primary-dark">PageView event sent.</span></p>
+<p class="flex items-center gap-2"><span class="text-green-500">[OK]</span><span class="text-text-primary-light dark:text-text-primary-dark">ViewContent event sent.</span></p>
+<p class="flex items-center gap-2"><span class="text-green-500">[OK]</span><span class="text-text-primary-light dark:text-text-primary-dark">AddToCart event sent.</span></p>
+<p class="flex items-center gap-2"><span class="text-red-500">[FAIL]</span><span class="text-text-primary-light dark:text-text-primary-dark">InitiateCheckout event.</span></p>
+<p class="flex items-center gap-2"><span class="text-green-500">[OK]</span><span class="text-text-primary-light dark:text-text-primary-dark">Purchase event sent.</span></p>
+<p class="flex items-center gap-2"><span class="text-green-500">[OK]</span><span class="text-text-primary-light dark:text-text-primary-dark">PageView event sent.</span></p>
+<p class="flex items-center gap-2"><span class="text-green-500">[OK]</span><span class="text-text-primary-light dark:text-text-primary-dark">ViewContent event sent.</span></p>
+</div>
+<div class="mt-4">
+<button class="w-full rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90">Enviar Evento de Teste</button>
+</div>
+</div>
+</div>
+<div class="rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark" x-show="activeTab === 'google'">
+<p class="text-center text-text-secondary-light dark:text-text-secondary-dark">Configurações do Google Ads estarão disponíveis aqui.</p>
+</div>
+<div class="rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark" x-show="activeTab === 'tiktok'">
+<p class="text-center text-text-secondary-light dark:text-text-secondary-dark">Configurações do TikTok Ads estarão disponíveis aqui.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script defer="" src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+</body></html>

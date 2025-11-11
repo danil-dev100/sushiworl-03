@@ -1,9 +1,7 @@
 'use client';
 
-import Link from 'next/link';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Eye } from 'lucide-react';
+import { formatPrice, formatDateTime } from '@/lib/utils';
+import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/constants';
 
 interface Order {
   id: string;
@@ -18,103 +16,48 @@ interface RecentOrdersProps {
   orders: Order[];
 }
 
-const statusColors = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  CONFIRMED: 'bg-blue-100 text-blue-800',
-  PREPARING: 'bg-purple-100 text-purple-800',
-  DELIVERING: 'bg-indigo-100 text-indigo-800',
-  DELIVERED: 'bg-green-100 text-green-800',
-  CANCELLED: 'bg-red-100 text-red-800',
-};
-
-const statusLabels = {
-  PENDING: 'Pendente',
-  CONFIRMED: 'Confirmado',
-  PREPARING: 'Preparando',
-  DELIVERING: 'Em Entrega',
-  DELIVERED: 'Entregue',
-  CANCELLED: 'Cancelado',
-};
-
 export function RecentOrders({ orders }: RecentOrdersProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-[#ead9cd] bg-white p-6 dark:border-[#4a3c30] dark:bg-[#2a1e14]">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-[#FF6B00]">Pedidos Recentes</h2>
-        <Link
-          href="/admin/pedidos"
-          className="text-sm font-semibold text-[#FF6B00] hover:underline"
-        >
-          Ver todos
-        </Link>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full">
-          <thead className="border-b border-[#ead9cd] dark:border-[#4a3c30]">
-            <tr>
-              <th className="py-3 text-left text-xs font-bold uppercase tracking-wider text-[#a16b45]">
-                Pedido
-              </th>
-              <th className="py-3 text-left text-xs font-bold uppercase tracking-wider text-[#a16b45]">
-                Cliente
-              </th>
-              <th className="py-3 text-left text-xs font-bold uppercase tracking-wider text-[#a16b45]">
-                Total
-              </th>
-              <th className="py-3 text-left text-xs font-bold uppercase tracking-wider text-[#a16b45]">
-                Status
-              </th>
-              <th className="py-3 text-left text-xs font-bold uppercase tracking-wider text-[#a16b45]">
-                Há
-              </th>
-              <th className="py-3 text-left text-xs font-bold uppercase tracking-wider text-[#a16b45]">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#ead9cd] dark:divide-[#4a3c30]">
-            {orders.map((order) => (
-              <tr key={order.id} className="hover:bg-[#f5f1e9] dark:hover:bg-[#23170f]">
-                <td className="whitespace-nowrap py-4 text-sm font-semibold text-[#333333] dark:text-[#f5f1e9]">
-                  #{order.orderNumber}
-                </td>
-                <td className="whitespace-nowrap py-4 text-sm text-[#333333] dark:text-[#f5f1e9]">
-                  {order.customerName}
-                </td>
-                <td className="whitespace-nowrap py-4 text-sm font-semibold text-[#333333] dark:text-[#f5f1e9]">
-                  € {order.total.toFixed(2)}
-                </td>
-                <td className="whitespace-nowrap py-4">
+    <div className="rounded-xl border border-[#ead9cd] bg-white p-6 dark:border-[#4a3c30] dark:bg-[#2a1e14]">
+      <h2 className="text-xl font-bold text-[#FF6B00]">Pedidos Recentes</h2>
+      
+      <div className="mt-6 space-y-4">
+        {orders.length === 0 ? (
+          <p className="text-center text-[#a16b45]">Nenhum pedido recente</p>
+        ) : (
+          orders.map((order) => (
+            <div
+              key={order.id}
+              className="flex items-center justify-between rounded-lg border border-[#ead9cd] p-4 dark:border-[#4a3c30]"
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <span className="font-bold text-[#333333] dark:text-[#f5f1e9]">
+                    #{order.orderNumber}
+                  </span>
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      statusColors[order.status as keyof typeof statusColors]
+                      ORDER_STATUS_COLORS[order.status as keyof typeof ORDER_STATUS_COLORS] ||
+                      'bg-gray-100 text-gray-800'
                     }`}
                   >
-                    {statusLabels[order.status as keyof typeof statusLabels]}
+                    {ORDER_STATUS_LABELS[order.status as keyof typeof ORDER_STATUS_LABELS] || order.status}
                   </span>
-                </td>
-                <td className="whitespace-nowrap py-4 text-sm text-[#a16b45]">
-                  {formatDistanceToNow(new Date(order.createdAt), {
-                    addSuffix: false,
-                    locale: ptBR,
-                  })}
-                </td>
-                <td className="whitespace-nowrap py-4">
-                  <Link
-                    href={`/admin/pedidos/${order.id}`}
-                    className="inline-flex items-center gap-1 text-sm font-semibold text-[#FF6B00] hover:underline"
-                  >
-                    <Eye className="h-4 w-4" />
-                    Ver
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+                <p className="mt-1 text-sm text-[#a16b45]">{order.customerName}</p>
+                <p className="text-xs text-[#a16b45]">
+                  {formatDateTime(order.createdAt)}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-lg font-bold text-[#FF6B00]">
+                  {formatPrice(order.total)}
+                </p>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
 }
-

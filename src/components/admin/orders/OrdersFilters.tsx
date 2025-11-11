@@ -1,64 +1,35 @@
 'use client';
 
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { Search } from 'lucide-react';
 
-interface OrdersFiltersProps {
-  counts: {
-    all: number;
-    pending: number;
-    confirmed: number;
-    preparing: number;
-    delivering: number;
-    delivered: number;
-    cancelled: number;
-  };
-  currentStatus?: string;
-}
-
-export function OrdersFilters({ counts, currentStatus = 'today' }: OrdersFiltersProps) {
-  const searchParams = useSearchParams();
-
-  const filters = [
-    { label: 'Hoje', value: 'today', count: counts.all },
-    { label: 'Pendentes', value: 'pending', count: counts.pending },
-    { label: 'Aceitos', value: 'confirmed', count: counts.confirmed },
-    { label: 'Todos', value: 'all', count: counts.all },
-  ];
-
-  const createQueryString = (name: string, value: string) => {
-    const params = new URLSearchParams(searchParams);
-    params.set(name, value);
-    return params.toString();
-  };
-
+export function OrdersFilters() {
   return (
-    <div className="flex flex-shrink-0 items-center gap-2 rounded-lg bg-white p-1 dark:bg-[#2a1e14]">
-      {filters.map((filter) => {
-        const isActive = currentStatus === filter.value || (!currentStatus && filter.value === 'today');
-        
-        return (
-          <Link
-            key={filter.value}
-            href={`/admin/pedidos?${createQueryString('status', filter.value)}`}
-            className={`flex-1 whitespace-nowrap rounded-md px-4 py-1.5 text-center text-sm font-semibold transition-colors ${
-              isActive
-                ? 'bg-[#FF6B00] text-white shadow-sm'
-                : 'text-[#333333] hover:bg-[#f5f1e9] dark:text-[#f5f1e9] dark:hover:bg-[#23170f]'
-            }`}
-          >
-            {filter.label}
-            {filter.count > 0 && (
-              <span className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
-                isActive ? 'bg-white/20' : 'bg-[#f5f1e9] dark:bg-[#23170f]'
-              }`}>
-                {filter.count}
-              </span>
-            )}
-          </Link>
-        );
-      })}
+    <div className="flex flex-col gap-4 rounded-lg bg-white p-4 dark:bg-[#2a1e14] md:flex-row md:items-center">
+      {/* Search */}
+      <div className="relative flex-grow">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a16b45]" />
+        <input
+          type="text"
+          placeholder="Buscar por ID, cliente..."
+          className="w-full rounded-md border-[#ead9cd] bg-[#f5f1e9] py-2 pl-10 pr-4 text-sm text-[#333333] placeholder-[#a16b45] focus:border-[#FF6B00] focus:ring-[#FF6B00] dark:border-[#4a3c30] dark:bg-[#23170f] dark:text-[#f5f1e9]"
+        />
+      </div>
+
+      {/* Status Filters */}
+      <div className="flex flex-shrink-0 items-center gap-2 rounded-lg bg-[#f5f1e9] p-1 dark:bg-[#23170f]">
+        <button className="flex-1 whitespace-nowrap rounded-md bg-[#FF6B00] px-4 py-1.5 text-sm font-semibold text-white shadow-sm">
+          Hoje
+        </button>
+        <button className="flex-1 whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-semibold text-[#333333] hover:bg-white dark:text-[#f5f1e9] dark:hover:bg-[#2a1e14]">
+          Pendentes
+        </button>
+        <button className="flex-1 whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-semibold text-[#333333] hover:bg-white dark:text-[#f5f1e9] dark:hover:bg-[#2a1e14]">
+          Aceitos
+        </button>
+        <button className="flex-1 whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-semibold text-[#333333] hover:bg-white dark:text-[#f5f1e9] dark:hover:bg-[#2a1e14]">
+          Todos
+        </button>
+      </div>
     </div>
   );
 }
-

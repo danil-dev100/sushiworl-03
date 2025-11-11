@@ -108,7 +108,7 @@ async function getDashboardData() {
 }
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+  // const session = await getServerSession(authOptions); // Desabilitado temporariamente
   const data = await getDashboardData();
 
   const stats = [

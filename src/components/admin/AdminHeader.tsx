@@ -1,11 +1,14 @@
 'use client';
 
 import { Bell, LogOut, User } from 'lucide-react';
-import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 export function AdminHeader() {
-  const { data: session } = useSession();
+  // ⚠️ Modo desenvolvimento - sessão mockada
+  const mockUser = {
+    name: 'Desenvolvedor',
+    role: 'ADMIN',
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#ead9cd] bg-white px-6 py-4 dark:border-[#4a3c30] dark:bg-[#2a1e14]">
@@ -13,7 +16,7 @@ export function AdminHeader() {
         <div>
           <h2 className="text-sm font-medium text-[#a16b45]">Bem-vindo de volta,</h2>
           <h1 className="text-xl font-bold text-[#333333] dark:text-[#f5f1e9]">
-            {session?.user?.name || 'Admin'}
+            {mockUser.name}
           </h1>
         </div>
 
@@ -28,10 +31,10 @@ export function AdminHeader() {
           <div className="flex items-center gap-3">
             <div className="text-right">
               <p className="text-sm font-semibold text-[#333333] dark:text-[#f5f1e9]">
-                {session?.user?.name}
+                {mockUser.name}
               </p>
               <p className="text-xs text-[#a16b45]">
-                {session?.user?.role === 'ADMIN' ? 'Administrador' : 'Gerente'}
+                {mockUser.role === 'ADMIN' ? 'Administrador' : 'Gerente'}
               </p>
             </div>
             
@@ -44,7 +47,7 @@ export function AdminHeader() {
               </Link>
               
               <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
+                onClick={() => alert('Logout desabilitado em modo desenvolvimento')}
                 className="rounded-full p-2 hover:bg-red-50 dark:hover:bg-red-900/20"
                 title="Sair"
               >

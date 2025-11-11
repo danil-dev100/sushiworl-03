@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Sparkles, Eye, Flame, MoreHorizontal, Salad, Wine, Fish, RiceBowl, Waves, IceCream, Plus } from 'lucide-react';
+import { Sparkles, Eye, Flame, MoreHorizontal, Salad, Wine, Fish, Square, Waves, IceCream, Plus } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -19,7 +19,7 @@ const categories: Category[] = [
   { id: 'poke', label: 'POKÉ BOWL', icon: <Salad className="w-5 h-5" />, emoji: '🥗' },
   { id: 'gunkan', label: 'GUNKAN', icon: <Wine className="w-5 h-5" />, emoji: '🍥' },
   { id: 'sashimi', label: 'SASHIMI', icon: <Fish className="w-5 h-5" />, emoji: '🐟' },
-  { id: 'nigiri', label: 'NIGIRI', icon: <RiceBowl className="w-5 h-5" />, emoji: '🍙' },
+  { id: 'nigiri', label: 'NIGIRI', icon: <Square className="w-5 h-5" />, emoji: '🍙' },
   { id: 'makis', label: 'MAKIS', icon: <Waves className="w-5 h-5" />, emoji: '🥢' },
   { id: 'temaki', label: 'TEMAKI', icon: <IceCream className="w-5 h-5" />, emoji: '🍦' },
 ];

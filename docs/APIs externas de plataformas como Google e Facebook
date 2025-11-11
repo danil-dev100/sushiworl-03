@@ -1,0 +1,80 @@
+
+## Integrações
+
+Esta seção descreve como o sistema se integra com APIs externas de plataformas como Google e Facebook para rastreamento, conversões e marketing.
+
+### 1. Google (Google Ads, Google Analytics 4, Google Tag Manager, Merchant Center)
+
+#### a) Captura de Parâmetros UTM e `gclid`
+*   **Descrição:** O sistema deve capturar automaticamente os parâmetros UTM (ex: `utm_source`, `utm_medium`, `utm_campaign`) e o `gclid` (Google Click Identifier) da URL da primeira visita do usuário.
+*   **Armazenamento:** Esses parâmetros devem ser armazenados associados ao usuário (se logado) ou a um identificador anônimo (ex: via cookie) para uso posterior.
+*   **Objetivo:** Atribuir conversões (pedidos) ao canal de tráfego e anúncio correto.
+
+#### b) Disparo de Eventos para Google Analytics 4 (GA4)
+*   **Descrição:** Disparar eventos específicos para o Google Analytics 4 usando o `gtag.js` ou via Google Tag Manager (ver abaixo).
+*   **Eventos Padrão:**
+    *   `page_view`: Disparado em cada carregamento de página.
+    *   `sign_up`: Disparado quando um usuário se cadastra.
+    *   `begin_checkout`: Disparado quando o usuário clica em "Ir para pagamento".
+    *   `add_to_cart`: Disparado quando um item é adicionado ao carrinho.
+    *   `view_cart`: Disparado quando o usuário acessa a página do carrinho.
+    *   `purchase`: Disparado na página de "Obrigado", com detalhes como `transaction_id`, `value`, `currency`, `items`, e o `gclid` original.
+    *   `cart_abandonment`: Disparado se o usuário sair do carrinho sem concluir o pedido (lógica de timeout ou navegação).
+*   **Dados Enviados:** Devem incluir o valor total, ID do pedido, itens do pedido e o `gclid` original para atribuição correta.
+
+#### c) Disparo de Conversões para Google Ads
+*   **Descrição:** Disparar eventos de conversão para o Google Ads, preferencialmente via API (Google Ads Conversion Tracking API) ou via Google Tag Manager.
+*   **Evento:** `purchase` (ou um evento de conversão personalizado definido no Google Ads).
+*   **Dados Enviados:** ID da conversão, `gclid` original, valor do pedido, moeda, e possivelmente o ID do pedido. O `gclid` é crucial para vincular a conversão ao clique original do anúncio.
+
+#### d) Injeção de Google Tag Manager (GTM)
+*   **Descrição:** Permitir a injeção de um ou mais containers do Google Tag Manager (IDs separados por vírgula ou lista).
+*   **Objetivo:** Facilitar a configuração e o gerenciamento de tags (analytics, conversões, pixels) via interface do GTM, sem alterar o código do site diretamente.
+
+#### e) Sincronização com Google Merchant Center
+*   **Descrição:** Sincronizar automaticamente os produtos do catálogo do SushiWorld com um ou mais perfis do Google Merchant Center.
+*   **Dados Sincronizados:** Nome, descrição, preço, imagem (`imagem_url` do banco de dados), SKU, categoria, disponibilidade.
+
+### 2. Facebook (Meta) (Facebook Pixel, Meta Conversions API, Catálogo)
+
+#### a) Captura de `fbclid`
+*   **Descrição:** Capturar o `fbclid` (Facebook Click Identifier) da URL da primeira visita do usuário.
+*   **Armazenamento:** Associado ao usuário ou identificador anônimo.
+*   **Objetivo:** Atribuir conversões ao anúncio do Facebook que gerou o clique.
+
+#### b) Disparo de Eventos para Facebook Pixel
+*   **Descrição:** Disparar eventos padrão e personalizados para o Facebook Pixel instalado.
+*   **Eventos Padrão:**
+    *   `PageView`: Disparado em cada carregamento de página.
+    *   `CompleteRegistration`: Disparado quando um usuário se cadastra.
+    *   `InitiateCheckout`: Disparado quando o usuário clica em "Ir para pagamento".
+    *   `AddToCart`: Disparado quando um item é adicionado ao carrinho.
+    *   `Purchase`: Disparado na página de "Obrigado", com valor total, conteúdo do carrinho e `currency`.
+*   **Dados Enviados:** Devem incluir conteúdo do evento (ex: `content_ids`, `content_name`), valor total, moeda, e o `fbclid` original.
+
+#### c) Disparo de Eventos via Meta Conversions API (CAPI)
+*   **Descrição:** Disparar os mesmos eventos do Pixel, mas **server-side** via Meta Conversions API.
+*   **Vantagem:** Mais confiável e seguro, pois os dados são enviados diretamente do servidor do SushiWorld para o Meta, evitando bloqueios de script no navegador.
+*   **Dados Enviados:** Inclui informações do cliente (hash de email, telefone), IP, User Agent, URL da página, tipo de evento, nome do evento, valor, conteúdo do carrinho, e o `fbclid` original.
+*   **Implementação:** Requer o envio de um `event_id` único por evento para evitar duplicações.
+
+#### d) Sincronização com Catálogo do Facebook
+*   **Descrição:** Sincronizar automaticamente os produtos do catálogo do SushiWorld com um ou mais catálogos do Facebook.
+*   **Dados Sincronizados:** Nome, descrição, preço, imagem (`imagem_url` do banco de dados), SKU, categoria, disponibilidade.
+
+### 3. Configuração no Painel Administrativo
+
+*   **Campos de Configuração:** O painel administrativo deve ter seções para inserir e gerenciar:
+    *   **Google:**
+        *   Measurement ID do GA4.
+        *   Container ID do GTM (pode ser mais de um).
+        *   ID de conversão do Google Ads.
+        *   Credenciais/IDs para Merchant Center (pode ser mais de um).
+    *   **Facebook:**
+        *   Pixel ID do Facebook.
+        *   Access Token para Conversions API.
+        *   ID do Catálogo do Facebook (pode ser mais de um).
+*   **Ativação/Desativação:** Permitir ativar ou desativar cada integração individualmente.
+*   **Testes:** Botões para testar o envio de eventos para cada plataforma integrada.
+
+...

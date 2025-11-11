@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SushiWorld - Gestão de Cardápio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF6B00",
+                        "background-light": "#f5f1e9",
+                        "background-dark": "#23170f",
+                        "card-light": "#ffffff",
+                        "card-dark": "#2a1e14",
+                        "text-primary-light": "#333333",
+                        "text-primary-dark": "#f5f1e9",
+                        "text-secondary-light": "#a16b45",
+                        "text-secondary-dark": "#a16b45",
+                        "border-light": "#ead9cd",
+                        "border-dark": "#4a3c30",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="flex h-screen overflow-hidden">
+<aside class="flex w-24 flex-col items-center gap-10 border-r border-border-light bg-card-light p-4 dark:border-border-dark dark:bg-card-dark">
+<div class="aspect-square w-12 rounded-full bg-cover bg-center bg-no-repeat" data-alt="SushiWorld logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBfw1g69y4b5qB5nrPpsBNNkZyktDvfT2MnR5Lb03NB2q6VuatJh2pFkEGtr-q66z8XkJVfrDhT4ETUZA9V88hUG3XU020JqslgjhP1b6zD6O6rvpk9RxbON0yjYbxpay8jFMOUZQRSyscgnZfOF1yaBo9KkIpTGnZ1Hr9BDcLbdoF0707XHmJlGpZK7wMKD1eyr7igrS12vzvg8StwfUceAX-0rtGmQqwxg8z2AnNW7kU8eDVf21V8dETbuuc6724gT6EfJ5FYBcQ");'></div>
+<nav class="flex flex-col gap-6">
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">dashboard</span>
+<p class="text-xs font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">shopping_cart</span>
+<p class="text-xs font-medium leading-normal">Pedidos</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-primary" href="#">
+<span class="material-symbols-outlined text-3xl">menu_book</span>
+<p class="text-xs font-bold leading-normal">Cardápio</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">group</span>
+<p class="text-xs font-medium leading-normal">Clientes</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">bar_chart</span>
+<p class="text-xs font-medium leading-normal">Relatórios</p>
+</a>
+</nav>
+<div class="mt-auto flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-3xl">settings</span>
+<p class="text-xs font-medium leading-normal">Ajustes</p>
+</div>
+</aside>
+<main class="flex-1 overflow-y-auto">
+<div class="flex h-full">
+<aside class="w-64 border-r border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<h2 class="mb-6 text-lg font-bold text-text-primary-light dark:text-text-primary-dark">Categorias</h2>
+<nav class="flex flex-col gap-2">
+<a class="rounded-md bg-primary/10 px-4 py-2 text-sm font-bold text-primary" href="#">Entradas</a>
+<a class="rounded-md px-4 py-2 text-sm font-medium text-text-secondary-light hover:bg-primary/10 hover:text-primary dark:text-text-secondary-dark" href="#">Temaki</a>
+<a class="rounded-md px-4 py-2 text-sm font-medium text-text-secondary-light hover:bg-primary/10 hover:text-primary dark:text-text-secondary-dark" href="#">Hossomaki</a>
+<a class="rounded-md px-4 py-2 text-sm font-medium text-text-secondary-light hover:bg-primary/10 hover:text-primary dark:text-text-secondary-dark" href="#">Sashimi</a>
+<a class="rounded-md px-4 py-2 text-sm font-medium text-text-secondary-light hover:bg-primary/10 hover:text-primary dark:text-text-secondary-dark" href="#">Poke</a>
+<a class="rounded-md px-4 py-2 text-sm font-medium text-text-secondary-light hover:bg-primary/10 hover:text-primary dark:text-text-secondary-dark" href="#">Gunkan</a>
+<a class="rounded-md px-4 py-2 text-sm font-medium text-text-secondary-light hover:bg-primary/10 hover:text-primary dark:text-text-secondary-dark" href="#">Uramaki</a>
+<a class="rounded-md px-4 py-2 text-sm font-medium text-text-secondary-light hover:bg-primary/10 hover:text-primary dark:text-text-secondary-dark" href="#">Nigiri</a>
+<a class="rounded-md px-4 py-2 text-sm font-medium text-text-secondary-light hover:bg-primary/10 hover:text-primary dark:text-text-secondary-dark" href="#">Futomaki</a>
+<a class="rounded-md px-4 py-2 text-sm font-medium text-text-secondary-light hover:bg-primary/10 hover:text-primary dark:text-text-secondary-dark" href="#">Hot roll</a>
+<a class="rounded-md px-4 py-2 text-sm font-medium text-text-secondary-light hover:bg-primary/10 hover:text-primary dark:text-text-secondary-dark" href="#">Combinados</a>
+</nav>
+</aside>
+<div class="flex-1 p-6 lg:p-10">
+<header class="relative mb-6 flex items-center justify-between gap-4">
+<div class="flex items-center gap-6">
+<h1 class="text-4xl font-black text-primary">Cardápio</h1>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">search</span>
+<input class="w-80 rounded-lg border-border-light bg-card-light py-2 pl-10 pr-4 text-text-primary-light placeholder:text-text-secondary-light focus:border-primary focus:ring-primary dark:border-border-dark dark:bg-card-dark dark:text-text-primary-dark dark:placeholder:text-text-secondary-dark" placeholder="Buscar por nome ou SKU..." type="text"/>
+</div>
+</div>
+<button class="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-lg transition-transform hover:scale-105">
+<span class="material-symbols-outlined">add</span>
+                            Adicionar Produto
+                        </button>
+</header>
+<div class="grid grid-cols-1 gap-4 @container sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+<div class="group relative cursor-pointer overflow-hidden rounded-lg border border-border-light bg-card-light shadow-sm transition-all hover:shadow-xl dark:border-border-dark dark:bg-card-dark">
+<div class="absolute right-2 top-2 z-10 flex flex-col gap-2 rounded-lg bg-black/50 p-2 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">content_copy</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">toggle_off</span></button>
+</div>
+<img alt="Gyoza" class="aspect-square w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQb14TSl16INDMZ8Wr1TxkIx1D2ajvOi-EEzZoEkZvYz-4eqiNScy4t5X-VQwaHnH7443vmZU-CtX1XW2Sp0YdgkHO68pY6I2y5Xl6qS13gexNHgxncmg1RDepX2jPdWiCJQL08K7epg2VWKhpztIQvQdvQdL6OfUab7HAwT0spmPuIp5_9rNaChxaFMXSb6ppR42p9p0ZUQcqHGtwYPn_T8rtfPbqd_B7UXk2yUWi5YoAEPff2I6AFFU4EBBgHMnuFwJGqeItmwc"/>
+<div class="p-4">
+<h3 class="font-bold text-primary">Gyoza (5 un.)</h3>
+<p class="mt-1 text-sm text-text-primary-light dark:text-text-primary-dark">€ 7,50</p>
+<div class="mt-2 flex items-center justify-between">
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">SKU: ENT001</p>
+<div class="flex items-center gap-1.5">
+<div class="h-2 w-2 rounded-full bg-green-500"></div>
+<span class="text-xs font-medium text-green-600">Disponível</span>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative cursor-pointer overflow-hidden rounded-lg border border-border-light bg-card-light shadow-sm transition-all hover:shadow-xl dark:border-border-dark dark:bg-card-dark">
+<div class="absolute right-2 top-2 z-10 flex flex-col gap-2 rounded-lg bg-black/50 p-2 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">content_copy</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">toggle_off</span></button>
+</div>
+<img alt="Sunomono" class="aspect-square w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvKPmZscH-WwPYgiB9S6ynb2Yx7ffgk3Nesl8GLaouGxM9CORGZk3Vlo7c009Ig0tL19kzdTrDAGD1mt0vpy_g07k_Jl9vMlN7OwZljlp2O5axHeqATajEWnOZcp4GZrtUbImog7VVfy0A_0KT1_vcEodB0TpSr__ouQw2mhTos-WlsgQDKoWxUzBAJJhsHp5seZh_usdn5DrcVeUcbq1GX4QIi1ZotKzZNoIZNdM6tncwLVrFYTe5KydV4XW8Wsj7IxljsIqQzYY"/>
+<div class="p-4">
+<h3 class="font-bold text-primary">Sunomono</h3>
+<p class="mt-1 text-sm text-text-primary-light dark:text-text-primary-dark">€ 6,00</p>
+<div class="mt-2 flex items-center justify-between">
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">SKU: ENT002</p>
+<div class="flex items-center gap-1.5">
+<div class="h-2 w-2 rounded-full bg-green-500"></div>
+<span class="text-xs font-medium text-green-600">Disponível</span>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative cursor-pointer overflow-hidden rounded-lg border border-border-light bg-card-light shadow-sm transition-all hover:shadow-xl dark:border-border-dark dark:bg-card-dark">
+<div class="absolute right-2 top-2 z-10 flex flex-col gap-2 rounded-lg bg-black/50 p-2 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">content_copy</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">toggle_off</span></button>
+</div>
+<img alt="Harumaki" class="aspect-square w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnHPqvJK6Vjp4-gi5w3zdSLSSCiVB1RMA5CDFisMbXMf4evdg1vu12IUg4PnX3uNtFlayKX6jyYvUCheFdW_E742CRsQ5Sq9h4wmyQJ96cNxjiF6j_6KaHGPYCIDY3gLNFpYl3C0dzHNuCmQ4NsuaXluOowPV5Rplrp23GwhND5aeAFzTbHA6GUMLFDYEhAoGHU1i5xHF-4J7DLxyuBLxXxAXqiv6kIRdsrkGQx3ZXVRwqM7fTSQEE6DysVQmrqgah5KKj4ZX4PGM"/>
+<div class="p-4">
+<h3 class="font-bold text-primary">Harumaki (2 un.)</h3>
+<p class="mt-1 text-sm text-text-primary-light dark:text-text-primary-dark">€ 5,50</p>
+<div class="mt-2 flex items-center justify-between">
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">SKU: ENT003</p>
+<div class="flex items-center gap-1.5">
+<div class="h-2 w-2 rounded-full bg-green-500"></div>
+<span class="text-xs font-medium text-green-600">Disponível</span>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative cursor-pointer overflow-hidden rounded-lg border border-border-light bg-card-light shadow-sm transition-all hover:shadow-xl dark:border-border-dark dark:bg-card-dark">
+<div class="absolute right-2 top-2 z-10 flex flex-col gap-2 rounded-lg bg-black/50 p-2 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">content_copy</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">toggle_off</span></button>
+</div>
+<img alt="Shimeji" class="aspect-square w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6aQNY2ariuvNpJX-4lQO64yVPdA0uNqUOMj-a9TDZz3x3hQ8pyaL2Jqm3EROR0_pdmVsIg465fS-SHe-Zod2v2slOtuB0ET4u--hswUU_Xr5Bd2Dvy-7RQ1p-I7qA0kl9HylLxk3zS79xA6WG5K2MSixO0ToUg6Xa3XeCZsdT_aZfn0mxaCkG9jiPOnMMnCFGNKh_5tEL-uuRGwvaJLdaYUkIbE3dbQt-UR665a7aRJoYcIsHOjnpspdiSr2uqIvdUvODqjz7ovU"/>
+<div class="p-4">
+<h3 class="font-bold text-primary">Shimeji na Manteiga</h3>
+<p class="mt-1 text-sm text-text-primary-light dark:text-text-primary-dark">€ 9,00</p>
+<div class="mt-2 flex items-center justify-between">
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">SKU: ENT004</p>
+<div class="flex items-center gap-1.5">
+<div class="h-2 w-2 rounded-full bg-green-500"></div>
+<span class="text-xs font-medium text-green-600">Disponível</span>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative cursor-pointer overflow-hidden rounded-lg border border-border-light bg-card-light shadow-sm transition-all hover:shadow-xl dark:border-border-dark dark:bg-card-dark">
+<div class="absolute right-2 top-2 z-10 flex flex-col gap-2 rounded-lg bg-black/50 p-2 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">content_copy</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">toggle_off</span></button>
+</div>
+<img alt="Ceviche" class="aspect-square w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDM1r1pydaSLttAUopdkAQ7jQ2ExDTMnmFSza_PtGAKPw69Tm4rNIlYlKnOxsOQULRyS7lZ_b8K0rwIQ-g9DF25e1nZP-kIUVx6NtAibBj_l-j8pWIgrQN1as0dpr6mnu4IPgHweWAJzGLG20NC5qQgWAWK_ggd1BMdtufIfBZ8DxyTSMJSJMUXr5IHZ5nMFmLoisKCUuXokrm8l9j7R4nLdOuDvOujVJRfBolioyb_fYdarSW3LCvATNPkRV-TeQwOsRvHWsE_j2Y"/>
+<div class="p-4">
+<h3 class="font-bold text-primary">Ceviche de Salmão</h3>
+<p class="mt-1 text-sm text-text-primary-light dark:text-text-primary-dark">€ 12,00</p>
+<div class="mt-2 flex items-center justify-between">
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">SKU: ENT005</p>
+<div class="flex items-center gap-1.5">
+<div class="h-2 w-2 rounded-full bg-green-500"></div>
+<span class="text-xs font-medium text-green-600">Disponível</span>
+</div>
+</div>
+</div>
+</div>
+<div class="group relative cursor-pointer overflow-hidden rounded-lg border border-border-light bg-card-light shadow-sm transition-all hover:shadow-xl dark:border-border-dark dark:bg-card-dark">
+<div class="absolute right-2 top-2 z-10 flex flex-col gap-2 rounded-lg bg-black/50 p-2 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">content_copy</span></button>
+<button class="text-white hover:text-primary"><span class="material-symbols-outlined text-xl">toggle_off</span></button>
+</div>
+<img alt="Missoshiru" class="aspect-square w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCj9iaFx0vXzHLY0FCYUIKBBEBWC9YEyCsaFQsyIP9Zw47hhPj6skYE85UD1Y91SLE4yVoy9IdQrXOyrlweKPGyF6pU9H3JulZVUtAf4Rv3cXilxRJ0Kq64HqOFTcwHSIZEmf5Rh4U5JQzQmKRhGTFzTcr6d4Qo8IvrRW903isrM5w_JwErPL-xW495GE1CaPXxCVPEb2gCxjaVSd1_Pe_Gd1FGnTBSJR6pJYJ9PrjceRM6gMIKz3N5tiUeHAEGusDyHzd_yZvgvJQ"/>
+<div class="p-4">
+<h3 class="font-bold text-primary">Missoshiru</h3>
+<p class="mt-1 text-sm text-text-primary-light dark:text-text-primary-dark">€ 4,50</p>
+<div class="mt-2 flex items-center justify-between">
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">SKU: ENT006</p>
+<div class="flex items-center gap-1.5">
+<div class="h-2 w-2 rounded-full bg-green-500"></div>
+<span class="text-xs font-medium text-green-600">Disponível</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

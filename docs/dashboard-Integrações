@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="light" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SushiWorld - Integrações</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF6B00",
+                        "background-light": "#f5f1e9",
+                        "background-dark": "#23170f",
+                        "card-light": "#ffffff",
+                        "card-dark": "#2a1e14",
+                        "text-primary-light": "#333333",
+                        "text-primary-dark": "#f5f1e9",
+                        "text-secondary-light": "#a16b45",
+                        "text-secondary-dark": "#a16b45",
+                        "border-light": "#ead9cd",
+                        "border-dark": "#4a3c30",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="flex h-screen overflow-hidden">
+<aside class="flex w-24 flex-col items-center gap-10 border-r border-border-light bg-card-light p-4 dark:border-border-dark dark:bg-card-dark">
+<div class="aspect-square w-12 rounded-full bg-cover bg-center bg-no-repeat" data-alt="SushiWorld logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBfw1g69y4b5qB5nrPpsBNNkZyktDvfT2MnR5Lb03NB2q6VuatJh2pFkEGtr-q66z8XkJVfrDhT4ETUZA9V88hUG3XU020JqslgjhP1b6zD6O6rvpk9RxbON0yjYbxpay8jFMOUZQRSyscgnZfOF1yaBo9KkIpTGnZ1Hr9BDcLbdoF0707XHmJlGpZK7wMKD1eyr7igrS12vzvg8StwfUceAX-0rtGmQqwxg8z2AnNW7kU8eDVf21V8dETbuuc6724gT6EfJ5FYBcQ");'></div>
+<nav class="flex flex-col gap-6">
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">dashboard</span>
+<p class="text-xs font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">shopping_cart</span>
+<p class="text-xs font-medium leading-normal">Pedidos</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">menu_book</span>
+<p class="text-xs font-medium leading-normal">Cardápio</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark" href="#">
+<span class="material-symbols-outlined text-3xl">sell</span>
+<p class="text-xs font-medium leading-normal">Promoções</p>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-primary" href="#">
+<span class="material-symbols-outlined text-3xl">integration_instructions</span>
+<p class="text-xs font-bold leading-normal">Integrações</p>
+</a>
+</nav>
+<div class="mt-auto flex flex-col items-center gap-1.5 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-3xl">settings</span>
+<p class="text-xs font-medium leading-normal">Ajustes</p>
+</div>
+</aside>
+<main class="flex-1 overflow-y-auto p-6 lg:p-10">
+<div class="mx-auto flex max-w-7xl flex-col gap-8">
+<header>
+<h1 class="text-4xl font-black text-primary">Integrações</h1>
+</header>
+<section class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+<div class="flex flex-col rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+<span class="material-symbols-outlined text-3xl text-gray-500">campaign</span>
+</div>
+<div>
+<h2 class="text-lg font-bold text-primary">Meta (Facebook &amp; Instagram)</h2>
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-green-500"></div>
+<p class="text-sm font-medium text-green-600">Conectado</p>
+</div>
+</div>
+</div>
+<div class="mt-auto pt-6">
+<a class="w-full text-center block rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90" href="#">Configurar</a>
+</div>
+</div>
+<div class="flex flex-col rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+<span class="material-symbols-outlined text-3xl text-gray-500">ads_click</span>
+</div>
+<div>
+<h2 class="text-lg font-bold text-primary">Google Ads</h2>
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-gray-400"></div>
+<p class="text-sm font-medium text-gray-500">Não Conectado</p>
+</div>
+</div>
+</div>
+<div class="mt-auto pt-6">
+<a class="w-full text-center block rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90" href="#">Conectar</a>
+</div>
+</div>
+<div class="flex flex-col rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+<span class="material-symbols-outlined text-3xl text-gray-500">mail</span>
+</div>
+<div>
+<h2 class="text-lg font-bold text-primary">Email Marketing</h2>
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-gray-400"></div>
+<p class="text-sm font-medium text-gray-500">Não Conectado</p>
+</div>
+</div>
+</div>
+<div class="mt-auto pt-6">
+<a class="w-full text-center block rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90" href="#">Conectar</a>
+</div>
+</div>
+<div class="flex flex-col rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+<span class="material-symbols-outlined text-3xl text-gray-500">sms</span>
+</div>
+<div>
+<h2 class="text-lg font-bold text-primary">Marketing SMS</h2>
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-green-500"></div>
+<p class="text-sm font-medium text-green-600">Conectado</p>
+</div>
+</div>
+</div>
+<div class="mt-auto pt-6">
+<a class="w-full text-center block rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90" href="#">Configurar</a>
+</div>
+</div>
+<div class="flex flex-col rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+<span class="material-symbols-outlined text-3xl text-gray-500">api</span>
+</div>
+<div>
+<h2 class="text-lg font-bold text-primary">API Customizada</h2>
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-gray-400"></div>
+<p class="text-sm font-medium text-gray-500">Não Conectado</p>
+</div>
+</div>
+</div>
+<div class="mt-auto pt-6">
+<a class="w-full text-center block rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90" href="#">Conectar</a>
+</div>
+</div>
+<div class="flex flex-col rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+<span class="material-symbols-outlined text-3xl text-gray-500">receipt_long</span>
+</div>
+<div>
+<h2 class="text-lg font-bold text-primary">Sistema Fiscal</h2>
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-green-500"></div>
+<p class="text-sm font-medium text-green-600">Conectado</p>
+</div>
+</div>
+</div>
+<div class="mt-auto pt-6">
+<a class="w-full text-center block rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90" href="#">Configurar</a>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+
+</body></html>

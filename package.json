@@ -8,10 +8,16 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
+    "setup": "tsx scripts/setup.ts",
+    "setup:quick": "tsx scripts/setup.ts --skip-seed --no-studio",
+    "setup:no-dev": "tsx scripts/setup.ts --no-dev",
     "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:cardapio": "tsx scripts/importar-cardapio.ts",
     "db:reset": "prisma migrate reset",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:validate": "prisma validate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

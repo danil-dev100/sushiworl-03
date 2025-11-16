@@ -1,27 +1,110 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { Loader2 } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/security';
+import { useCart } from '@/contexts/CartContext';
+import { SimpleProductOptionsDialog } from './SimpleProductOptionsDialog';
 
 interface ProductCardProps {
+  productId: string;
   name: string;
   description: string;
   price: string;
   discountPrice?: string;
   imageUrl: string;
-  sku: string;
 }
 
 export default function ProductCard({
+  productId,
   name,
   description,
   price,
   discountPrice,
   imageUrl,
-  sku
 }: ProductCardProps) {
-  const handleAddToCart = () => {
-    console.log('Adicionando produto:', sku);
+  const { addItem } = useCart();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [productOptions, setProductOptions] = useState<any[]>([]);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(false);
+
+  const priceNumber = parseFloat(price.replace('€', '').replace(',', '.'));
+
+  const handleAddToCart = async () => {
+    setIsLoadingOptions(true);
+    try {
+      const response = await fetch(`/api/products/${productId}/options`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const activeOptions = data.options.filter((opt: any) => 
+          opt.isActive && opt.displayAt === 'SITE'
+        );
+        
+        if (activeOptions.length > 0) {
+          setProductOptions(activeOptions);
+          setIsDialogOpen(true);
+        } else {
+          addItem({
+            productId,
+            name,
+            price: priceNumber,
+            quantity: 1,
+            image: imageUrl,
+          });
+        }
+      } else {
+        addItem({
+          productId,
+          name,
+          price: priceNumber,
+          quantity: 1,
+          image: imageUrl,
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao buscar opções:', error);
+      addItem({
+        productId,
+        name,
+        price: priceNumber,
+        quantity: 1,
+        image: imageUrl,
+      });
+    } finally {
+      setIsLoadingOptions(false);
+    }
+  };
+
+  const handleAddWithOptions = (withOptions: boolean) => {
+    let finalPrice = priceNumber;
+    let selectedOptions: any[] = [];
+
+    if (withOptions && productOptions.length > 0) {
+      const option = productOptions[0];
+      const totalOptionPrice = option.isPaid ? option.basePrice + (option.choices[0]?.price || 0) : 0;
+      finalPrice += totalOptionPrice;
+      
+      selectedOptions = [{
+        optionId: option.id,
+        optionName: option.name,
+        choices: [{
+          choiceId: option.choices[0]?.id || '',
+          choiceName: option.choices[0]?.name || option.name,
+          price: totalOptionPrice,
+        }],
+      }];
+    }
+
+    addItem({
+      productId,
+      name: withOptions ? `${name} (${productOptions[0]?.name})` : name,
+      price: finalPrice,
+      quantity: 1,
+      image: imageUrl,
+      selectedOptions: withOptions ? selectedOptions : undefined,
+    });
   };
 
   const altText = `${name} - ${description}`;
@@ -58,10 +141,31 @@ export default function ProductCard({
       </div>
       <button
         onClick={handleAddToCart}
-        className="mt-4 w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity"
+        disabled={isLoadingOptions}
+        className="mt-4 w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Adicionar
+        {isLoadingOptions ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Carregando...
+          </>
+        ) : (
+          'Adicionar'
+        )}
       </button>
+
+      {/* Dialog de Opções Simples */}
+      <SimpleProductOptionsDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        product={{
+          id: productId,
+          name,
+          price: priceNumber,
+        }}
+        options={productOptions}
+        onAddToCart={handleAddWithOptions}
+      />
     </div>
   );
 }

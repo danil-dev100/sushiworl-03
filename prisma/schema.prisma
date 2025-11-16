@@ -123,6 +123,8 @@ model ProductOption {
   maxSelection Int     @default(1)
   allowMultiple Boolean @default(false)
   displayAt   DisplayAt @default(CART) // SITE ou CART
+  isPaid      Boolean  @default(false) // Se a opção base é paga
+  basePrice   Float    @default(0) // Preço base da opção (se isPaid = true)
   
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)

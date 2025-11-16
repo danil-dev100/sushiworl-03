@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Verificar se é uma rota admin
-  if (pathname.startsWith('/admin') || pathname.startsWith('/(admin)')) {
+  if (pathname.startsWith('/admin')) {
     // Obter token do usuário
     const token = await getToken({
       req: request,
@@ -26,11 +26,6 @@ export async function middleware(request: NextRequest) {
       // Se for cliente tentando acessar admin, redirecionar para home
       return NextResponse.redirect(new URL('/', request.url));
     }
-
-    // Se for primeiro login, redirecionar para troca de senha
-    if (token.firstLogin && !pathname.includes('/trocar-senha')) {
-      return NextResponse.redirect(new URL('/admin/trocar-senha', request.url));
-    }
   }
 
   return NextResponse.next();
@@ -39,6 +34,5 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/admin/:path*',
-    '/(admin)/:path*',
   ],
 };

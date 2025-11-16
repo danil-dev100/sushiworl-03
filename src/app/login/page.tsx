@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -95,16 +97,28 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
+            <div className="relative">
               <Input
                 id="password"
-                type="password"
+                type={isPasswordVisible ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isLoading}
                 autoComplete="current-password"
+                className="pr-12"
               />
+              <button
+                type="button"
+                onClick={() => setIsPasswordVisible((prev) => !prev)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-[#FF6B00]"
+                tabIndex={-1}
+                aria-label={isPasswordVisible ? 'Ocultar senha' : 'Mostrar senha'}
+              >
+                {isPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             </div>
 
             <Button
@@ -123,12 +137,18 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Link para voltar ao site */}
-          <div className="mt-6 text-center">
+          {/* Links úteis */}
+          <div className="mt-6 space-y-2 text-center">
+            <Link
+              href="/admin/trocar-senha"
+              className="block text-sm text-[#FF6B00] hover:text-[#FF6B00]/80 transition-colors underline"
+            >
+              Trocar senha
+            </Link>
             <button
               type="button"
               onClick={() => router.push('/')}
-              className="text-sm text-gray-600 hover:text-[#FF6B00] transition-colors"
+              className="block w-full text-sm text-gray-600 hover:text-[#FF6B00] transition-colors"
             >
               ← Voltar ao site
             </button>

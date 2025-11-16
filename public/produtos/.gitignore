@@ -1,0 +1,9 @@
+# Ignorar todas as imagens de produtos
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# Manter a pasta no git
+!.gitignore
+

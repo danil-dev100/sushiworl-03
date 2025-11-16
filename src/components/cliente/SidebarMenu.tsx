@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { Sparkles, Eye, Flame, MoreHorizontal, Salad, Wine, Fish, Square, Waves, IceCream, Plus } from 'lucide-react';
 
 interface Category {
@@ -16,7 +16,7 @@ const categories: Category[] = [
   { id: 'combinados', label: 'COMBINADOS', icon: <Eye className="w-5 h-5" />, emoji: '🍣' },
   { id: 'hots', label: 'HOTS', icon: <Flame className="w-5 h-5" />, emoji: '🔥' },
   { id: 'entradas', label: 'ENTRADAS', icon: <MoreHorizontal className="w-5 h-5" />, emoji: '🍤' },
-  { id: 'poke', label: 'POKÉ BOWL', icon: <Salad className="w-5 h-5" />, emoji: '🥗' },
+  { id: 'poke-bowl', label: 'POKÉ BOWL', icon: <Salad className="w-5 h-5" />, emoji: '🥗' },
   { id: 'gunkan', label: 'GUNKAN', icon: <Wine className="w-5 h-5" />, emoji: '🍥' },
   { id: 'sashimi', label: 'SASHIMI', icon: <Fish className="w-5 h-5" />, emoji: '🐟' },
   { id: 'nigiri', label: 'NIGIRI', icon: <Square className="w-5 h-5" />, emoji: '🍙' },
@@ -29,7 +29,18 @@ interface SidebarMenuProps {
 }
 
 export default function SidebarMenu({ activeSection = 'destaques' }: SidebarMenuProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const isCardapioPage = pathname === '/cardapio';
+
   const handleClick = (id: string) => {
+    // Se estiver na home, redireciona para o cardápio com a seção
+    if (!isCardapioPage) {
+      router.push(`/cardapio#${id}`);
+      return;
+    }
+
+    // Se já estiver no cardápio, faz scroll suave
     const element = document.getElementById(id);
     if (element) {
       const headerOffset = 100;

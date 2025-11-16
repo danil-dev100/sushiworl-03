@@ -31,7 +31,7 @@ const menuItems = [
   {
     label: 'Cardápio',
     icon: UtensilsCrossed,
-    href: '/admin/produtos',
+    href: '/admin/cardapio',
   },
   {
     label: 'Clientes',

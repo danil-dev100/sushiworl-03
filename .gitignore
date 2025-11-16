@@ -81,3 +81,28 @@ credentials/
 
 # Cache
 .cache/
+
+# Documentação de desenvolvimento (não enviar para produção)
+/docs/TESTE-*.md
+/docs/DEBUG-*.md
+/docs/PASSO-A-PASSO-*.md
+/docs/POPUP-*.md
+/docs/dashboard-opcionais
+/docs/dashboard-Gestão-de-Cardápio
+
+# Scripts de teste e debug
+/scripts/check-product-options.js
+/scripts/seed-data/
+/scripts/test-*.js
+
+# Imagens de teste dos produtos
+/public/produtos/*.jpg
+/public/produtos/*.jpeg
+/public/produtos/*.png
+/public/produtos/*.webp
+!/public/produtos/.gitkeep
+
+# Arquivos temporários de desenvolvimento
+*.local.ts
+*.test.ts
+*.spec.ts

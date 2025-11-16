@@ -1,7 +1,7 @@
 import ProductCard from './ProductCard';
 
 interface Product {
-  id: number;
+  id: string | number;
   name: string;
   description: string;
   price: string;
@@ -24,12 +24,12 @@ export default function ProductSection({ products }: ProductSectionProps) {
       {products.map((product) => (
         <ProductCard
           key={product.id}
+          productId={typeof product.id === 'string' ? product.id : product.id.toString()}
           name={product.name}
           description={product.description}
           price={product.price}
           discountPrice={product.discountPrice}
           imageUrl={product.image}
-          sku={product.id.toString()}
         />
       ))}
     </div>

@@ -1,205 +1,195 @@
 # 🍣 SushiWorld - Sistema de Delivery
 
-Sistema completo de delivery de sushi com painel administrativo, desenvolvido com Next.js 15, Prisma, Supabase e NextAuth.
+Sistema completo de delivery para restaurante de sushi com painel administrativo e carrinho de compras.
 
 ## 🚀 Funcionalidades
 
-### 🛒 Site do Cliente
-- ✅ Cardápio completo com categorias
-- ✅ Carrinho de compras
-- ✅ Checkout com endereço de entrega
-- ✅ Validação de área de entrega
-- ✅ Múltiplas formas de pagamento
-- ✅ Tracking de pedidos em tempo real
-- ✅ Sistema de promoções e cupons
-- ✅ Responsivo (mobile, tablet, desktop)
+### **Para Clientes:**
+- 🛒 Carrinho de compras com localStorage
+- 🎯 Opções personalizáveis nos produtos (braseado, molhos, etc)
+- 🔍 Busca de produtos
+- 📱 Design responsivo (mobile, tablet, desktop)
+- 🌙 Modo escuro
+- 📦 Visualização de produtos por categoria
 
-### 👨‍💼 Painel Administrativo
-- ✅ Dashboard com métricas em tempo real
-- ✅ Gestão de pedidos (aceitar/recusar/imprimir)
-- ✅ Gestão de produtos e cardápio
-- ✅ Configurações da empresa (horários, IVA, impressora)
-- ✅ Gestão de usuários e permissões
-- ✅ Áreas de entrega com mapa interativo
-- ✅ Sistema de promoções (cupons, up-sell, down-sell)
-- ✅ Relatórios e analytics
-- ✅ Email marketing e automações
-- ✅ Integrações (Facebook Pixel, Google Ads, Webhooks)
+### **Para Administradores:**
+- 📊 Dashboard com estatísticas
+- 🍱 Gestão completa de produtos
+- 🎨 Opções e complementos personalizáveis
+- 📋 Gestão de pedidos em tempo real
+- 👥 Gestão de usuários e permissões
+- 💰 Controle financeiro
+- 🗺️ Área de entrega personalizada
+
+---
 
 ## 🛠️ Tecnologias
 
-- **Framework**: Next.js 15 (App Router)
-- **Banco de Dados**: PostgreSQL (Supabase)
-- **ORM**: Prisma 6.19.0
-- **Autenticação**: NextAuth.js
-- **Estilização**: Tailwind CSS
-- **Ícones**: Lucide React
-- **Gráficos**: Chart.js
-- **Mapas**: Leaflet.js
-- **Deploy**: Vercel
+- **Framework:** Next.js 14 (App Router)
+- **Linguagem:** TypeScript
+- **Banco de Dados:** PostgreSQL + Prisma ORM
+- **Autenticação:** NextAuth.js
+- **UI:** Tailwind CSS + Shadcn/ui
+- **Formulários:** React Hook Form + Zod
+- **Notificações:** Sonner (Toast)
+- **Deploy:** Vercel
 
-## 📦 Instalação
+---
 
-### 1. Clonar Repositório
+## 📦 Instalação Local
+
+### **Pré-requisitos:**
+- Node.js 18+
+- PostgreSQL
+- npm ou yarn
+
+### **Passos:**
 
 ```bash
-git clone https://github.com/SEU_USUARIO/sushiworld.git
+# 1. Clonar repositório
+git clone https://github.com/seu-usuario/sushiworld.git
 cd sushiworld
-```
 
-### 2. Instalar Dependências
-
-```bash
+# 2. Instalar dependências
 npm install
-```
 
-### 3. Configurar Variáveis de Ambiente
+# 3. Configurar variáveis de ambiente
+cp .env.example .env
+# Edite o arquivo .env com suas configurações
 
-```bash
-# Copiar arquivo de exemplo
-cp .env.example .env.local
+# 4. Executar migrations
+npx prisma migrate dev
 
-# Editar .env.local com suas credenciais
-```
+# 5. (Opcional) Seed do banco
+npx prisma db seed
 
-### 4. Configurar Banco de Dados
-
-```bash
-# Gerar Prisma Client
-npx prisma generate
-
-# Sincronizar schema
-npx prisma db push
-
-# (Opcional) Abrir Prisma Studio
-npx prisma studio
-```
-
-### 5. Criar Usuário Admin
-
-```bash
-npx tsx scripts/create-admin.ts
-```
-
-### 6. Rodar Projeto
-
-```bash
-# Desenvolvimento
+# 6. Iniciar servidor de desenvolvimento
 npm run dev
-
-# Produção
-npm run build
-npm start
 ```
 
-## 🔐 Login Admin
+Acesse: `http://localhost:3000`
 
-Após criar o usuário admin:
+---
 
-- **URL**: http://localhost:3000/login
-- **Email**: admin@sushiworld.pt
-- **Senha**: admin123 (trocar no primeiro login)
+## 🌐 Deploy
 
-## 📁 Estrutura do Projeto
+Veja o guia completo em [DEPLOY.md](./DEPLOY.md)
 
-```
-sushiworld/
-├── src/
-│   ├── app/
-│   │   ├── (admin)/          # Painel administrativo
-│   │   ├── (cliente)/         # Site do cliente
-│   │   └── api/               # APIs REST
-│   ├── components/
-│   │   ├── admin/             # Componentes do admin
-│   │   └── cliente/           # Componentes do site
-│   ├── lib/
-│   │   ├── auth.ts            # Configuração NextAuth
-│   │   ├── db.ts              # Prisma Client
-│   │   ├── constants.ts       # Constantes globais
-│   │   └── utils.ts           # Funções auxiliares
-│   └── prisma/
-│       └── schema.prisma      # Schema do banco
-├── public/
-│   ├── produtos.webp/         # Imagens dos produtos (78 fotos)
-│   └── logo.webp/             # Logo do restaurante
-├── scripts/
-│   ├── create-admin.ts        # Criar usuário admin
-│   └── setup.ts               # Setup automático
-└── docs/                      # Documentação
-```
+**Resumo:**
+1. Configure o banco de dados (Supabase/Neon/Railway)
+2. Faça push para o GitHub
+3. Conecte na Vercel
+4. Configure variáveis de ambiente
+5. Deploy automático! 🚀
 
-## 🎨 Design System
-
-### Cores
-- **Primary**: `#FF6B00` (Laranja)
-- **Background**: `#f5f1e9`
-- **Text**: `#333333`
-- **Secondary**: `#a16b45`
-
-### Fontes
-- **Display**: Plus Jakarta Sans
+---
 
 ## 📝 Variáveis de Ambiente
 
 ```env
 # Banco de Dados
 DATABASE_URL="postgresql://..."
-DIRECT_URL="postgresql://..."
 
-# NextAuth
-NEXTAUTH_SECRET="[GERAR_COM_openssl_rand_-base64_32]"
+# Autenticação
+NEXTAUTH_SECRET="sua-chave-secreta"
 NEXTAUTH_URL="http://localhost:3000"
-
-# Supabase (Opcional)
-NEXT_PUBLIC_SUPABASE_URL="https://..."
-NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
 ```
 
-## 🚀 Deploy
+Veja `.env.example` para todas as variáveis.
 
-### Vercel (Recomendado)
+---
 
-1. Push para GitHub
-2. Conectar repositório na Vercel
-3. Configurar variáveis de ambiente
-4. Deploy automático
+## 🗂️ Estrutura do Projeto
 
-Veja [DEPLOY-GITHUB.md](./DEPLOY-GITHUB.md) para instruções detalhadas.
+```
+src/
+├── app/                    # Rotas Next.js
+│   ├── (admin)/           # Painel administrativo
+│   ├── (cliente)/         # Site público
+│   └── api/               # API Routes
+├── components/            # Componentes React
+│   ├── admin/            # Componentes do admin
+│   ├── cliente/          # Componentes do site
+│   └── ui/               # Componentes UI (Shadcn)
+├── contexts/             # Context API (Carrinho, etc)
+├── lib/                  # Utilitários e configurações
+└── types/                # TypeScript types
 
-## 📚 Documentação
+prisma/
+└── schema.prisma         # Schema do banco de dados
 
-- [Guia de Setup Completo](./SETUP-COMPLETO.md)
-- [Quick Start](./QUICKSTART.md)
-- [Implementação do Admin](./ADMIN-PANEL-IMPLEMENTATION.md)
-- [Deploy no GitHub](./DEPLOY-GITHUB.md)
+public/
+├── logo.webp/           # Logo e assets
+└── produtos/            # Imagens dos produtos
+```
 
-## 🔒 Segurança
+---
+
+## 🔐 Segurança
 
 - ✅ Autenticação com NextAuth
-- ✅ Senhas hash com bcrypt
-- ✅ Proteção de rotas por role
+- ✅ Proteção de rotas admin
 - ✅ Validação de dados com Zod
+- ✅ Sanitização de HTML
 - ✅ CSRF protection
-- ✅ Rate limiting (em produção)
+- ✅ Variáveis de ambiente seguras
 
-## 🤝 Contribuindo
+---
 
-1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -m '✨ feat: Nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
+## 📱 Responsividade
+
+- ✅ Mobile (320px+)
+- ✅ Tablet (768px+)
+- ✅ Desktop (1024px+)
+- ✅ Large Desktop (1440px+)
+
+---
+
+## 🎨 Tema
+
+**Cores:**
+- Primária: `#FF6B00` (Laranja)
+- Background Light: `#f5f1e9` (Bege claro)
+- Background Dark: `#23170f` (Marrom escuro)
+- Texto: `#333333` (Cinza escuro)
+
+---
 
 ## 📄 Licença
 
-Este projeto é privado e proprietário.
+Este projeto é proprietário e confidencial.
 
-## 📞 Contato
+---
 
-- **Restaurante**: SushiWorld Santa Iria
-- **Telefone**: +351 934 841 148
-- **Email**: pedidosushiworld@gmail.com
-- **Endereço**: Santa Iria
+## 👨‍💻 Desenvolvimento
+
+```bash
+# Desenvolvimento
+npm run dev
+
+# Build
+npm run build
+
+# Start produção
+npm start
+
+# Prisma Studio
+npx prisma studio
+
+# Verificar tipos
+npm run type-check
+
+# Lint
+npm run lint
+```
+
+---
+
+## 🆘 Suporte
+
+Para suporte, entre em contato:
+- Email: pedidosushiworld@gmail.com
+- Telefone: +351 934 841 148
 
 ---
 

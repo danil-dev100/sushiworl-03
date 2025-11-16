@@ -5,13 +5,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Menu, X, ShoppingCart } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useCart } from '@/contexts/CartContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { totalItems } = useCart();
   
-  // TODO: Substituir por estado real do carrinho
-  const cartItemsCount = 0;
+  const cartItemsCount = totalItems;
 
   const menuItems = [
     { href: '/', label: 'Início' },

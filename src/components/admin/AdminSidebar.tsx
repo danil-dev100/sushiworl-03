@@ -51,7 +51,7 @@ const menuItems = [
   {
     label: 'Áreas Entrega',
     icon: MapPin,
-    href: '/admin/areas-entrega',
+    href: '/admin/configuracoes/areas-entrega',
   },
   {
     label: 'Marketing',

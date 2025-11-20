@@ -14,6 +14,11 @@ import {
   Link2,
   Copy,
   Check,
+  Info,
+  UserPlus,
+  UserCheck,
+  Tag,
+  TrendingDown as DiscountIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +38,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {
@@ -78,7 +89,11 @@ type PeriodFilter = '7' | '30' | '90' | 'custom';
 
 type MetricsData = {
   revenue: { current: number; previous: number; growth: number };
+  revenueWithoutDiscount: number;
+  revenueWithDiscount: number;
   orders: { current: number; previous: number; growth: number };
+  newOrders: number;
+  recurringOrders: number;
   customers: { current: number; previous: number; growth: number };
   avgTicket: { current: number; previous: number; growth: number };
   ltv: number;
@@ -95,10 +110,45 @@ type MarketingData = {
     usageCount: number;
     discountValue: number;
     discountType: string;
+    evolution: Array<{ date: string; uses: number; revenue: number }>;
   }>;
   promotionsByType: Record<string, number>;
   totalSavings: number;
   totalPromotionUses: number;
+};
+
+type UTMData = {
+  sources: Array<{
+    source: string;
+    orders: number;
+    revenue: number;
+    customers: number;
+    avgTicket: number;
+    evolution: Array<{ date: string; orders: number; revenue: number }>;
+  }>;
+  campaigns: Array<{
+    campaign: string;
+    source: string;
+    medium: string;
+    orders: number;
+    revenue: number;
+    customers: number;
+  }>;
+  totalUTMOrders: number;
+  totalUTMRevenue: number;
+};
+
+type UTMLink = {
+  id: string;
+  url: string;
+  utmSource: string;
+  utmMedium: string;
+  utmCampaign: string;
+  clicks: number;
+  conversions: number;
+  revenue: number;
+  avgOrderValue: number;
+  conversionRate: number;
 };
 
 export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
@@ -108,7 +158,11 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
   const [metrics, setMetrics] = useState<MetricsData | null>(null);
   const [charts, setCharts] = useState<any>(null);
   const [marketing, setMarketing] = useState<MarketingData | null>(null);
+  const [utmData, setUtmData] = useState<UTMData | null>(null);
+  const [utmLinks, setUtmLinks] = useState<UTMLink[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingUTMLinks, setIsLoadingUTMLinks] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [isUTMDialogOpen, setIsUTMDialogOpen] = useState(false);
   const [utmParams, setUtmParams] = useState({
     url: '',
@@ -119,6 +173,9 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
     content: '',
   });
   const [copiedUTM, setCopiedUTM] = useState(false);
+  const [pieChartType, setPieChartType] = useState<'category' | 'promotion' | 'utm'>('category');
+  const [selectedPromotion, setSelectedPromotion] = useState<string>('');
+  const [comparisonPeriod, setComparisonPeriod] = useState<'6months' | '3years'>('6months');
 
   const loadMetrics = async () => {
     setIsLoading(true);
@@ -142,6 +199,7 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
       setMetrics(data.metrics);
       setCharts(data.charts);
       setMarketing(data.marketing);
+      setUtmData(data.utm);
     } catch (error) {
       console.error('Erro ao carregar relatórios:', error);
       
@@ -157,7 +215,26 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
 
   useEffect(() => {
     loadMetrics();
+    loadUTMLinks();
   }, [period, customStart, customEnd]);
+
+  const loadUTMLinks = async () => {
+    setIsLoadingUTMLinks(true);
+    try {
+      const response = await fetch('/api/admin/analytics/utm-links');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao carregar links UTM');
+      }
+
+      setUtmLinks(data.utmLinks || []);
+    } catch (error) {
+      console.error('Erro ao carregar links UTM:', error);
+    } finally {
+      setIsLoadingUTMLinks(false);
+    }
+  };
 
   const generatedUTM = useMemo(() => {
     if (!utmParams.url || !utmParams.source || !utmParams.medium || !utmParams.campaign) {
@@ -185,7 +262,65 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
     setCopiedUTM(true);
     toast.success('Link copiado para a área de transferência!');
     
+    // Salvar link gerado no banco
+    try {
+      await fetch('/api/admin/analytics/utm-links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: utmParams.url,
+          utmSource: utmParams.source,
+          utmMedium: utmParams.medium,
+          utmCampaign: utmParams.campaign,
+          utmTerm: utmParams.term,
+          utmContent: utmParams.content,
+        }),
+      });
+      
+      // Recarregar lista de links
+      loadUTMLinks();
+    } catch (error) {
+      console.error('Erro ao salvar link UTM:', error);
+    }
+    
     setTimeout(() => setCopiedUTM(false), 2000);
+  };
+
+  const handleExportCSV = async () => {
+    setIsExporting(true);
+    try {
+      const params = new URLSearchParams();
+      
+      if (period === 'custom' && customStart && customEnd) {
+        params.append('startDate', customStart);
+        params.append('endDate', customEnd);
+      } else {
+        params.append('days', period);
+      }
+
+      const response = await fetch(`/api/admin/analytics/export?${params.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error('Erro ao exportar dados');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `relatorio-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success('Relatório exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar relatório');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Configuração dos gráficos
@@ -254,6 +389,179 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
       }
     : null;
 
+  // Gráfico de pizza dinâmico
+  const pieChartData = useMemo(() => {
+    if (pieChartType === 'category' && charts?.salesByCategory) {
+      const hasData = Object.keys(charts.salesByCategory).length > 0;
+      if (!hasData) return null;
+      
+      return {
+        labels: Object.keys(charts.salesByCategory),
+        datasets: [
+          {
+            data: Object.values(charts.salesByCategory),
+            backgroundColor: [
+              '#FF6B00',
+              '#FFB84D',
+              '#FF8C00',
+              '#FFA500',
+              '#FFD700',
+              '#FFC107',
+              '#FF9800',
+              '#FF5722',
+            ],
+            borderColor: '#fff',
+            borderWidth: 2,
+          },
+        ],
+      };
+    } else if (pieChartType === 'promotion' && marketing?.promotionsByType) {
+      const hasData = Object.keys(marketing.promotionsByType).length > 0;
+      if (!hasData) return null;
+      
+      return {
+        labels: Object.keys(marketing.promotionsByType).map((type) => {
+          const labels: Record<string, string> = {
+            COUPON: '🎟️ Cupons',
+            FIRST_PURCHASE: '🎁 Primeira Compra',
+            ORDER_BUMP: '📦 Order Bump',
+            UP_SELL: '⬆️ Up-sell',
+            DOWN_SELL: '⬇️ Down-sell',
+          };
+          return labels[type] || type;
+        }),
+        datasets: [
+          {
+            data: Object.values(marketing.promotionsByType),
+            backgroundColor: [
+              '#FF6B00',
+              '#4CAF50',
+              '#2196F3',
+              '#FFC107',
+              '#9C27B0',
+            ],
+            borderColor: '#fff',
+            borderWidth: 2,
+          },
+        ],
+      };
+    } else if (pieChartType === 'utm' && utmData?.sources && utmData.sources.length > 0) {
+      return {
+        labels: utmData.sources.map((s) => s.source),
+        datasets: [
+          {
+            data: utmData.sources.map((s) => s.revenue),
+            backgroundColor: [
+              '#FF6B00',
+              '#E91E63',
+              '#9C27B0',
+              '#3F51B5',
+              '#2196F3',
+              '#00BCD4',
+              '#009688',
+              '#4CAF50',
+            ],
+            borderColor: '#fff',
+            borderWidth: 2,
+          },
+        ],
+      };
+    }
+    
+    // Se não houver dados para o tipo selecionado, tenta outro tipo
+    if (pieChartType === 'promotion' && charts?.salesByCategory && Object.keys(charts.salesByCategory).length > 0) {
+      return {
+        labels: Object.keys(charts.salesByCategory),
+        datasets: [
+          {
+            data: Object.values(charts.salesByCategory),
+            backgroundColor: [
+              '#FF6B00',
+              '#FFB84D',
+              '#FF8C00',
+              '#FFA500',
+              '#FFD700',
+              '#FFC107',
+              '#FF9800',
+              '#FF5722',
+            ],
+            borderColor: '#fff',
+            borderWidth: 2,
+          },
+        ],
+      };
+    }
+    
+    return null;
+  }, [pieChartType, charts, marketing, utmData]);
+
+  // Gráfico de evolução de promoção selecionada
+  const promotionEvolutionData = useMemo(() => {
+    if (!selectedPromotion || !marketing) return null;
+
+    const promo = marketing.promotions.find((p) => p.id === selectedPromotion);
+    if (!promo?.evolution || promo.evolution.length === 0) return null;
+
+    return {
+      labels: promo.evolution.map((e) => e.date),
+      datasets: [
+        {
+          label: 'Usos',
+          data: promo.evolution.map((e) => e.uses),
+          borderColor: '#FF6B00',
+          backgroundColor: 'rgba(255, 107, 0, 0.1)',
+          yAxisID: 'y',
+          tension: 0.3,
+          fill: true,
+        },
+        {
+          label: 'Receita (€)',
+          data: promo.evolution.map((e) => e.revenue),
+          borderColor: '#4CAF50',
+          backgroundColor: 'rgba(76, 175, 80, 0.1)',
+          yAxisID: 'y1',
+          tension: 0.3,
+          fill: true,
+        },
+      ],
+    };
+  }, [selectedPromotion, marketing]);
+
+  const promotionEvolutionOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: {
+          color: '#333333',
+          font: { family: 'Inter, sans-serif' },
+        },
+      },
+    },
+    scales: {
+      y: {
+        type: 'linear' as const,
+        display: true,
+        position: 'left' as const,
+        beginAtZero: true,
+        grid: { color: 'rgba(234, 217, 205, 0.3)' },
+        ticks: { color: '#a16b45' },
+      },
+      y1: {
+        type: 'linear' as const,
+        display: true,
+        position: 'right' as const,
+        beginAtZero: true,
+        grid: { drawOnChartArea: false },
+        ticks: { color: '#a16b45' },
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: '#a16b45' },
+      },
+    },
+  };
+
   return (
     <div className="flex h-full flex-col gap-6">
       <header className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
@@ -315,6 +623,16 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
             <Link2 className="h-4 w-4" />
             Gerador UTM
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCSV}
+            disabled={isExporting}
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            {isExporting ? 'Exportando...' : 'Exportar CSV'}
+          </Button>
         </div>
       </header>
 
@@ -356,42 +674,80 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
               value={`€${metrics.revenue.current.toFixed(2)}`}
               growth={metrics.revenue.growth}
               icon={DollarSign}
+              tooltip="Valor total de vendas no período selecionado, comparado com o período anterior de igual duração."
             />
             <MetricCard
               title="Pedidos"
               value={metrics.orders.current.toString()}
               growth={metrics.orders.growth}
               icon={ShoppingCart}
+              tooltip="Número total de pedidos realizados, incluindo novos clientes e recorrentes."
             />
             <MetricCard
               title="Clientes"
               value={metrics.customers.current.toString()}
               growth={metrics.customers.growth}
               icon={Users}
+              tooltip="Número de clientes únicos que fizeram pedidos no período."
             />
             <MetricCard
               title="Ticket Médio"
               value={`€${metrics.avgTicket.current.toFixed(2)}`}
               growth={metrics.avgTicket.growth}
               icon={BarChart3}
+              tooltip="Valor médio por pedido (Receita Total ÷ Número de Pedidos)."
             />
           </section>
 
-          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <StatCard
               title="LTV (Lifetime Value)"
               value={`€${metrics.ltv.toFixed(2)}`}
               subtitle="Valor médio por cliente"
+              tooltip="Valor médio que cada cliente gera durante todo o tempo de relacionamento com a empresa."
             />
             <StatCard
               title="Taxa de Retenção"
               value={`${metrics.retentionRate.toFixed(1)}%`}
               subtitle="Clientes que retornam"
+              tooltip="Percentual de clientes que fizeram mais de uma compra."
             />
             <StatCard
               title="Primeiras Compras"
               value={`${metrics.firstPurchaseRate.toFixed(1)}%`}
               subtitle="Novos clientes"
+              tooltip="Percentual de pedidos feitos por clientes novos (primeira compra)."
+            />
+            <StatCard
+              title="Pedidos Novos"
+              value={metrics.newOrders.toString()}
+              subtitle="Primeira compra"
+              tooltip="Quantidade de pedidos de clientes fazendo sua primeira compra."
+              icon={UserPlus}
+            />
+            <StatCard
+              title="Pedidos Recorrentes"
+              value={metrics.recurringOrders.toString()}
+              subtitle="Clientes retornando"
+              tooltip="Quantidade de pedidos de clientes que já compraram antes."
+              icon={UserCheck}
+            />
+          </section>
+
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
+            <StatCard
+              title="Receita Sem Desconto"
+              value={`€${metrics.revenueWithoutDiscount.toFixed(2)}`}
+              subtitle="Valor total sem promoções"
+              tooltip="Valor total que seria gerado se não houvesse descontos aplicados."
+              icon={Tag}
+            />
+            <StatCard
+              title="Receita Com Desconto"
+              value={`€${metrics.revenueWithDiscount.toFixed(2)}`}
+              subtitle={`Economia: €${(metrics.revenueWithoutDiscount - metrics.revenueWithDiscount).toFixed(2)}`}
+              tooltip="Valor total após aplicação de descontos e promoções. A economia representa o valor total em descontos concedidos."
+              icon={DiscountIcon}
             />
           </section>
 
@@ -410,6 +766,64 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
                   <div className="h-64">
                     <Line data={dailyOrdersData} options={chartOptions} />
                   </div>
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Gráfico de Pizza Dinâmico */}
+          {pieChartData && (
+            <section className="rounded-xl border border-[#ead9cd] bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-[#333333]">Análise por</h3>
+                  <InfoTooltip text="Selecione o tipo de dado que deseja visualizar no gráfico de pizza." />
+                </div>
+                <Select value={pieChartType} onValueChange={(value: any) => setPieChartType(value)}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="category">Categorias</SelectItem>
+                    <SelectItem value="promotion">Promoções</SelectItem>
+                    <SelectItem value="utm">Fontes UTM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="h-80 flex items-center justify-center">
+                <Pie data={pieChartData} options={{ ...chartOptions, maintainAspectRatio: true }} />
+              </div>
+            </section>
+          )}
+
+          {/* Evolução de Promoção Específica */}
+          {marketing && marketing.promotions.length > 0 && (
+            <section className="rounded-xl border border-[#ead9cd] bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-[#333333]">Evolução de Campanha</h3>
+                  <InfoTooltip text="Acompanhe a performance diária de uma promoção específica, incluindo número de usos e receita gerada." />
+                </div>
+                <Select value={selectedPromotion} onValueChange={setSelectedPromotion}>
+                  <SelectTrigger className="w-64">
+                    <SelectValue placeholder="Selecione uma promoção" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {marketing.promotions.map((promo) => (
+                      <SelectItem key={promo.id} value={promo.id}>
+                        {promo.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {promotionEvolutionData ? (
+                <div className="h-80">
+                  <Line data={promotionEvolutionData} options={promotionEvolutionOptions} />
+                </div>
+              ) : (
+                <div className="flex h-40 items-center justify-center text-[#a16b45]">
+                  <p>Selecione uma promoção para ver sua evolução</p>
                 </div>
               )}
             </section>
@@ -487,6 +901,217 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
               </section>
             </>
           )}
+
+          {/* Performance de UTM */}
+          {utmData && utmData.sources.length > 0 && (
+            <>
+              <section className="rounded-xl border border-[#ead9cd] bg-white p-6 shadow-sm">
+                <div className="mb-4 flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-[#333333]">Performance por Fonte UTM</h3>
+                  <InfoTooltip text="Análise de pedidos e receita por fonte de tráfego (utm_source). Use o gerador de UTM para criar links rastreáveis." />
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-6">
+                  <div className="rounded-lg border border-[#ead9cd] bg-[#f5f1e9] p-4">
+                    <p className="text-sm font-medium text-[#a16b45]">Pedidos com UTM</p>
+                    <p className="mt-1 text-2xl font-bold text-[#333333]">{utmData.totalUTMOrders}</p>
+                    <p className="mt-1 text-xs text-[#a16b45]">
+                      {metrics ? ((utmData.totalUTMOrders / metrics.orders.current) * 100).toFixed(1) : 0}% do total
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-[#ead9cd] bg-[#f5f1e9] p-4">
+                    <p className="text-sm font-medium text-[#a16b45]">Receita com UTM</p>
+                    <p className="mt-1 text-2xl font-bold text-[#333333]">€{utmData.totalUTMRevenue.toFixed(2)}</p>
+                    <p className="mt-1 text-xs text-[#a16b45]">
+                      {metrics ? ((utmData.totalUTMRevenue / metrics.revenue.current) * 100).toFixed(1) : 0}% do total
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-[#ead9cd] bg-[#f5f1e9] p-4">
+                    <p className="text-sm font-medium text-[#a16b45]">Fontes Ativas</p>
+                    <p className="mt-1 text-2xl font-bold text-[#333333]">{utmData.sources.length}</p>
+                    <p className="mt-1 text-xs text-[#a16b45]">Canais com vendas</p>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-[#ead9cd] bg-[#f5f1e9]">
+                        <th className="px-4 py-2 text-left text-xs font-medium text-[#a16b45]">Fonte</th>
+                        <th className="px-4 py-2 text-right text-xs font-medium text-[#a16b45]">Pedidos</th>
+                        <th className="px-4 py-2 text-right text-xs font-medium text-[#a16b45]">Receita</th>
+                        <th className="px-4 py-2 text-right text-xs font-medium text-[#a16b45]">Clientes</th>
+                        <th className="px-4 py-2 text-right text-xs font-medium text-[#a16b45]">Ticket Médio</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {utmData.sources.map((source) => (
+                        <tr key={source.source} className="border-b border-[#ead9cd]">
+                          <td className="px-4 py-3 text-sm font-medium text-[#333333]">{source.source}</td>
+                          <td className="px-4 py-3 text-right text-sm text-[#333333]">{source.orders}</td>
+                          <td className="px-4 py-3 text-right text-sm font-semibold text-[#FF6B00]">
+                            €{source.revenue.toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3 text-right text-sm text-[#333333]">{source.customers}</td>
+                          <td className="px-4 py-3 text-right text-sm text-[#333333]">
+                            €{source.avgTicket.toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              {utmData.campaigns.length > 0 && (
+                <section className="rounded-xl border border-[#ead9cd] bg-white p-6 shadow-sm">
+                  <div className="mb-4 flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-[#333333]">Campanhas Detalhadas</h3>
+                    <InfoTooltip text="Performance individual de cada campanha (utm_campaign), mostrando fonte, meio e resultados." />
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-[#ead9cd] bg-[#f5f1e9]">
+                          <th className="px-4 py-2 text-left text-xs font-medium text-[#a16b45]">Campanha</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-[#a16b45]">Fonte</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-[#a16b45]">Meio</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-[#a16b45]">Pedidos</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-[#a16b45]">Receita</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-[#a16b45]">Clientes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {utmData.campaigns.map((campaign, idx) => (
+                          <tr key={idx} className="border-b border-[#ead9cd]">
+                            <td className="px-4 py-3 text-sm font-medium text-[#333333]">{campaign.campaign}</td>
+                            <td className="px-4 py-3 text-sm text-[#a16b45]">{campaign.source}</td>
+                            <td className="px-4 py-3 text-sm text-[#a16b45]">{campaign.medium}</td>
+                            <td className="px-4 py-3 text-right text-sm text-[#333333]">{campaign.orders}</td>
+                            <td className="px-4 py-3 text-right text-sm font-semibold text-[#FF6B00]">
+                              €{campaign.revenue.toFixed(2)}
+                            </td>
+                            <td className="px-4 py-3 text-right text-sm text-[#333333]">{campaign.customers}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              )}
+            </>
+          )}
+
+          {/* Links UTM Gerados */}
+          <section className="rounded-xl border border-[#ead9cd] bg-white p-6 shadow-sm">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-[#333333]">Links UTM Gerados</h3>
+                <InfoTooltip text="Histórico de links UTM criados pelo gerador, com estatísticas de cliques, conversões e receita gerada por cada link." />
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadUTMLinks}
+                disabled={isLoadingUTMLinks}
+              >
+                {isLoadingUTMLinks ? 'Atualizando...' : 'Atualizar'}
+              </Button>
+            </div>
+
+            {utmLinks.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-[#ead9cd] bg-[#f5f1e9]">
+                      <th className="px-4 py-2 text-left text-xs font-medium text-[#a16b45]">
+                        Link / Campanha
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium text-[#a16b45]">
+                        <div className="flex items-center justify-center gap-1">
+                          Cliques
+                          <InfoTooltip text="Número de visitantes que acessaram o site através deste link." />
+                        </div>
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium text-[#a16b45]">
+                        <div className="flex items-center justify-center gap-1">
+                          Conversões
+                          <InfoTooltip text="Número de pedidos realizados por visitantes que vieram deste link." />
+                        </div>
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium text-[#a16b45]">
+                        <div className="flex items-center justify-center gap-1">
+                          Taxa Conv.
+                          <InfoTooltip text="Percentual de visitantes que realizaram pedido (Conversões ÷ Cliques × 100)." />
+                        </div>
+                      </th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-[#a16b45]">
+                        <div className="flex items-center justify-end gap-1">
+                          Receita
+                          <InfoTooltip text="Valor total em vendas geradas por este link." />
+                        </div>
+                      </th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-[#a16b45]">
+                        <div className="flex items-center justify-end gap-1">
+                          Ticket Médio
+                          <InfoTooltip text="Valor médio por pedido (Receita ÷ Conversões)." />
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {utmLinks.map((link) => (
+                      <tr key={link.id} className="border-b border-[#ead9cd] hover:bg-[#f5f1e9]/50">
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-[#333333]">
+                              {link.utmCampaign}
+                            </span>
+                            <span className="text-xs text-[#a16b45]">
+                              {link.utmSource} / {link.utmMedium}
+                            </span>
+                            <span className="text-xs font-mono text-[#a16b45]">
+                              {link.url}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="inline-flex items-center justify-center rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800">
+                            {link.clicks}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="inline-flex items-center justify-center rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-800">
+                            {link.conversions}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="text-sm font-semibold text-[#333333]">
+                            {link.conversionRate.toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span className="text-sm font-bold text-[#FF6B00]">
+                            €{link.revenue.toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span className="text-sm text-[#333333]">
+                            €{link.avgOrderValue.toFixed(2)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="flex h-32 flex-col items-center justify-center text-[#a16b45]">
+                <Link2 className="mb-2 h-8 w-8 opacity-50" />
+                <p className="text-sm">Nenhum link UTM gerado ainda</p>
+                <p className="text-xs">Use o Gerador UTM para criar links rastreáveis</p>
+              </div>
+            )}
+          </section>
         </>
       ) : null}
 
@@ -501,7 +1126,10 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="utm-url">URL do Site *</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="utm-url">URL do Site *</Label>
+                <InfoTooltip text="URL completa da página de destino onde o visitante chegará ao clicar no link." />
+              </div>
               <Input
                 id="utm-url"
                 placeholder="https://sushiworld.pt"
@@ -511,7 +1139,10 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="utm-source">Origem (Source) *</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="utm-source">Origem (Source) *</Label>
+                  <InfoTooltip text="De onde vem o tráfego. Ex: google, facebook, instagram, newsletter" />
+                </div>
                 <Input
                   id="utm-source"
                   placeholder="google, facebook, instagram"
@@ -520,7 +1151,10 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="utm-medium">Meio (Medium) *</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="utm-medium">Meio (Medium) *</Label>
+                  <InfoTooltip text="Tipo de canal de marketing. Ex: cpc (anúncio pago), email, social, organic" />
+                </div>
                 <Input
                   id="utm-medium"
                   placeholder="cpc, email, social"
@@ -530,7 +1164,10 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="utm-campaign">Campanha (Campaign) *</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="utm-campaign">Campanha (Campaign) *</Label>
+                <InfoTooltip text="Nome identificador da campanha. Ex: promo-verao-2025, black-friday, lancamento-produto" />
+              </div>
               <Input
                 id="utm-campaign"
                 placeholder="promo-verao, black-friday"
@@ -540,7 +1177,10 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="utm-term">Termo (Term)</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="utm-term">Termo (Term)</Label>
+                  <InfoTooltip text="Palavra-chave paga (para Google Ads). Ex: sushi-delivery, comida-japonesa" />
+                </div>
                 <Input
                   id="utm-term"
                   placeholder="palavra-chave"
@@ -549,7 +1189,10 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="utm-content">Conteúdo (Content)</Label>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="utm-content">Conteúdo (Content)</Label>
+                  <InfoTooltip text="Diferencia anúncios ou links similares. Ex: banner-topo, link-bio, story-1" />
+                </div>
                 <Input
                   id="utm-content"
                   placeholder="banner-1, link-bio"
@@ -581,20 +1224,40 @@ export function ReportsPageContent({ currentUser }: ReportsPageContentProps) {
   );
 }
 
+// Componente de tooltip informativo
+function InfoTooltip({ text }: { text: string }) {
+  return (
+    <TooltipProvider>
+      <UITooltip>
+        <TooltipTrigger asChild>
+          <Info className="h-4 w-4 cursor-help text-[#a16b45] hover:text-[#FF6B00]" />
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs">
+          <p>{text}</p>
+        </TooltipContent>
+      </UITooltip>
+    </TooltipProvider>
+  );
+}
+
 type MetricCardProps = {
   title: string;
   value: string;
   growth: number;
   icon: React.ElementType;
+  tooltip?: string;
 };
 
-function MetricCard({ title, value, growth, icon: Icon }: MetricCardProps) {
+function MetricCard({ title, value, growth, icon: Icon, tooltip }: MetricCardProps) {
   const isPositive = growth >= 0;
   
   return (
     <div className="rounded-xl border border-[#ead9cd] bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-[#a16b45]">{title}</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-medium text-[#a16b45]">{title}</h2>
+          {tooltip && <InfoTooltip text={tooltip} />}
+        </div>
         <div
           className={cn(
             'flex items-center gap-1 text-sm font-semibold',
@@ -623,14 +1286,28 @@ type StatCardProps = {
   title: string;
   value: string;
   subtitle: string;
+  tooltip?: string;
+  icon?: React.ElementType;
 };
 
-function StatCard({ title, value, subtitle }: StatCardProps) {
+function StatCard({ title, value, subtitle, tooltip, icon: Icon }: StatCardProps) {
   return (
     <div className="rounded-xl border border-[#ead9cd] bg-white p-4 shadow-sm">
-      <h2 className="text-sm font-medium text-[#a16b45]">{title}</h2>
-      <p className="mt-1 text-2xl font-bold text-[#333333]">{value}</p>
-      <p className="mt-1 text-xs text-[#a16b45]">{subtitle}</p>
+      <div className="flex items-center gap-2">
+        <h2 className="text-sm font-medium text-[#a16b45]">{title}</h2>
+        {tooltip && <InfoTooltip text={tooltip} />}
+      </div>
+      <div className="mt-2 flex items-center gap-3">
+        {Icon && (
+          <div className="rounded-full bg-[#FF6B00]/10 p-2">
+            <Icon className="h-5 w-5 text-[#FF6B00]" />
+          </div>
+        )}
+        <div>
+          <p className="text-2xl font-bold text-[#333333]">{value}</p>
+          <p className="mt-1 text-xs text-[#a16b45]">{subtitle}</p>
+        </div>
+      </div>
     </div>
   );
 }

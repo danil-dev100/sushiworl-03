@@ -157,19 +157,44 @@ export async function GET(request: NextRequest) {
       dailyOrders[date] = (dailyOrders[date] || 0) + 1;
     });
 
-    // Primeiras compras (simplificado - verificar se usuário tem apenas este pedido)
+    // Primeiras compras vs pedidos recorrentes
     const userOrderCounts = new Map<string, number>();
-    currentOrders.forEach((order) => {
+    let newOrders = 0;
+    let recurringOrders = 0;
+
+    for (const order of currentOrders) {
       if (order.userId) {
-        userOrderCounts.set(order.userId, (userOrderCounts.get(order.userId) || 0) + 1);
+        // Verificar se é primeira compra do usuário
+        const previousOrders = await prisma.order.count({
+          where: {
+            userId: order.userId,
+            createdAt: {
+              lt: order.createdAt,
+            },
+          },
+        });
+
+        if (previousOrders === 0) {
+          newOrders++;
+        } else {
+          recurringOrders++;
+        }
+      } else {
+        // Se não tem userId, considera como novo (guest)
+        newOrders++;
       }
-    });
-    
-    const firstPurchases = Array.from(userOrderCounts.values()).filter(count => count === 1).length;
+    }
 
-    const firstPurchaseRate = currentOrderCount > 0 ? (firstPurchases / currentOrderCount) * 100 : 0;
+    const firstPurchaseRate = currentOrderCount > 0 ? (newOrders / currentOrderCount) * 100 : 0;
 
-    // Promoções usadas
+    // Calcular valores com e sem desconto
+    const revenueWithDiscount = currentRevenue;
+    const revenueWithoutDiscount = currentOrders.reduce(
+      (sum, order) => sum + order.subtotal,
+      0
+    );
+
+    // Promoções usadas com evolução
     const promotionsUsed = await prisma.promotion.findMany({
       where: {
         usageCount: {
@@ -183,22 +208,152 @@ export async function GET(request: NextRequest) {
         usageCount: true,
         discountValue: true,
         discountType: true,
+        orders: {
+          where: {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+          select: {
+            createdAt: true,
+            total: true,
+            discount: true,
+          },
+        },
       },
     });
 
+    // Evolução diária de cada promoção
+    const promotionsWithEvolution = promotionsUsed.map((promo) => {
+      const evolutionMap = new Map<string, { uses: number; revenue: number }>();
+      
+      promo.orders.forEach((order) => {
+        const date = order.createdAt.toISOString().split('T')[0];
+        const current = evolutionMap.get(date) || { uses: 0, revenue: 0 };
+        evolutionMap.set(date, {
+          uses: current.uses + 1,
+          revenue: current.revenue + order.total,
+        });
+      });
+
+      const evolution = Array.from(evolutionMap.entries())
+        .map(([date, data]) => ({ date, ...data }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      return {
+        id: promo.id,
+        name: promo.name,
+        type: promo.type,
+        usageCount: promo.usageCount,
+        discountValue: promo.discountValue,
+        discountType: promo.discountType,
+        evolution,
+      };
+    });
+
     // Métricas de marketing por tipo
-    const promotionsByType = promotionsUsed.reduce<Record<string, number>>((acc, promo) => {
+    const promotionsByType = promotionsWithEvolution.reduce<Record<string, number>>((acc, promo) => {
       acc[promo.type] = (acc[promo.type] || 0) + promo.usageCount;
       return acc;
     }, {});
 
     // Calcular economia total das promoções
-    const totalSavings = promotionsUsed.reduce((sum, promo) => {
-      const discountValue = promo.discountType === 'FIXED' 
-        ? promo.discountValue * promo.usageCount
-        : 0; // Para porcentagem, precisaria do valor dos pedidos
-      return sum + discountValue;
-    }, 0);
+    const totalSavings = currentOrders.reduce((sum, order) => sum + order.discount, 0);
+
+    // Dados de UTM
+    const utmOrders = currentOrders.filter((order) => order.utmSource);
+    
+    // Agrupar por fonte UTM
+    const utmSourcesMap = new Map<string, {
+      orders: number;
+      revenue: number;
+      customers: Set<string>;
+      evolution: Map<string, { orders: number; revenue: number }>;
+    }>();
+
+    utmOrders.forEach((order) => {
+      const source = order.utmSource || 'unknown';
+      const date = order.createdAt.toISOString().split('T')[0];
+      
+      if (!utmSourcesMap.has(source)) {
+        utmSourcesMap.set(source, {
+          orders: 0,
+          revenue: 0,
+          customers: new Set(),
+          evolution: new Map(),
+        });
+      }
+
+      const sourceData = utmSourcesMap.get(source)!;
+      sourceData.orders++;
+      sourceData.revenue += order.total;
+      if (order.userId) sourceData.customers.add(order.userId);
+
+      const evolutionData = sourceData.evolution.get(date) || { orders: 0, revenue: 0 };
+      sourceData.evolution.set(date, {
+        orders: evolutionData.orders + 1,
+        revenue: evolutionData.revenue + order.total,
+      });
+    });
+
+    const utmSources = Array.from(utmSourcesMap.entries()).map(([source, data]) => ({
+      source,
+      orders: data.orders,
+      revenue: data.revenue,
+      customers: data.customers.size,
+      avgTicket: data.orders > 0 ? data.revenue / data.orders : 0,
+      evolution: Array.from(data.evolution.entries())
+        .map(([date, evo]) => ({ date, ...evo }))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+    }));
+
+    // Dados de campanhas UTM detalhadas
+    const utmCampaignsMap = new Map<string, {
+      campaign: string;
+      source: string;
+      medium: string;
+      orders: number;
+      revenue: number;
+      customers: Set<string>;
+    }>();
+
+    currentOrders.forEach((order) => {
+      if (!order.utmSource) return;
+
+      // Buscar dados completos de UTM do usuário
+      const key = `${order.utmSource}-${order.userId || 'guest'}`;
+      const campaign = 'campaign'; // Placeholder - precisa ser capturado do usuário
+      const medium = 'medium'; // Placeholder
+      
+      if (!utmCampaignsMap.has(key)) {
+        utmCampaignsMap.set(key, {
+          campaign: campaign,
+          source: order.utmSource,
+          medium: medium,
+          orders: 0,
+          revenue: 0,
+          customers: new Set(),
+        });
+      }
+
+      const campaignData = utmCampaignsMap.get(key)!;
+      campaignData.orders++;
+      campaignData.revenue += order.total;
+      if (order.userId) campaignData.customers.add(order.userId);
+    });
+
+    const utmCampaigns = Array.from(utmCampaignsMap.values()).map((data) => ({
+      campaign: data.campaign,
+      source: data.source,
+      medium: data.medium,
+      orders: data.orders,
+      revenue: data.revenue,
+      customers: data.customers.size,
+    }));
+
+    const totalUTMOrders = utmOrders.length;
+    const totalUTMRevenue = utmOrders.reduce((sum, order) => sum + order.total, 0);
 
     return NextResponse.json({
       period: {
@@ -212,11 +367,15 @@ export async function GET(request: NextRequest) {
           previous: previousRevenue,
           growth: revenueGrowth,
         },
+        revenueWithoutDiscount,
+        revenueWithDiscount,
         orders: {
           current: currentOrderCount,
           previous: previousOrderCount,
           growth: orderGrowth,
         },
+        newOrders,
+        recurringOrders,
         customers: {
           current: uniqueCustomers,
           previous: previousUniqueCustomers,
@@ -237,10 +396,16 @@ export async function GET(request: NextRequest) {
         dailyOrders,
       },
       marketing: {
-        promotions: promotionsUsed,
+        promotions: promotionsWithEvolution,
         promotionsByType,
         totalSavings,
-        totalPromotionUses: promotionsUsed.reduce((sum, p) => sum + p.usageCount, 0),
+        totalPromotionUses: promotionsWithEvolution.reduce((sum, p) => sum + p.usageCount, 0),
+      },
+      utm: {
+        sources: utmSources,
+        campaigns: utmCampaigns,
+        totalUTMOrders,
+        totalUTMRevenue,
       },
     });
   } catch (error) {

@@ -85,6 +85,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import ImageUpload from '@/components/admin/ImageUpload';
+import { TooltipHelper } from '@/components/shared/TooltipHelper';
 
 type PromotionType = 'COUPON' | 'FIRST_PURCHASE' | 'ORDER_BUMP' | 'UP_SELL' | 'DOWN_SELL';
 type DiscountType = 'FIXED' | 'PERCENTAGE';
@@ -139,6 +140,7 @@ type HomeHeroSettings = {
   headline: string;
   headlineColor: string;
   headlineSize: number;
+  bannerHeight: number;
 };
 
 type PromotionsPageContentProps = {
@@ -211,6 +213,7 @@ const DEFAULT_HOME_HERO: HomeHeroSettings = {
   headline: 'SushiWorld: O Sabor do Japão na Sua Casa',
   headlineColor: '#FFFFFF',
   headlineSize: 4.5,
+  bannerHeight: 60,
 };
 
 const promotionFormSchema = z.object({
@@ -933,7 +936,13 @@ function HomeBannerConfigurator({
   isSaving,
   hasChanges,
 }: HomeBannerConfiguratorProps) {
-  const overlayPercent = Math.round(hero.overlayOpacity * 100);
+  const overlayOpacity =
+    typeof hero.overlayOpacity === 'number' ? hero.overlayOpacity : 0.4;
+  const overlayPercent = Math.round(overlayOpacity * 100);
+  const headlineSize =
+    typeof hero.headlineSize === 'number' ? hero.headlineSize : 4.5;
+  const headlineColor = hero.headlineColor || '#FFFFFF';
+  const headlineText = hero.headline ?? '';
   const previewBackground = {
     backgroundImage: hero.imageUrl ? `url(${hero.imageUrl})` : undefined,
     backgroundSize: 'cover',
@@ -941,7 +950,7 @@ function HomeBannerConfigurator({
   } as React.CSSProperties;
 
   const maskStyle: React.CSSProperties = {
-    background: hexToRgba(hero.overlayColor, hero.overlayOpacity),
+    background: hexToRgba(hero.overlayColor, overlayOpacity),
   };
 
   return (
@@ -970,13 +979,13 @@ function HomeBannerConfigurator({
                   <p
                     className="font-bold transition-all"
                     style={{
-                      color: hero.headlineColor,
-                      fontSize: `${hero.headlineSize / 2.5}rem`,
+                      color: headlineColor,
+                      fontSize: `${headlineSize / 2.5}rem`,
                       lineHeight: 1.2,
                       textShadow: '0 1px 3px rgba(0,0,0,0.4)',
                     }}
                   >
-                    {hero.headline || 'Sua headline aparecerá aqui'}
+                    {headlineText || 'Sua headline aparecerá aqui'}
                   </p>
                 </div>
               </>
@@ -996,7 +1005,7 @@ function HomeBannerConfigurator({
               Headline exibida
             </label>
             <Input
-              value={hero.headline}
+              value={headlineText}
               onChange={(event) => onChange({ headline: event.target.value })}
               placeholder="SushiWorld: O Sabor do Japão na Sua Casa"
             />
@@ -1014,12 +1023,12 @@ function HomeBannerConfigurator({
               <div className="flex items-center gap-3">
                 <Input
                   type="color"
-                  value={hero.headlineColor}
+                  value={headlineColor}
                   onChange={(event) => onChange({ headlineColor: event.target.value })}
                   className="h-10 w-12 cursor-pointer border border-[#ead9cd] bg-white p-1"
                 />
                 <Input
-                  value={hero.headlineColor}
+                  value={headlineColor}
                   onChange={(event) => onChange({ headlineColor: event.target.value })}
                   maxLength={7}
                 />
@@ -1030,11 +1039,11 @@ function HomeBannerConfigurator({
                 <Type className="h-4 w-4 text-[#FF6B00]" />
                 Tamanho
                 <span className="text-xs font-medium text-[#a16b45]">
-                  {hero.headlineSize.toFixed(1)}rem
+                  {headlineSize.toFixed(1)}rem
                 </span>
               </label>
               <Slider
-                value={[hero.headlineSize]}
+                value={[headlineSize]}
                 min={2.5}
                 max={6}
                 step={0.1}
@@ -1089,6 +1098,28 @@ function HomeBannerConfigurator({
             />
             <p className="text-xs text-[#a16b45]">
               Máscaras mais fortes destacam o texto; valores baixos deixam a foto em evidência.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <label className="flex items-center gap-2 text-sm font-semibold text-[#333333]">
+              <Settings2 className="h-4 w-4 text-[#FF6B00]" />
+              Tamanho do banner&nbsp;
+              <span className="text-xs font-medium text-[#a16b45]">{hero.bannerHeight ?? 60}vh</span>
+            </label>
+            <Slider
+              value={[hero.bannerHeight ?? 60]}
+              min={30}
+              max={100}
+              step={5}
+              onValueChange={(value) =>
+                onChange({
+                  bannerHeight: value?.[0] ?? 60,
+                })
+              }
+            />
+            <p className="text-xs text-[#a16b45]">
+              Controle a altura do banner. Valores menores criam banners mais compactos.
             </p>
           </div>
 
@@ -1293,7 +1324,10 @@ function PromotionFormDialog({
                 name="name"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Nome da promoção</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Nome da promoção</FormLabel>
+                      <TooltipHelper text="Nome descritivo da promoção que aparecerá no sistema administrativo. Deve ser claro e identificável para facilitar a gestão." />
+                    </div>
                     <FormControl>
                       <Input placeholder="Ex: 10% OFF Primeira Compra" {...field} />
                     </FormControl>
@@ -1307,7 +1341,10 @@ function PromotionFormDialog({
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipo da promoção</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Tipo da promoção</FormLabel>
+                      <TooltipHelper text="Define a estratégia da promoção. Cada tipo tem uma abordagem diferente: Tradicional (cupons/descontos diretos), Primeira Compra (novos clientes), Order Bump (upsell no checkout), Up-sell (upgrade de produtos), Down-sell (alternativas mais acessíveis)." />
+                    </div>
                     <Select
                       value={field.value}
                       onValueChange={(value: PromotionType) => field.onChange(value)}
@@ -1320,7 +1357,10 @@ function PromotionFormDialog({
                       <SelectContent>
                         {(Object.keys(promotionTypeConfig) as PromotionType[]).map((type) => (
                           <SelectItem key={type} value={type}>
-                            {promotionTypeConfig[type].label}
+                            <div className="flex items-center gap-2">
+                              <span>{promotionTypeConfig[type].label}</span>
+                              <TooltipHelper text={promotionTypeConfig[type].description} />
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1335,7 +1375,10 @@ function PromotionFormDialog({
                 name="discountType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipo de desconto</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Tipo de desconto</FormLabel>
+                      <TooltipHelper text="Percentual: desconto baseado em porcentagem (ex: 10% OFF). Valor Fixo: desconto em euros (ex: 5€ OFF). O tipo afeta como o desconto é calculado sobre o valor dos produtos." />
+                    </div>
                     <Select
                       value={field.value}
                       onValueChange={(value: DiscountType) => field.onChange(value)}
@@ -1360,12 +1403,15 @@ function PromotionFormDialog({
                 name="discountValue"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      Valor do desconto{' '}
-                      <span className="text-xs font-medium text-[#a16b45]">
-                        {discountTypeLabel[watchDiscountType]}
-                      </span>
-                    </FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormLabel>
+                        Valor do desconto{' '}
+                        <span className="text-xs font-medium text-[#a16b45]">
+                          {discountTypeLabel[watchDiscountType]}
+                        </span>
+                      </FormLabel>
+                      <TooltipHelper text={watchDiscountType === 'PERCENTAGE' ? 'Valor percentual do desconto (ex: 10 para 10% OFF)' : 'Valor fixo em euros a ser descontado (ex: 5 para 5€ OFF)'} />
+                    </div>
                     <FormControl>
                       <Input placeholder="Ex: 10" {...field} />
                     </FormControl>
@@ -1379,7 +1425,10 @@ function PromotionFormDialog({
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Código do cupom</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Código do cupom</FormLabel>
+                      <TooltipHelper text="Código único que os clientes usarão para aplicar o desconto. Se não informado, a promoção será automática (sem necessidade de código)." />
+                    </div>
                     <FormControl>
                       <div className="relative">
                         <Input
@@ -1413,7 +1462,10 @@ function PromotionFormDialog({
                 name="minOrderValue"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Valor mínimo do pedido (€)</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Valor mínimo do pedido (€)</FormLabel>
+                      <TooltipHelper text="Valor mínimo que o pedido deve ter para que a promoção seja aplicável. Deixe em branco para não ter restrição de valor mínimo." />
+                    </div>
                     <FormControl>
                       <Input placeholder="Ex: 20" {...field} />
                     </FormControl>
@@ -1427,7 +1479,10 @@ function PromotionFormDialog({
                 name="usageLimit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Limite de uso</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <FormLabel>Limite de uso</FormLabel>
+                      <TooltipHelper text="Número máximo de vezes que a promoção pode ser utilizada. Deixe em branco para uso ilimitado. Útil para controlar orçamento de marketing." />
+                    </div>
                     <FormControl>
                       <Input placeholder="Ex: 100 (deixe vazio para ilimitado)" {...field} />
                     </FormControl>
@@ -1442,7 +1497,10 @@ function PromotionFormDialog({
                   name="validFrom"
                   render={({ field }) => (
                     <FormItem className="w-full">
-                      <FormLabel>Início da vigência</FormLabel>
+                      <div className="flex items-center gap-2">
+                        <FormLabel>Início da vigência</FormLabel>
+                        <TooltipHelper text="Data e hora em que a promoção começará a funcionar. Se não informado, a promoção começará imediatamente após ser ativada." />
+                      </div>
                       <FormControl>
                         <Input type="datetime-local" {...field} />
                       </FormControl>
@@ -1456,7 +1514,10 @@ function PromotionFormDialog({
                   name="validUntil"
                   render={({ field }) => (
                     <FormItem className="w-full">
-                      <FormLabel>Fim da vigência</FormLabel>
+                      <div className="flex items-center gap-2">
+                        <FormLabel>Fim da vigência</FormLabel>
+                        <TooltipHelper text="Data e hora em que a promoção será automaticamente desativada. Se não informado, a promoção ficará ativa até ser manualmente desativada." />
+                      </div>
                       <FormControl>
                         <Input type="datetime-local" {...field} />
                       </FormControl>
@@ -1472,8 +1533,11 @@ function PromotionFormDialog({
                   name="isActive"
                   render={({ field }) => (
                     <FormItem className="flex w-full items-center justify-between rounded-lg border border-[#ead9cd] p-4">
-                      <div>
-                        <FormLabel>Ativar promoção imediatamente</FormLabel>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <FormLabel>Ativar promoção imediatamente</FormLabel>
+                          <TooltipHelper text="Controla se a promoção está ativa e disponível para os clientes. Promoções inativas não aparecem no site mas podem ser reativadas a qualquer momento." />
+                        </div>
                         <FormDescription>
                           Caso desmarque, a promoção permanecerá pausada até ser ativada.
                         </FormDescription>
@@ -1490,8 +1554,11 @@ function PromotionFormDialog({
                   name="isFirstPurchaseOnly"
                   render={({ field }) => (
                     <FormItem className="flex w-full items-center justify-between rounded-lg border border-[#ead9cd] p-4">
-                      <div>
-                        <FormLabel>Restrita à primeira compra</FormLabel>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <FormLabel>Restrita à primeira compra</FormLabel>
+                          <TooltipHelper text="Quando ativado, a promoção só será aplicável para clientes que nunca fizeram compras antes. Ideal para captar novos clientes e aumentar a base de usuários." />
+                        </div>
                         <FormDescription>
                           Aplique automaticamente apenas para clientes novos.
                         </FormDescription>
@@ -1606,9 +1673,12 @@ function PromotionFormDialog({
 
             <div className="rounded-lg border border-[#ead9cd] p-4">
               <div className="flex flex-col gap-2">
-                <h3 className="text-sm font-semibold text-[#333333]">
-                  Aplicar promoção a produtos específicos
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-[#333333]">
+                    Aplicar promoção a produtos específicos
+                  </h3>
+                  <TooltipHelper text="Selecione produtos específicos para aplicar a promoção. Se nenhum produto for selecionado, a promoção poderá ser aplicada a todos os produtos ou baseada em regras específicas (categoria, valor mínimo, etc)." />
+                </div>
                 <p className="text-xs text-[#a16b45]">
                   Selecione os produtos que receberão esta oferta. Caso nenhum seja escolhido, ela
                   poderá ser aplicada globalmente via regras.

@@ -1,158 +1,186 @@
-import { Metadata } from 'next';
-import { prisma } from '@/lib/db';
-import { 
-  ShoppingBag, 
-  Euro, 
-  Clock, 
+'use client';
+
+import { useState, useEffect } from 'react';
+import {
+  ShoppingBag,
+  Euro,
+  Clock,
   TrendingUp,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Users,
+  Download,
+  Settings,
 } from 'lucide-react';
 import { DashboardCharts } from '@/components/admin/dashboard/DashboardCharts';
 import { RecentOrders } from '@/components/admin/dashboard/RecentOrders';
 import { TopProducts } from '@/components/admin/dashboard/TopProducts';
+import { TooltipHelper } from '@/components/shared/TooltipHelper';
+import { Button } from '@/components/ui/button';
+import { CustomMetricsDialog } from '@/components/admin/dashboard/CustomMetricsDialog';
 
-export const metadata: Metadata = {
-  title: 'Dashboard | Admin - SushiWorld',
-  description: 'Painel administrativo do SushiWorld',
-};
 
-async function getDashboardData() {
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const lastWeek = new Date(today);
-    lastWeek.setDate(lastWeek.getDate() - 7);
-    
-    const lastMonth = new Date(today);
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
-
-    const [todayOrders, pendingOrders, activeOrders, todayRevenue, lastWeekRevenue, topProducts, recentOrders] =
-      await Promise.all([
-        prisma.order.count({
-          where: {
-            createdAt: { gte: today },
-            status: { not: 'CANCELLED' },
-          },
-        }),
-        prisma.order.count({
-          where: { status: 'PENDING' },
-        }),
-        prisma.order.count({
-          where: { status: { in: ['CONFIRMED', 'PREPARING', 'DELIVERING'] } },
-        }),
-        prisma.order.aggregate({
-          where: {
-            createdAt: { gte: today },
-            status: { not: 'CANCELLED' },
-          },
-          _sum: { total: true },
-        }),
-        prisma.order.aggregate({
-          where: {
-            createdAt: { 
-              gte: new Date(lastWeek.getTime() - 7 * 24 * 60 * 60 * 1000),
-              lt: lastWeek,
-            },
-            status: { not: 'CANCELLED' },
-          },
-          _sum: { total: true },
-        }),
-        prisma.product.findMany({
-          orderBy: { orderCount: 'desc' },
-          take: 3,
-          select: { name: true, orderCount: true },
-        }),
-        prisma.order.findMany({
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-          select: {
-            id: true,
-            orderNumber: true,
-            customerName: true,
-            total: true,
-            status: true,
-            createdAt: true,
-          },
-        }),
-      ]);
-
-    const revenueChange = lastWeekRevenue._sum.total && lastWeekRevenue._sum.total > 0
-      ? ((todayRevenue._sum.total || 0) - lastWeekRevenue._sum.total) / lastWeekRevenue._sum.total * 100
-      : 0;
-
-    return {
-      todayOrders,
-      pendingOrders,
-      activeOrders,
-      todayRevenue: todayRevenue._sum.total || 0,
-      revenueChange,
-      topProducts,
-      recentOrders,
-    };
-  } catch (error) {
-    console.error('[Dashboard] Erro ao carregar dados:', error);
-    return {
-      todayOrders: 0,
-      pendingOrders: 0,
-      activeOrders: 0,
-      todayRevenue: 0,
-      revenueChange: 0,
-      topProducts: [],
-      recentOrders: [],
-    };
-  }
+interface DashboardData {
+  todayOrders: number;
+  pendingOrders: number;
+  activeOrders: number;
+  todayRevenue: number;
+  revenueChange: number;
+  totalRevenue: number;
+  averageTicket: number;
+  totalOrders: number;
+  uniqueCustomers: number;
+  categoryRevenue: any[];
+  topProducts: any[];
+  recentOrders: any[];
 }
 
-export default async function DashboardPage() {
-  const data = await getDashboardData();
+export default function DashboardPage() {
+  const [showCustomMetrics, setShowCustomMetrics] = useState(false);
+  const [customMetrics, setCustomMetrics] = useState<any[]>([]);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch('/api/admin/dashboard');
+      if (response.ok) {
+        const dashboardData = await response.json();
+        setData(dashboardData);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados do dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      const response = await fetch('/api/admin/dashboard/export-csv');
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `relatorio-dashboard-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else {
+        alert('Erro ao exportar relatório CSV');
+      }
+    } catch (error) {
+      console.error('Erro ao exportar CSV:', error);
+      alert('Erro ao exportar relatório CSV');
+    }
+  };
 
   const stats = [
     {
-      label: 'Pedidos Novos',
-      value: data.pendingOrders,
-      icon: ShoppingBag,
-      change: '+5%',
-      changeType: 'positive' as const,
-      color: 'bg-orange-100 text-orange-600',
-    },
-    {
-      label: 'Faturamento do Dia',
-      value: `€ ${data.todayRevenue.toFixed(2)}`,
+      label: 'Receita Total',
+      value: `€ ${data.totalRevenue.toFixed(2)}`,
       icon: Euro,
       change: `${data.revenueChange > 0 ? '+' : ''}${data.revenueChange.toFixed(1)}%`,
       changeType: data.revenueChange >= 0 ? 'positive' as const : 'negative' as const,
       color: 'bg-green-100 text-green-600',
+      subtitle: 'Receita acumulada',
+      tooltip: 'Faturamento bruto total de todos os pedidos confirmados',
     },
     {
-      label: 'Pedidos em Andamento',
-      value: data.activeOrders,
-      icon: Clock,
-      change: '-3%',
-      changeType: 'negative' as const,
-      color: 'bg-blue-100 text-blue-600',
-    },
-    {
-      label: 'Produtos Mais Vendidos',
-      value: data.topProducts[0]?.name || 'N/A',
+      label: 'Ticket Médio',
+      value: `€ ${data.averageTicket.toFixed(2)}`,
       icon: TrendingUp,
-      change: '+8%',
+      change: '+12%',
+      changeType: 'positive' as const,
+      color: 'bg-blue-100 text-blue-600',
+      subtitle: 'Valor médio por pedido',
+      tooltip: 'Receita total dividida pelo número de pedidos (métrica de eficiência)',
+    },
+    {
+      label: 'Clientes Únicos',
+      value: data.uniqueCustomers,
+      icon: Users,
+      change: '+15%',
       changeType: 'positive' as const,
       color: 'bg-purple-100 text-purple-600',
-      subtitle: data.topProducts.slice(1, 3).map(p => p.name).join(', '),
+      subtitle: 'Clientes ativos no período',
+      tooltip: 'Número de clientes diferentes que fizeram pelo menos um pedido',
+    },
+    {
+      label: 'Total de Pedidos',
+      value: data.totalOrders,
+      icon: ShoppingBag,
+      change: '+8%',
+      changeType: 'positive' as const,
+      color: 'bg-orange-100 text-orange-600',
+      subtitle: 'Pedidos realizados',
+      tooltip: 'Quantidade total de pedidos realizados no período',
     },
   ];
+
+  if (loading || !data) {
+    return (
+      <div className="flex flex-col gap-8">
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <h1 className="text-4xl font-black leading-tight tracking-tight text-[#FF6B00]">
+              Dashboard
+            </h1>
+            <TooltipHelper text="Painel principal com métricas gerais do negócio, gráficos de vendas e informações sobre pedidos" />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-[#a16b45]">
+              Carregando dados...
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-4xl font-black leading-tight tracking-tight text-[#FF6B00]">
-          Dashboard
-        </h1>
-        <div className="text-sm text-[#a16b45]">
-          Última atualização: {new Date().toLocaleTimeString('pt-PT')}
+        <div className="flex items-center gap-2">
+          <h1 className="text-4xl font-black leading-tight tracking-tight text-[#FF6B00]">
+            Dashboard
+          </h1>
+          <TooltipHelper text="Painel principal com métricas gerais do negócio, gráficos de vendas e informações sobre pedidos" />
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={handleExportCSV}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Exportar CSV
+          </Button>
+          <Button
+            onClick={() => setShowCustomMetrics(true)}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Regras Customizadas
+          </Button>
+          <div className="text-sm text-[#a16b45]">
+            Última atualização: {new Date().toLocaleTimeString('pt-PT')}
+          </div>
         </div>
       </div>
 
@@ -187,9 +215,12 @@ export default async function DashboardPage() {
                 <div className={`rounded-full p-3 ${stat.color}`}>
                   <Icon className="h-6 w-6" />
                 </div>
-                <p className="text-base font-semibold leading-normal text-[#FF6B00]">
-                  {stat.label}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-base font-semibold leading-normal text-[#FF6B00]">
+                    {stat.label}
+                  </p>
+                  <TooltipHelper text={stat.tooltip || 'Métrica de performance do negócio'} />
+                </div>
               </div>
 
               {/* Value */}
@@ -207,17 +238,35 @@ export default async function DashboardPage() {
       </div>
 
       {/* Charts */}
+      <div className="flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-[#333333] dark:text-[#f5f1e9]">Gráficos de Performance</h2>
+        <TooltipHelper text="Visualização gráfica das vendas, pedidos e tendências de negócio ao longo do tempo" />
+      </div>
       <DashboardCharts />
 
       {/* Recent Orders & Top Products */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-2xl font-bold text-[#333333] dark:text-[#f5f1e9]">Pedidos Recentes</h2>
+            <TooltipHelper text="Lista dos pedidos mais recentes com status e informações dos clientes" />
+          </div>
           <RecentOrders orders={data.recentOrders} />
         </div>
         <div>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-2xl font-bold text-[#333333] dark:text-[#f5f1e9]">Produtos Mais Vendidos</h2>
+            <TooltipHelper text="Ranking dos produtos mais populares baseado na quantidade de vendas" />
+          </div>
           <TopProducts products={data.topProducts} />
         </div>
       </div>
+
+      {/* Custom Metrics Dialog */}
+      <CustomMetricsDialog
+        open={showCustomMetrics}
+        onOpenChange={setShowCustomMetrics}
+      />
     </div>
   );
 }

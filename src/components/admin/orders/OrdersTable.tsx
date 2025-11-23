@@ -13,9 +13,13 @@ import {
   Mail,
   FileText,
   Loader2,
+  Trash2,
+  Square,
+  CheckSquare,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type OrderItem = {
   id: string;
@@ -133,8 +137,60 @@ export function OrdersTable({ orders }: OrdersTableProps) {
   const [localOrders, setLocalOrders] = useState(orders);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
 
   const hasOrders = localOrders.length > 0;
+
+  const handleSelectOrder = (orderId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(prev => [...prev, orderId]);
+    } else {
+      setSelectedOrders(prev => prev.filter(id => id !== orderId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(localOrders.map(order => order.id));
+    } else {
+      setSelectedOrders([]);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedOrders.length === 0) return;
+
+    setPendingAction('delete-selected');
+    startTransition(async () => {
+      try {
+        const response = await fetch('/api/admin/orders/batch-delete', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ orderIds: selectedOrders }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => null);
+          throw new Error(error?.error || 'Falha ao deletar pedidos');
+        }
+
+        setLocalOrders(prev => prev.filter(order => !selectedOrders.includes(order.id)));
+        setSelectedOrders([]);
+        toast.success(`${selectedOrders.length} pedido(s) deletado(s) com sucesso!`);
+        router.refresh();
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : 'Erro ao deletar pedidos. Tente novamente.'
+        );
+      } finally {
+        setPendingAction(null);
+      }
+    });
+  };
 
   const handleStatusUpdate = (orderId: string, status: string) => {
     setPendingAction(`${status}:${orderId}`);
@@ -232,6 +288,45 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
   return (
     <div className="rounded-xl border border-[#ead9cd] bg-white p-6 dark:border-[#4a3c30] dark:bg-[#2a1e14]">
+      {hasOrders && (
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={selectedOrders.length === localOrders.length && localOrders.length > 0}
+                onCheckedChange={handleSelectAll}
+                id="select-all"
+              />
+              <label
+                htmlFor="select-all"
+                className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]"
+              >
+                Selecionar todos ({selectedOrders.length} de {localOrders.length})
+              </label>
+            </div>
+            {selectedOrders.length > 0 && (
+              <Button
+                onClick={handleDeleteSelected}
+                variant="destructive"
+                size="sm"
+                disabled={isPending || pendingAction === 'delete-selected'}
+              >
+                {pendingAction === 'delete-selected' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deletando...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Deletar ({selectedOrders.length})
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
       {hasOrders ? (
         <div className="grid grid-cols-1 gap-4 @container md:grid-cols-2 xl:grid-cols-3">
           {localOrders.map((order) => (
@@ -240,11 +335,18 @@ export function OrdersTable({ orders }: OrdersTableProps) {
               className="flex h-full flex-col gap-4 rounded-lg border border-[#ead9cd] bg-white p-4 shadow-sm transition hover:shadow-lg dark:border-[#4a3c30] dark:bg-[#23170f]"
             >
               <header className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-[#a16b45]">Pedido</p>
-                  <p className="text-lg font-bold text-[#333333] dark:text-[#f5f1e9]">
-                    #SW{order.orderNumber.toString().padStart(5, '0')}
-                  </p>
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    checked={selectedOrders.includes(order.id)}
+                    onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+                    className="mt-1"
+                  />
+                  <div>
+                    <p className="text-sm text-[#a16b45]">Pedido</p>
+                    <p className="text-lg font-bold text-[#333333] dark:text-[#f5f1e9]">
+                      #SW{order.orderNumber.toString().padStart(5, '0')}
+                    </p>
+                  </div>
                 </div>
                 {statusBadge(order.status)}
               </header>

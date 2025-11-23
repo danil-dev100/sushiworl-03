@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Clock } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/security';
 import { useCart } from '@/contexts/CartContext';
 import { SimpleProductOptionsDialog } from './SimpleProductOptionsDialog';
+import { toast } from 'sonner';
 
 interface ProductCardProps {
   productId: string;
@@ -14,6 +15,12 @@ interface ProductCardProps {
   price: string;
   discountPrice?: string;
   imageUrl: string;
+  status?: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DISCONTINUED';
+  outOfStock?: boolean;
+  storeStatus?: {
+    isOpen: boolean;
+    message: string | null;
+  };
 }
 
 export default function ProductCard({
@@ -23,6 +30,9 @@ export default function ProductCard({
   price,
   discountPrice,
   imageUrl,
+  status = 'AVAILABLE',
+  outOfStock = false,
+  storeStatus,
 }: ProductCardProps) {
   const { addItem } = useCart();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -32,16 +42,25 @@ export default function ProductCard({
   const priceNumber = parseFloat(price.replace('€', '').replace(',', '.'));
 
   const handleAddToCart = async () => {
+    // Verificar se a loja está aberta
+    if (storeStatus && !storeStatus.isOpen) {
+      toast.error(storeStatus.message || 'Lamentamos mas não estamos abertos agora.', {
+        duration: 5000,
+        icon: <Clock className="h-5 w-5" />,
+      });
+      return;
+    }
+
     setIsLoadingOptions(true);
     try {
       const response = await fetch(`/api/products/${productId}/options`);
-      
+
       if (response.ok) {
         const data = await response.json();
-        const activeOptions = data.options.filter((opt: any) => 
+        const activeOptions = data.options.filter((opt: any) =>
           opt.isActive && opt.displayAt === 'SITE'
         );
-        
+
         if (activeOptions.length > 0) {
           setProductOptions(activeOptions);
           setIsDialogOpen(true);
@@ -107,6 +126,9 @@ export default function ProductCard({
     });
   };
 
+  const isAvailable = !outOfStock;
+  const availabilityText = isAvailable ? 'Disponível' : 'Esgotado';
+
   const altText = `${name} - ${description}`;
 
   return (
@@ -121,9 +143,15 @@ export default function ProductCard({
         />
       </div>
       <div className="flex flex-col flex-grow">
-        <h3 className="text-price dark:text-background-light text-lg font-bold">
+        <h3 className="font-bold text-[#FF6B00] text-lg">
           {sanitizeHtml(name)}
         </h3>
+        <div className="flex items-center gap-1.5 mt-1">
+          <div className={`w-2 h-2 rounded-full ${isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          <span className={`text-sm font-medium ${isAvailable ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+            {availabilityText}
+          </span>
+        </div>
         <p
           className="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow"
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
@@ -141,7 +169,7 @@ export default function ProductCard({
       </div>
       <button
         onClick={handleAddToCart}
-        disabled={isLoadingOptions}
+        disabled={isLoadingOptions || !isAvailable}
         className="mt-4 w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoadingOptions ? (
@@ -149,6 +177,8 @@ export default function ProductCard({
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Carregando...
           </>
+        ) : !isAvailable ? (
+          'Esgotado'
         ) : (
           'Adicionar'
         )}

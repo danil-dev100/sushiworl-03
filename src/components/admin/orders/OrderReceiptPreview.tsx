@@ -355,7 +355,7 @@ export default function OrderReceiptPreview({ order, companyInfo, config = defau
   };
 
   return (
-    <div className="max-w-[400px] mx-auto bg-white shadow-lg border border-gray-300">
+    <div className="print-receipt max-w-[400px] mx-auto bg-white shadow-lg border border-gray-300">
       {sections.map((section) => renderSection(section.id))}
     </div>
   );

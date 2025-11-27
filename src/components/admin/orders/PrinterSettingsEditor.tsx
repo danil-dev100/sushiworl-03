@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import { GripVertical, Eye, EyeOff, Save, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { GripVertical, Eye, EyeOff, Save, RotateCcw, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import OrderReceiptPreview, { OrderReceiptConfig, OrderReceiptSection } from './OrderReceiptPreview';
+import OrderReceiptPreview, { OrderReceiptConfig } from './OrderReceiptPreview';
+import PrintStyles from './PrintStyles';
 import { toast } from 'sonner';
+import { useReactToPrint } from 'react-to-print';
 
 interface PrinterSettingsEditorProps {
   initialConfig?: OrderReceiptConfig;
@@ -50,7 +52,7 @@ const defaultConfig: OrderReceiptConfig = {
   },
 };
 
-// Mock data para preview
+// Mock data para preview - será substituído por dados reais
 const mockOrder = {
   id: '123',
   orderNumber: '1117774633',
@@ -60,22 +62,22 @@ const mockOrder = {
   trafficInfo: 'Tivemos em consideração o estado do tráfego real em 22 de novembro às 22:18',
   deliveryDistance: 'Norte 9,9 km',
   deliveryAddress: 'Rua Das Camélias 21-1 Direito, 2695-538, São joão da talha',
-  placedAt: '2024-11-22T21:18:00',
-  acceptedAt: '2024-11-22T21:18:00',
-  completedAt: '2024-11-22T22:18:00',
+  placedAt: new Date().toISOString(),
+  acceptedAt: new Date().toISOString(),
+  completedAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
   customer: {
-    firstName: 'Guilherme',
-    lastName: 'Ricardo',
-    email: 'Guilhermegricardo@gmail.com',
-    phone: '+351 934 841 148',
+    firstName: 'João',
+    lastName: 'Silva',
+    email: 'cliente@exemplo.com',
+    phone: '+351 910 000 000',
   },
-  specialInstructions: 'Fatura S/f 295949201, Ligar quando chegar ,nao tocar a campainha por favor, bebé dormindo',
+  specialInstructions: 'Ligar quando chegar, não tocar a campainha por favor',
   items: [
     {
       quantity: 1,
       name: 'Combo 1',
       variant: 'Cola 1/1 - Oferta: Cola 1/l',
-      notes: 'Batata Frita SEM CHEDDAR por favor.',
+      notes: 'Sem picante.',
       price: 29.50,
     },
   ],
@@ -85,17 +87,59 @@ const mockOrder = {
   total: 34.00,
 };
 
-const mockCompanyInfo = {
-  name: 'Brazilian Burger House | Expo',
-  address: 'Alameda dos Oceanos, 27A 3.15-3 A, 1990-197 Lisboa, 1990-197 Lisboa',
-  phone: '+351 963 504 628',
-  websiteUrl: 'brazilianburgerhouse.pt',
-};
-
 export default function PrinterSettingsEditor({ initialConfig, onSave }: PrinterSettingsEditorProps) {
   const [config, setConfig] = useState<OrderReceiptConfig>(initialConfig || defaultConfig);
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [companyInfo, setCompanyInfo] = useState({
+    name: 'Carregando...',
+    address: '',
+    phone: '',
+    websiteUrl: '',
+  });
+  const printRef = useRef<HTMLDivElement>(null);
+
+  // Buscar dados reais da empresa
+  useEffect(() => {
+    fetch('/api/admin/settings/company-info')
+      .then((res) => res.json())
+      .then((data) => {
+        setCompanyInfo({
+          name: data.companyName,
+          address: data.companyAddress,
+          phone: data.companyPhone,
+          websiteUrl: data.websiteUrl,
+        });
+      })
+      .catch((error) => {
+        console.error('Erro ao buscar dados da empresa:', error);
+        // Manter valores padrão em caso de erro
+        setCompanyInfo({
+          name: 'Seu Restaurante',
+          address: 'Rua Exemplo, 123, Lisboa',
+          phone: '+351 000 000 000',
+          websiteUrl: 'seusite.com',
+        });
+      });
+  }, []);
+
+  // Função de impressão
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Teste-Recibo-${new Date().getTime()}`,
+    pageStyle: `
+      @page {
+        size: 80mm auto;
+        margin: 0;
+      }
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+        }
+      }
+    `,
+  });
 
   const handleDragStart = (index: number) => {
     setDraggedItem(index);
@@ -172,9 +216,11 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Editor de Configurações */}
-      <div className="space-y-6">
+    <>
+      <PrintStyles />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Editor de Configurações */}
+        <div className="space-y-6">
         <div className="bg-white dark:bg-[#2a1e14] rounded-lg border border-[#e5d5b5] dark:border-[#3d2e1f] p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-[#333333] dark:text-[#f5f1e9]">
@@ -512,14 +558,39 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
       {/* Preview */}
       <div className="lg:sticky lg:top-6">
         <div className="bg-white dark:bg-[#2a1e14] rounded-lg border border-[#e5d5b5] dark:border-[#3d2e1f] p-6">
-          <h2 className="text-xl font-bold text-[#333333] dark:text-[#f5f1e9] mb-6">
-            Preview em Tempo Real
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-[#333333] dark:text-[#f5f1e9]">
+              Preview em Tempo Real
+            </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePrint}
+              className="gap-2"
+            >
+              <Printer className="w-4 h-4" />
+              Imprimir Teste
+            </Button>
+          </div>
+
+          {/* Info sobre dados reais */}
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <p className="text-xs text-blue-800 dark:text-blue-200">
+              ℹ️ <strong>Dados da empresa:</strong> Este preview usa as informações reais do seu restaurante configuradas em{' '}
+              <a href="/admin/configuracoes/empresa" className="underline hover:text-blue-600">
+                Configurações da Empresa
+              </a>
+            </p>
+          </div>
+
           <div className="flex justify-center">
-            <OrderReceiptPreview order={mockOrder} companyInfo={mockCompanyInfo} config={config} />
+            <div ref={printRef}>
+              <OrderReceiptPreview order={mockOrder} companyInfo={companyInfo} config={config} />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -8,7 +8,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")     // Pooler (porta 6543) - para runtime
-  directUrl = env("DIRECT_URL")       // Conexão direta (porta 5432) - para migrações
+  // directUrl = env("DIRECT_URL")    // Conexão direta desabilitada temporariamente
 }
 
 // ============================================
@@ -108,6 +108,7 @@ model Product {
   orderItems      OrderItem[]
   productOptions  ProductOption[]
   promotionItems  PromotionItem[]
+  smartPromotions SmartPromotion[]
 }
 
 model ProductOption {
@@ -425,56 +426,342 @@ model AnalyticsEvent {
   @@index([createdAt])
 }
 
+model UTMLink {
+  id          String   @id @default(cuid())
+  
+  // URL e Parâmetros
+  url         String
+  utmSource   String
+  utmMedium   String
+  utmCampaign String
+  utmTerm     String?
+  utmContent  String?
+  
+  // Link completo gerado
+  fullUrl     String   @db.Text
+  
+  // Estatísticas
+  clicks      Int      @default(0)
+  conversions Int      @default(0) // Pedidos realizados
+  revenue     Float    @default(0)
+  
+  // Controle
+  createdBy   String?  // ID do usuário que criou
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([utmSource])
+  @@index([utmCampaign])
+  @@index([createdAt])
+}
+
 // ============================================
 // INTEGRAÇÕES
 // ============================================
 
 model Integration {
   id          String   @id @default(cuid())
-  
+  name        String?
+
   platform    IntegrationPlatform
   type        String   // pixel, capi, analytics, etc.
-  
+
   // Credenciais
   apiKey      String?
   apiSecret   String?
   pixelId     String?
   measurementId String?
-  
+  accessToken String?
+
   // Configuração
   config      Json?    // Configurações específicas
-  
+
   isActive    Boolean  @default(true)
-  
+  lastSyncAt  DateTime?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
+  // Logs de eventos
+  eventLogs   TrackingEvent[]
+
   @@unique([platform, type, pixelId])
+}
+
+// Log de eventos de tracking
+model TrackingEvent {
+  id            String   @id @default(cuid())
+
+  integrationId String?
+  integration   Integration? @relation(fields: [integrationId], references: [id], onDelete: SetNull)
+
+  eventType     String   // page_view, purchase, add_to_cart, etc.
+  eventData     Json?    // Dados do evento
+
+  // Origem do tráfego
+  pageUrl       String?
+  referrer      String?
+
+  // Identificadores de cliques
+  gclid         String?  // Google Click ID
+  fbclid        String?  // Facebook Click ID
+  ttclid        String?  // TikTok Click ID
+
+  // UTM parameters
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+  utmContent    String?
+  utmTerm       String?
+
+  // Status do envio
+  platform      String?  // facebook, google, tiktok, etc.
+  status        String   @default("pending") // pending, sent, failed
+  statusCode    Int?
+  errorMessage  String?
+
+  // Dados do usuário
+  userId        String?
+  sessionId     String?
+  ipAddress     String?
+  userAgent     String?
+
+  createdAt     DateTime @default(now())
+
+  @@index([eventType])
+  @@index([platform])
+  @@index([status])
+  @@index([gclid])
+  @@index([fbclid])
+  @@index([createdAt])
+}
+
+// Configuração de Open Graph / Social Share
+model SocialShareConfig {
+  id          String   @id @default(cuid())
+
+  // OG Tags padrão
+  ogTitle       String?
+  ogDescription String?
+  ogImage       String?
+  ogType        String   @default("website")
+
+  // Twitter Card
+  twitterCard   String   @default("summary_large_image")
+  twitterSite   String?
+  twitterCreator String?
+
+  // Configuração adicional
+  siteName      String?
+  locale        String   @default("pt_BR")
+
+  isActive      Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Webhook {
   id          String   @id @default(cuid())
-  
+
   name        String
   url         String
   method      String   @default("POST") // POST, GET, PUT
-  
+
+  // Direção do webhook
+  direction   WebhookDirection @default(OUTBOUND)
+
   // Eventos que disparam o webhook
   events      String[] // order.created, order.confirmed, etc.
-  
-  // Headers customizados
+
+  // Headers customizados e segurança
   headers     Json?
-  
+  secret      String?  // Secret para validação
+
   // Controle
   isActive    Boolean  @default(true)
-  
+
   // Estatísticas
   lastTriggeredAt DateTime?
   successCount Int     @default(0)
   failureCount Int     @default(0)
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  logs        WebhookLog[]
+}
+
+model WebhookLog {
+  id          String   @id @default(cuid())
+  webhookId   String
+
+  event       String
+  status      WebhookStatus
+  statusCode  Int?
+
+  // Dados da requisição/resposta
+  requestBody Json?
+  responseBody String? @db.Text
+  errorMessage String?
+
+  // Tempo de execução
+  duration    Int?     // em milissegundos
+
+  triggeredAt DateTime @default(now())
+
+  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([triggeredAt])
+  @@index([status])
+}
+
+// ============================================
+// MARKETING - EMAIL MARKETING
+// ============================================
+
+model EmailAutomation {
+  id          String   @id @default(cuid())
+
+  name        String
+  description String?
+
+  // Fluxo da automação (JSON com nós e conexões)
+  flow        Json // {nodes: [], connections: []}
+
+  isActive    Boolean  @default(true)
+  isDraft     Boolean  @default(true)
+
+  // Estatísticas
+  totalExecutions Int @default(0)
+  successCount    Int @default(0)
+  failureCount    Int @default(0)
+
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  logs        EmailAutomationLog[]
+}
+
+model EmailAutomationLog {
+  id            String   @id @default(cuid())
+  automationId  String
+
+  // Dados da execução
+  userId        String?
+  email         String
+  trigger       String
+  nodeId        String
+
+  status        EmailAutomationStatus
+  errorMessage  String?
+
+  executedAt    DateTime @default(now())
+
+  automation    EmailAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@index([automationId])
+  @@index([executedAt])
+}
+
+model EmailTemplate {
+  id          String   @id @default(cuid())
+
+  name        String
+  subject     String
+  htmlContent String   @db.Text
+  textContent String?  @db.Text
+
+  // Configurações
+  fromName    String   @default("SushiWorld")
+  fromEmail   String   @default("pedidosushiworld@gmail.com")
+
+  // Botão personalizado
+  buttonText  String?
+  buttonUrl   String?
+  buttonColor String?  @default("#FF6B00")
+
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SmtpSettings {
+  id          String   @id @default(cuid())
+
+  // Servidor SMTP
+  smtpServer  String   @default("smtp.gmail.com")
+  smtpPort    Int      @default(587)
+  smtpUser    String?
+  smtpPassword String?
+  useTls      Boolean  @default(true)
+
+  // Remetente padrão
+  defaultFromName  String @default("SushiWorld")
+  defaultFromEmail String @default("pedidosushiworld@gmail.com")
+
+  // Anti-spam
+  minDelaySeconds  Int    @default(60)  // Delay mínimo entre emails
+  maxDelaySeconds  Int    @default(300) // Delay máximo entre emails
+  maxEmailsPerHour Int    @default(100) // Limite por hora
+
+  // Retenção de dados
+  emailRetentionDays Int  @default(30)  // Dias para manter emails
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// MARKETING - PROMOÇÕES INTELIGENTES
+// ============================================
+
+model SmartPromotion {
+  id              String   @id @default(cuid())
+
+  name            String
+  description     String?
+
+  type            SmartPromotionType // UPSELL, ORDER_BUMP, DOWNSELL
+
+  // Gatilho
+  triggerType     TriggerType? // PRODUCT, CATEGORY, CART, CART_VALUE
+  triggerValue    String?  // ID do produto/categoria ou valor
+
+  // Oferta
+  offerProductId  String?  // Produto oferecido
+  discountType    DiscountType // FIXED ou PERCENTAGE
+  discountValue   Float
+
+  // Mensagem
+  title           String?  @db.VarChar(35)
+  message         String?  @db.Text
+  displayMessage  String?  @db.Text
+
+  // Condições
+  minCartValue    Float?   // Valor mínimo do carrinho
+  timeRestriction Json?    // {startHour, endHour}
+  maxUses         Int?     // Limite de uso por pedido
+
+  // Controle
+  priority        Int      @default(0) // Ordem de prioridade
+  isMandatory     Boolean  @default(false) // Checkbox obrigatório
+  isActive        Boolean  @default(true)
+
+  // Estatísticas
+  shownCount      Int      @default(0)
+  acceptedCount   Int      @default(0)
+  revenue         Float    @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  offerProduct    Product? @relation(fields: [offerProductId], references: [id])
 }
 
 // ============================================
@@ -626,6 +913,9 @@ enum IntegrationPlatform {
   GOOGLE_ADS
   GOOGLE_ANALYTICS
   GOOGLE_TAG_MANAGER
+  TIKTOK
+  TABOOLA
+  PINTEREST
   CUSTOM
 }
 
@@ -637,4 +927,83 @@ enum VatType {
 enum BannerMode {
   STATIC
   CAROUSEL
+}
+
+// ============================================
+// MARKETING ENUMS
+// ============================================
+
+enum EmailAutomationStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum WebhookDirection {
+  INBOUND   // Recebe webhooks externos
+  OUTBOUND  // Envia webhooks
+}
+
+enum WebhookStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum SmartPromotionType {
+  UPSELL      // Upgrade de produto
+  ORDER_BUMP  // Adicional no checkout
+  DOWNSELL    // Alternativa mais barata
+}
+
+// ============================================
+// MÉTRICAS CUSTOMIZADAS
+// ============================================
+
+model CustomMetric {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  formula     String   @db.Text
+  type        MetricType @default(FINANCIAL)
+  unit        String   @default("€")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum MetricType {
+  FINANCIAL
+  OPERATIONAL
+  MARKETING
+  CUSTOMER
+}
+
+// ============================================
+// CONFIGURAÇÕES DA EMPRESA
+// ============================================
+
+model CompanySettings {
+  id              String   @id @default(cuid())
+
+  // Configurações de impressão
+  printerSettings Json?    // Armazena OrderReceiptConfig
+
+  // Banner principal
+  homeBannerImageUrl  String?
+  homeBannerTitle     String?
+  homeBannerSubtitle  String?
+  homeBannerLinkUrl   String?
+  homeBannerLinkText  String?
+  showHomeBanner      Boolean  @default(true)
+
+  // Informações da empresa
+  companyName     String?
+  companyAddress  String?
+  companyPhone    String?
+  companyEmail    String?
+  websiteUrl      String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

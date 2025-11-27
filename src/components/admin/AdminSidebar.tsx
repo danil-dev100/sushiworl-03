@@ -2,19 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
-import { 
-  LayoutDashboard, 
-  ShoppingCart, 
-  UtensilsCrossed, 
-  Users, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  UtensilsCrossed,
+  Users,
   Settings,
-  Tag,
-  Mail,
-  Webhook,
   MapPin,
-  TrendingUp
+  TrendingUp,
+  Webhook,
+  Printer
 } from 'lucide-react';
 
 const menuItems = [
@@ -39,34 +36,29 @@ const menuItems = [
     href: '/admin/configuracoes/usuarios',
   },
   {
-    label: 'Promoções',
-    icon: Tag,
+    label: 'Marketing',
+    icon: TrendingUp,
     href: '/admin/marketing/promocoes',
   },
   {
-    label: 'Relatórios',
-    icon: BarChart3,
-    href: '/admin/marketing/relatorios',
+    label: 'Webhooks',
+    icon: Webhook,
+    href: '/admin/marketing/webhooks',
   },
   {
-    label: 'Áreas Entrega',
+    label: 'Pixels',
+    icon: TrendingUp,
+    href: '/admin/marketing/pixels',
+  },
+  {
+    label: 'Entrega',
     icon: MapPin,
     href: '/admin/configuracoes/areas-entrega',
   },
   {
-    label: 'Marketing',
-    icon: TrendingUp,
-    href: '/admin/marketing/ofertas',
-  },
-  {
-    label: 'Email',
-    icon: Mail,
-    href: '/admin/configuracoes/email',
-  },
-  {
-    label: 'Integrações',
-    icon: Webhook,
-    href: '/admin/configuracoes/integracoes',
+    label: 'Impressora',
+    icon: Printer,
+    href: '/admin/configuracoes/impressora',
   },
 ];
 
@@ -84,17 +76,17 @@ export function AdminSidebar() {
     <aside className="flex w-24 flex-col items-center gap-10 border-r border-[#ead9cd] bg-white p-4 dark:border-[#4a3c30] dark:bg-[#2a1e14]">
       {/* Logo */}
       <Link href="/admin/dashboard" className="relative h-12 w-12">
-        <div className="aspect-square w-12 rounded-full bg-cover bg-center bg-no-repeat" 
+        <div className="aspect-square w-12 rounded-full bg-cover bg-center bg-no-repeat"
              style={{backgroundImage: 'url("/logo.webp/logo-nova-sushiworl-santa-iria-sem-fundo.webp")'}}>
         </div>
       </Link>
 
       {/* Menu Items */}
       <nav className="flex flex-col gap-6">
-        {menuItems.slice(0, -2).map((item) => {
+        {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
-          
+
           return (
             <Link
               key={item.href}

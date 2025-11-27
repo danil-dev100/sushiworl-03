@@ -1,23 +1,8 @@
 import PrinterSettingsEditor from '@/components/admin/orders/PrinterSettingsEditor';
-import prisma from '@/lib/db';
-
-async function getPrinterSettings() {
-  try {
-    const settings = await prisma.companySettings.findFirst({
-      select: {
-        printerSettings: true,
-      },
-    });
-
-    return settings?.printerSettings as any || null;
-  } catch (error) {
-    console.error('Erro ao buscar configurações de impressora:', error);
-    return null;
-  }
-}
 
 export default async function PrinterSettingsPage() {
-  const initialConfig = await getPrinterSettings();
+  // Configuração inicial é null - será carregada do banco via API no componente cliente
+  const initialConfig = null;
 
   return (
     <div className="space-y-6">

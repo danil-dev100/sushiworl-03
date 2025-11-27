@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Info, MessageSquare } from 'lucide-react';
 
 export interface OrderReceiptSection {
@@ -184,7 +184,7 @@ export default function OrderReceiptPreview({ order, companyInfo, config = defau
               <p className="text-sm text-gray-700">{order.deliveryAddress}</p>
               {config.fields.showQRCode && (
                 <div className="flex justify-center mt-3">
-                  <QRCode
+                  <QRCodeSVG
                     value={`${companyInfo.websiteUrl}/pedido/${order.id}`}
                     size={120}
                     level="M"

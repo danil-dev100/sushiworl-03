@@ -11,7 +11,8 @@ import {
   MapPin,
   TrendingUp,
   Webhook,
-  Printer
+  Printer,
+  Mail
 } from 'lucide-react';
 
 const menuItems = [
@@ -39,6 +40,11 @@ const menuItems = [
     label: 'Marketing',
     icon: TrendingUp,
     href: '/admin/marketing/promocoes',
+  },
+  {
+    label: 'Email',
+    icon: Mail,
+    href: '/admin/marketing/email',
   },
   {
     label: 'Webhooks',

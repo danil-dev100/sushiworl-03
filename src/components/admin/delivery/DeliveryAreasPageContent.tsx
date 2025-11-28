@@ -69,6 +69,7 @@ export function DeliveryAreasPageContent({
   const [drawnPolygon, setDrawnPolygon] = useState<number[][] | null>(null);
   const [restaurantLocation, setRestaurantLocation] = useState('');
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [showMapView, setShowMapView] = useState(false);
 
   useEffect(() => {
     setRestaurantLocation(restaurantAddress);
@@ -85,6 +86,8 @@ export function DeliveryAreasPageContent({
     });
     setDrawnPolygon(null);
     setSelectedArea(null);
+    setIsDrawing(false);
+    setShowMapView(false);
     setIsDialogOpen(true);
   };
 
@@ -120,8 +123,13 @@ export function DeliveryAreasPageContent({
   };
 
   const handleSave = async () => {
-    if (!editingArea.name || !drawnPolygon || drawnPolygon.length < 3) {
-      toast.error('Preencha todos os campos e desenhe a área no mapa');
+    if (!editingArea.name) {
+      toast.error('Preencha o nome da área');
+      return;
+    }
+
+    if (!drawnPolygon || drawnPolygon.length < 3) {
+      toast.error('Desenhe a área no mapa (mínimo 3 pontos)');
       return;
     }
 
@@ -158,6 +166,9 @@ export function DeliveryAreasPageContent({
       setIsDialogOpen(false);
       setEditingArea({});
       setDrawnPolygon(null);
+      setSelectedArea(null);
+      setIsDrawing(false);
+      setShowMapView(false);
     } catch (error) {
       console.error('Erro ao salvar área:', error);
       toast.error('Erro ao salvar área');
@@ -198,7 +209,7 @@ export function DeliveryAreasPageContent({
   };
 
   return (
-    <div className="flex h-full flex-col gap-6">
+    <div className="flex flex-col gap-6 h-full overflow-hidden">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-4xl font-black text-[#FF6B00]">Áreas de Entrega</h1>
@@ -237,10 +248,10 @@ export function DeliveryAreasPageContent({
         </div>
       </section>
 
-      <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-10">
+      <div className="flex-1 grid grid-cols-1 gap-6 lg:grid-cols-10 overflow-hidden">
         {/* Lista de Áreas */}
-        <div className="flex flex-col gap-4 lg:col-span-3">
-          <div className="rounded-xl border border-[#ead9cd] bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-4 lg:col-span-3 overflow-hidden">
+          <div className="rounded-xl border border-[#ead9cd] bg-white p-4 shadow-sm h-full overflow-y-auto">
             <h3 className="mb-4 font-bold text-[#333333]">Áreas Cadastradas</h3>
             {areas.length > 0 ? (
               <div className="space-y-3">
@@ -307,12 +318,25 @@ export function DeliveryAreasPageContent({
         </div>
 
         {/* Mapa */}
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-7 overflow-hidden">
           <div className="h-full min-h-[500px] rounded-xl border border-[#ead9cd] bg-white shadow-sm overflow-hidden">
             <DeliveryMap
               areas={areas}
               selectedArea={selectedArea}
               onPolygonDrawn={setDrawnPolygon}
+              onDrawingFinished={() => {
+                // Quando o usuário termina de desenhar no mapa principal, abre o dialog
+                const newColor = getRandomColor();
+                setEditingArea({
+                  name: '',
+                  deliveryType: 'PAID',
+                  deliveryFee: 0,
+                  minOrderValue: null,
+                  color: newColor,
+                  isActive: true,
+                });
+                setIsDialogOpen(true);
+              }}
               restaurantAddress={restaurantLocation}
             />
           </div>
@@ -321,7 +345,7 @@ export function DeliveryAreasPageContent({
 
       {/* Dialog de Criação/Edição */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {selectedArea ? 'Editar Área' : 'Adicionar Nova Área'}
@@ -413,6 +437,22 @@ export function DeliveryAreasPageContent({
                 </p>
               </div>
             )}
+
+            {/* Mapa para desenhar dentro do dialog */}
+            <div className="mt-4">
+              <Label className="text-sm font-medium mb-2 block">Desenhar Área no Mapa</Label>
+              <div className="h-64 rounded-lg border border-[#ead9cd] overflow-hidden">
+                <DeliveryMap
+                  areas={areas}
+                  selectedArea={selectedArea}
+                  onPolygonDrawn={setDrawnPolygon}
+                  restaurantAddress={restaurantLocation}
+                  initialDrawingMode={!selectedArea}
+                  initialPolygonColor={editingArea.color}
+                  initialPolygon={selectedArea?.polygon}
+                />
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -424,6 +464,7 @@ export function DeliveryAreasPageContent({
             <Button
               onClick={handleSave}
               className="bg-[#FF6B00] hover:bg-[#FF6B00]/90"
+              disabled={!drawnPolygon || drawnPolygon.length < 3}
             >
               Salvar Área
             </Button>

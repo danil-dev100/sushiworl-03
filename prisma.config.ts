@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 /**
  * Configuração moderna do Prisma com loading de .env
  */
-dotenv.config({ path: '.env.local' }); // Carrega envs antes de tudo
+dotenv.config({ path: '.env' }); // Carrega envs antes de tudo
 
 const config = {
   schema: path.join('prisma', 'schema.prisma'),

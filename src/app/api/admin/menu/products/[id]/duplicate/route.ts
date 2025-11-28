@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(
   request: NextRequest,
@@ -19,13 +20,14 @@ export async function POST(
     // Buscar produto original
     const original = await prisma.product.findUnique({
       where: { id },
-      include: {
-        productOptions: {
-          include: {
-            choices: true,
-          },
-        },
-      },
+      // TEMPORÁRIO: Remover productOptions até sincronizar schema
+      // include: {
+      //   productOptions: {
+      //     include: {
+      //       choices: true,
+      //     },
+      //   },
+      // },
     });
 
     if (!original) {
@@ -78,6 +80,11 @@ export async function POST(
         salt: original.salt,
       },
     });
+
+    // Revalidar páginas que mostram produtos
+    revalidatePath('/');
+    revalidatePath('/cardapio');
+    revalidatePath('/admin/cardapio');
 
     return NextResponse.json({ product }, { status: 201 });
   } catch (error) {

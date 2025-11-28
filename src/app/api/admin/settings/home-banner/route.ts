@@ -11,6 +11,7 @@ type HomeHeroPayload = {
   headline: string;
   headlineColor: string;
   headlineSize: number;
+  bannerHeight: number;
 };
 
 const DEFAULT_SETTINGS = {
@@ -37,6 +38,14 @@ function sanitizeSize(value: unknown): number {
   return Number(numeric.toFixed(1));
 }
 
+function sanitizeBannerHeight(value: unknown): number {
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) return 60;
+  if (numeric < 30) return 30;
+  if (numeric > 100) return 100;
+  return Number(numeric.toFixed(0));
+}
+
 function sanitizeColor(value: unknown): string {
   if (typeof value === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value)) {
     return value.toUpperCase();
@@ -55,6 +64,7 @@ function buildHeroPayload(body: any): HomeHeroPayload {
         : 'SushiWorld: O Sabor do Japão na Sua Casa',
     headlineColor: sanitizeColor(body?.headlineColor ?? '#FFFFFF'),
     headlineSize: sanitizeSize(body?.headlineSize ?? 4.5),
+    bannerHeight: sanitizeBannerHeight(body?.bannerHeight ?? 60),
   };
 }
 

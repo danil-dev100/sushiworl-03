@@ -1,4 +1,7 @@
+'use client';
+
 import ProductCard from './ProductCard';
+import { useStoreStatus } from '@/hooks/useStoreStatus';
 
 interface Product {
   id: string | number;
@@ -8,6 +11,8 @@ interface Product {
   discountPrice?: string;
   category: string;
   image: string;
+  status?: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DISCONTINUED';
+  outOfStock?: boolean;
 }
 
 interface ProductSectionProps {
@@ -15,6 +20,8 @@ interface ProductSectionProps {
 }
 
 export default function ProductSection({ products }: ProductSectionProps) {
+  const { isOpen, message } = useStoreStatus();
+
   if (!products || products.length === 0) {
     return null;
   }
@@ -30,6 +37,9 @@ export default function ProductSection({ products }: ProductSectionProps) {
           price={product.price}
           discountPrice={product.discountPrice}
           imageUrl={product.image}
+          status={product.status}
+          outOfStock={product.outOfStock}
+          storeStatus={{ isOpen, message }}
         />
       ))}
     </div>

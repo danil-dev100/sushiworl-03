@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { revalidatePath } from 'next/cache';
 
 export async function PUT(
   request: NextRequest,
@@ -55,6 +56,11 @@ export async function PUT(
         salt: body.salt,
       },
     });
+
+    // Revalidar páginas que mostram produtos
+    revalidatePath('/');
+    revalidatePath('/cardapio');
+    revalidatePath('/admin/cardapio');
 
     return NextResponse.json({ product });
   } catch (error) {

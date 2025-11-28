@@ -343,6 +343,24 @@ export function ProductBasicInfo({ form, categories }: ProductBasicInfoProps) {
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="outOfStock"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Esgotado</FormLabel>
+                <FormDescription className="text-sm">
+                  Marque se o produto está temporariamente indisponível
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
       </div>
     </div>
   );

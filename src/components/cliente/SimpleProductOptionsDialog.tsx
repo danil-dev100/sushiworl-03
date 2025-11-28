@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Sparkles, Check } from 'lucide-react';
 
 interface ProductOption {
   id: string;
@@ -38,7 +37,6 @@ export function SimpleProductOptionsDialog({
 }: SimpleProductOptionsDialogProps) {
   if (!open || options.length === 0) return null;
 
-  // Para simplicidade, vamos mostrar apenas a primeira opção
   const option = options[0];
   const totalPrice = option.isPaid ? option.basePrice + (option.choices[0]?.price || 0) : 0;
 
@@ -52,46 +50,72 @@ export function SimpleProductOptionsDialog({
     onOpenChange(false);
   };
 
+  // Texto persuasivo baseado no tipo de opcional
+  const getPersuasiveText = () => {
+    const name = option.name.toLowerCase();
+    if (name.includes('brasea')) return 'Eleve sua experiência com um toque especial de chef!';
+    if (name.includes('queijo') || name.includes('phila')) return 'A cremosidade perfeita para complementar seu pedido!';
+    if (name.includes('molho')) return 'O sabor extra que faz toda a diferença!';
+    return 'A escolha favorita dos nossos clientes!';
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-sm rounded-xl bg-[#f5f1e9] dark:bg-[#23170f] p-6 text-center shadow-lg relative">
-        {/* Botão Fechar */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={() => onOpenChange(false)}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl bg-[#f5f1e9] dark:bg-[#23170f] p-6 text-center shadow-2xl relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Badge */}
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#FF6B00] text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+          <Sparkles className="h-3 w-3" />
+          Recomendado
+        </div>
+
+        {/* Fechar */}
         <button
           onClick={() => onOpenChange(false)}
-          className="absolute right-4 top-4 text-[#333333] dark:text-[#f5f1e9] hover:text-[#FF6B00] transition-colors"
+          className="absolute right-3 top-3 text-[#333333]/50 dark:text-[#f5f1e9]/50 hover:text-[#FF6B00] transition-colors"
         >
           <X className="h-5 w-5" />
         </button>
 
         {/* Título */}
-        <h3 className="text-xl font-bold text-[#333333] dark:text-[#f5f1e9]">
-          Deseja adicionar um opcional?
+        <h3 className="text-xl font-bold text-[#333333] dark:text-[#f5f1e9] mt-2">
+          Turbine seu pedido!
         </h3>
 
-        {/* Descrição */}
-        <p className="mt-4 text-base text-[#333333]/80 dark:text-[#f5f1e9]/80">
-          {option.name} por apenas €{totalPrice.toFixed(2)}?
+        {/* Texto persuasivo */}
+        <p className="mt-3 text-sm text-[#a16b45] dark:text-[#f5f1e9]/70">
+          {getPersuasiveText()}
         </p>
 
-        {option.description && (
-          <p className="mt-2 text-sm text-[#a16b45]">
-            {option.description}
+        {/* Preço destaque */}
+        <div className="mt-4 py-3 px-4 bg-white/50 dark:bg-black/20 rounded-lg">
+          <p className="text-lg font-bold text-[#333333] dark:text-[#f5f1e9]">
+            {option.name}
           </p>
-        )}
+          <p className="text-2xl font-black text-[#FF6B00] mt-1">
+            +€{totalPrice.toFixed(2).replace('.', ',')}
+          </p>
+        </div>
 
         {/* Botões */}
-        <div className="mt-6 flex flex-col gap-3">
+        <div className="mt-5 flex flex-col gap-2">
           <button
             onClick={handleAccept}
-            className="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-[#FF6B00] text-white text-base font-bold hover:opacity-90 transition-opacity"
+            className="w-full flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl h-12 px-4 bg-[#FF6B00] text-white text-base font-bold hover:bg-[#ff7f1f] transition-colors shadow-lg shadow-[#FF6B00]/30"
           >
-            Aceitar Opcional (+€{totalPrice.toFixed(2)})
+            <Check className="h-5 w-5" />
+            Sim, quero! (+€{totalPrice.toFixed(2).replace('.', ',')})
           </button>
           <button
             onClick={handleReject}
-            className="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-4 bg-[#FF6B00]/20 dark:bg-white/20 text-[#FF6B00] dark:text-white text-base font-bold hover:bg-[#FF6B00]/30 dark:hover:bg-white/30 transition-colors"
+            className="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-11 px-4 border-2 border-[#FF6B00]/30 text-[#FF6B00] dark:text-[#f5f1e9] text-sm font-medium hover:bg-[#FF6B00]/10 transition-colors"
           >
-            Adicionar sem Opcional
+            Não, obrigado
           </button>
         </div>
       </div>

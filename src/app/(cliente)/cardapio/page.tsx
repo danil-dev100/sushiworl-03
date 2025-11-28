@@ -12,7 +12,6 @@ async function getProducts() {
     const products = await prisma.product.findMany({
       where: {
         isVisible: true,
-        outOfStock: false,
       },
       orderBy: {
         createdAt: 'desc',
@@ -26,6 +25,8 @@ async function getProducts() {
         discountPrice: true,
         category: true,
         imageUrl: true,
+        status: true,
+        outOfStock: true,
         isHot: true,
         isHalal: true,
         isVegan: true,
@@ -56,6 +57,8 @@ async function getProducts() {
         discountPrice: product.discountPrice ? `€${product.discountPrice.toFixed(2)}` : undefined,
         category: product.category,
         image: product.imageUrl,
+        status: product.status,
+        outOfStock: product.outOfStock,
         isHot: product.isHot,
         isHalal: product.isHalal,
         isVegan: product.isVegan,
@@ -78,6 +81,8 @@ async function getProducts() {
         discountPrice: product.discountPrice ? `€${product.discountPrice.toFixed(2)}` : undefined,
         category: product.category,
         image: product.imageUrl,
+        status: product.status,
+        outOfStock: product.outOfStock,
       }));
 
     return produtosPorCategoria;

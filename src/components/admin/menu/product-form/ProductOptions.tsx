@@ -43,6 +43,8 @@ export function ProductOptions({ productId }: ProductOptionsProps) {
       if (response.ok) {
         const data = await response.json();
         setOptions(data.options || []);
+      } else {
+        console.error('Erro na resposta:', response.status);
       }
     } catch (error) {
       console.error('Erro ao carregar opções:', error);
@@ -122,7 +124,10 @@ export function ProductOptions({ productId }: ProductOptionsProps) {
       </div>
 
       {isLoading ? (
-        <div className="text-center text-sm text-[#a16b45]">Carregando opções...</div>
+        <div className="flex items-center justify-center p-6">
+          <Loader2 className="h-6 w-6 animate-spin text-[#FF6B00]" />
+          <span className="ml-2 text-sm text-[#a16b45]">Carregando opções...</span>
+        </div>
       ) : options.length === 0 ? (
         <div className="rounded-md border border-dashed border-[#ead9cd] p-6 text-center dark:border-[#4a3c30]">
           <p className="text-sm text-[#a16b45]">
@@ -144,6 +149,7 @@ export function ProductOptions({ productId }: ProductOptionsProps) {
                   {option.type === 'REQUIRED' ? 'Obrigatório' : 'Opcional'} •{' '}
                   {option.choices?.length || 0} escolhas •{' '}
                   {option.displayAt === 'SITE' ? 'Exibir no site' : 'Exibir no carrinho'}
+                  {option.isPaid && option.basePrice > 0 && ` • €${option.basePrice.toFixed(2)}`}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -205,4 +211,3 @@ export function ProductOptions({ productId }: ProductOptionsProps) {
     </div>
   );
 }
-

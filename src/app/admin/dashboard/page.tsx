@@ -40,14 +40,15 @@ export default function DashboardPage() {
   const [customMetrics, setCustomMetrics] = useState<any[]>([]);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<'today' | '7days' | '30days' | 'all'>('30days');
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [period]);
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch('/api/admin/dashboard');
+      const response = await fetch(`/api/admin/dashboard?period=${period}`);
       if (response.ok) {
         const dashboardData = await response.json();
         setData(dashboardData);
@@ -61,13 +62,13 @@ export default function DashboardPage() {
 
   const handleExportCSV = async () => {
     try {
-      const response = await fetch('/api/admin/dashboard/export-csv');
+      const response = await fetch(`/api/admin/dashboard/export-csv?period=${period}`);
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `relatorio-dashboard-${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `relatorio-dashboard-${period}-${new Date().toISOString().split('T')[0]}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -80,6 +81,31 @@ export default function DashboardPage() {
       alert('Erro ao exportar relatório CSV');
     }
   };
+
+  if (loading || !data) {
+    return (
+      <div className="flex flex-col gap-8">
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <h1 className="text-4xl font-black leading-tight tracking-tight text-[#FF6B00]">
+              Dashboard
+            </h1>
+            <TooltipHelper text="Painel principal com métricas gerais do negócio, gráficos de vendas e informações sobre pedidos" />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-[#a16b45]">
+              Carregando dados...
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
+        </div>
+      </div>
+    );
+  }
 
   const stats = [
     {
@@ -124,31 +150,6 @@ export default function DashboardPage() {
     },
   ];
 
-  if (loading || !data) {
-    return (
-      <div className="flex flex-col gap-8">
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <h1 className="text-4xl font-black leading-tight tracking-tight text-[#FF6B00]">
-              Dashboard
-            </h1>
-            <TooltipHelper text="Painel principal com métricas gerais do negócio, gráficos de vendas e informações sobre pedidos" />
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="text-sm text-[#a16b45]">
-              Carregando dados...
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
@@ -160,6 +161,50 @@ export default function DashboardPage() {
           <TooltipHelper text="Painel principal com métricas gerais do negócio, gráficos de vendas e informações sobre pedidos" />
         </div>
         <div className="flex items-center gap-3">
+          {/* Period Filter */}
+          <div className="flex items-center gap-2 rounded-lg border border-[#ead9cd] dark:border-[#4a3c30] bg-white dark:bg-[#2a1e14] p-1">
+            <button
+              onClick={() => setPeriod('today')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                period === 'today'
+                  ? 'bg-[#FF6B00] text-white'
+                  : 'text-[#a16b45] hover:bg-[#FF6B00]/10'
+              }`}
+            >
+              Hoje
+            </button>
+            <button
+              onClick={() => setPeriod('7days')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                period === '7days'
+                  ? 'bg-[#FF6B00] text-white'
+                  : 'text-[#a16b45] hover:bg-[#FF6B00]/10'
+              }`}
+            >
+              7 Dias
+            </button>
+            <button
+              onClick={() => setPeriod('30days')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                period === '30days'
+                  ? 'bg-[#FF6B00] text-white'
+                  : 'text-[#a16b45] hover:bg-[#FF6B00]/10'
+              }`}
+            >
+              30 Dias
+            </button>
+            <button
+              onClick={() => setPeriod('all')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                period === 'all'
+                  ? 'bg-[#FF6B00] text-white'
+                  : 'text-[#a16b45] hover:bg-[#FF6B00]/10'
+              }`}
+            >
+              Tudo
+            </button>
+          </div>
+
           <Button
             onClick={handleExportCSV}
             variant="outline"

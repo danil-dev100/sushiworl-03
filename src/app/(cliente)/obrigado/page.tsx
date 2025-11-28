@@ -1,21 +1,28 @@
-import { Metadata } from 'next';
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Pedido Confirmado - SushiWorld',
-  description: 'Seu pedido foi confirmado com sucesso!',
-};
-
-// TODO: Buscar dados do pedido da URL ou sessão
-const pedidoMock = {
-  id: 'SW-1234-5678',
-  total: 45.50,
-  items: 'Combo Especial, Hot Roll, Temaki Salmão e mais...',
-};
+interface OrderData {
+  id: string;
+  total: number;
+  items: string;
+  emailSent: boolean;
+}
 
 export default function ObrigadoPage() {
-  // TODO: Implementar disparo de eventos de conversão para GA4, Facebook Pixel, Google Ads
+  const [orderData, setOrderData] = useState<OrderData | null>(null);
+
+  useEffect(() => {
+    // Buscar dados do pedido do sessionStorage
+    const storedOrder = sessionStorage.getItem('lastOrder');
+    if (storedOrder) {
+      setOrderData(JSON.parse(storedOrder));
+      // Limpar após leitura
+      sessionStorage.removeItem('lastOrder');
+    }
+  }, []);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">
@@ -31,7 +38,9 @@ export default function ObrigadoPage() {
                 Obrigado! Seu pedido foi confirmado.
               </h1>
               <p className="text-[#a16b45] dark:text-[#a1a1aa] text-base font-normal leading-normal pt-2 px-4 text-center max-w-md">
-                Você receberá um e-mail de confirmação em breve com todos os detalhes do seu pedido.
+                {orderData?.emailSent
+                  ? 'Você receberá um e-mail de confirmação em breve com todos os detalhes do seu pedido.'
+                  : 'Seu pedido foi registrado com sucesso e está aguardando confirmação do restaurante.'}
               </p>
             </div>
 
@@ -44,7 +53,7 @@ export default function ObrigadoPage() {
                 Resumo da sua compra
               </h4>
               <p className="text-[#333333] dark:text-[#f5f1e9] text-base font-normal leading-normal mb-6">
-                {pedidoMock.items}
+                {orderData?.items || 'Carregando itens...'}
               </p>
               <div className="flex flex-col gap-3">
                 <div className="flex justify-between gap-x-6 py-1">
@@ -52,19 +61,28 @@ export default function ObrigadoPage() {
                     ID do Pedido
                   </p>
                   <p className="text-[#333333] dark:text-[#f5f1e9] text-sm font-medium leading-normal text-right">
-                    {pedidoMock.id}
+                    {orderData?.id || '...'}
                   </p>
                 </div>
                 <div className="flex justify-between gap-x-6 py-1">
                   <p className="text-[#333333] dark:text-[#f5f1e9] text-sm font-normal leading-normal">
                     Valor Total
                   </p>
-                  <p className="text-[#333333] dark:text-[#f5f1e9] text-sm font-medium leading-normal text-right">
-                    €{pedidoMock.total.toFixed(2)}
+                  <p className="text-[#FF6B00] text-sm font-bold leading-normal text-right">
+                    €{orderData?.total?.toFixed(2) || '0.00'}
                   </p>
                 </div>
               </div>
             </div>
+
+            {/* Informação sobre Email */}
+            {orderData?.emailSent && (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  📧 Um e-mail com o resumo do seu pedido foi enviado para o seu endereço de e-mail cadastrado.
+                </p>
+              </div>
+            )}
 
             {/* Botões de Ação */}
             <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-center">
@@ -87,4 +105,3 @@ export default function ObrigadoPage() {
     </div>
   );
 }
-

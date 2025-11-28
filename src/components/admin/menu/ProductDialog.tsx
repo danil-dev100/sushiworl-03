@@ -20,6 +20,7 @@ import { ProductDetails } from './product-form/ProductDetails';
 import { ProductNutrition } from './product-form/ProductNutrition';
 import { ProductOptions } from './product-form/ProductOptions';
 import { ProductAvailability } from './product-form/ProductAvailability';
+import { TooltipHelper } from '@/components/shared/TooltipHelper';
 
 const productSchema = z.object({
   sku: z.string().min(1, 'SKU é obrigatório'),
@@ -213,12 +214,31 @@ export function ProductDialog({
         <FormProvider {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-lg font-semibold text-[#333333] dark:text-[#f5f1e9]">Configuração do Produto</span>
+                <TooltipHelper text="Configure todas as informações do produto através das diferentes abas" />
+              </div>
               <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="basic">Básico</TabsTrigger>
-                <TabsTrigger value="details">Detalhes</TabsTrigger>
-                <TabsTrigger value="nutrition">Nutrição</TabsTrigger>
-                <TabsTrigger value="options">Opções</TabsTrigger>
-                <TabsTrigger value="availability">Disponibilidade</TabsTrigger>
+                <TabsTrigger value="basic" className="flex items-center gap-2">
+                  Básico
+                  <TooltipHelper text="Informações essenciais do produto: nome, preço, categoria e imagem principal" />
+                </TabsTrigger>
+                <TabsTrigger value="details" className="flex items-center gap-2">
+                  Detalhes
+                  <TooltipHelper text="Descrição completa, ingredientes, restrições alimentares e configurações especiais" />
+                </TabsTrigger>
+                <TabsTrigger value="nutrition" className="flex items-center gap-2">
+                  Nutrição
+                  <TooltipHelper text="Informações nutricionais: calorias, macronutrientes e valores por porção" />
+                </TabsTrigger>
+                <TabsTrigger value="options" className="flex items-center gap-2">
+                  Opções
+                  <TooltipHelper text="Configure variações do produto: tamanhos, sabores, acompanhamentos extras" />
+                </TabsTrigger>
+                <TabsTrigger value="availability" className="flex items-center gap-2">
+                  Disponibilidade
+                  <TooltipHelper text="Controle quando e como o produto aparece no cardápio e para quais clientes" />
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="basic" className="space-y-4">

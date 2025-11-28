@@ -27,14 +27,20 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
   },
-  webpack: (config) => {
-    if (process.env.NODE_ENV === "development") {
-      config.module.rules.push({
-        test: /\.(jsx|tsx)$/,
-        exclude: /node_modules/,
-        enforce: "pre",
-        use: "@dyad-sh/nextjs-webpack-component-tagger",
-      });
+  experimental: {
+    // Ativar esbuild para melhor performance
+    esbuild: {
+      // Configurações adicionais do esbuild podem ser adicionadas aqui
+    },
+  },
+  // Configurações adicionais do esbuild para desenvolvimento
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      // Configurações específicas do esbuild para desenvolvimento
+      config.optimization = {
+        ...config.optimization,
+        minimize: false, // Desabilitar minificação em dev para melhor debugging
+      };
     }
     return config;
   },

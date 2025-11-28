@@ -21,11 +21,20 @@ interface CartItem {
   }[];
 }
 
+interface AdditionalItem {
+  id: string;
+  name: string;
+  price: number;
+}
+
 interface CartContextType {
   items: CartItem[];
+  additionalItems: AdditionalItem[];
   addItem: (item: Omit<CartItem, 'id'>) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  addAdditionalItem: (item: Omit<AdditionalItem, 'id'>) => void;
+  removeAdditionalItem: (id: string) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -35,16 +44,26 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [additionalItems, setAdditionalItems] = useState<AdditionalItem[]>([]);
 
   // Carregar carrinho do localStorage ao montar
   useEffect(() => {
     const savedCart = localStorage.getItem('sushiworld-cart');
+    const savedAdditional = localStorage.getItem('sushiworld-cart-additional');
     if (savedCart) {
       try {
         const parsed = JSON.parse(savedCart);
         setItems(parsed);
       } catch (error) {
         console.error('Erro ao carregar carrinho:', error);
+      }
+    }
+    if (savedAdditional) {
+      try {
+        const parsed = JSON.parse(savedAdditional);
+        setAdditionalItems(parsed);
+      } catch (error) {
+        console.error('Erro ao carregar itens adicionais:', error);
       }
     }
   }, []);
@@ -54,10 +73,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('sushiworld-cart', JSON.stringify(items));
   }, [items]);
 
+  // Salvar itens adicionais no localStorage quando mudar
+  useEffect(() => {
+    localStorage.setItem('sushiworld-cart-additional', JSON.stringify(additionalItems));
+  }, [additionalItems]);
+
   const addItem = (item: Omit<CartItem, 'id'>) => {
     const id = `${item.productId}-${Date.now()}-${Math.random()}`;
     const newItem = { ...item, id };
-    
+
     setItems((prev) => [...prev, newItem]);
     toast.success(`${item.name} adicionado ao carrinho!`);
   };
@@ -80,16 +104,31 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  const addAdditionalItem = (item: Omit<AdditionalItem, 'id'>) => {
+    // Verificar se já existe
+    const exists = additionalItems.find(i => i.name === item.name);
+    if (exists) return;
+
+    const id = `additional-${Date.now()}-${Math.random()}`;
+    const newItem = { ...item, id };
+    setAdditionalItems((prev) => [...prev, newItem]);
+  };
+
+  const removeAdditionalItem = (id: string) => {
+    setAdditionalItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
   const clearCart = () => {
     setItems([]);
+    setAdditionalItems([]);
     toast.success('Carrinho limpo');
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  
+
   const totalPrice = items.reduce((sum, item) => {
     let itemTotal = item.price * item.quantity;
-    
+
     // Adicionar preço das opções selecionadas
     if (item.selectedOptions) {
       item.selectedOptions.forEach((option) => {
@@ -98,17 +137,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         });
       });
     }
-    
+
     return sum + itemTotal;
-  }, 0);
+  }, 0) + additionalItems.reduce((sum, item) => sum + item.price, 0);
 
   return (
     <CartContext.Provider
       value={{
         items,
+        additionalItems,
         addItem,
         removeItem,
         updateQuantity,
+        addAdditionalItem,
+        removeAdditionalItem,
         clearCart,
         totalItems,
         totalPrice,
@@ -126,4 +168,3 @@ export function useCart() {
   }
   return context;
 }
-

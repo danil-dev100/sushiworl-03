@@ -49,6 +49,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { TooltipHelper } from '@/components/shared/TooltipHelper';
 import { toast } from 'sonner';
 import {
   Eye,
@@ -344,18 +345,24 @@ export function UsersPageContent({
     <div className="flex h-full flex-col gap-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-4xl font-black text-[#FF6B00]">Usuários</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-4xl font-black text-[#FF6B00]">Usuários</h1>
+            <TooltipHelper text="Sistema de gestão de usuários administrativos com controle de permissões e níveis de acesso" />
+          </div>
           <p className="text-sm text-[#a16b45]">
             Gerencie administradores e gerentes com diferentes níveis de acesso.
           </p>
         </div>
-        <Button
-          onClick={() => handleDialogOpen(null)}
-          className="flex items-center gap-2 bg-[#FF6B00] px-6 py-2 text-sm font-bold text-white transition hover:bg-[#FF6B00]/90"
-        >
-          <Plus className="h-4 w-4" />
-          Adicionar Usuário
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => handleDialogOpen(null)}
+            className="flex items-center gap-2 bg-[#FF6B00] px-6 py-2 text-sm font-bold text-white transition hover:bg-[#FF6B00]/90"
+          >
+            <Plus className="h-4 w-4" />
+            Adicionar Usuário
+          </Button>
+          <TooltipHelper text="Adicione um novo usuário administrativo com permissões específicas (Admin, Gerente, etc.)" />
+        </div>
       </header>
 
       <div className="flex items-center justify-between gap-4">

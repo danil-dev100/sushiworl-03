@@ -90,17 +90,6 @@ export default function SidebarMenu({ activeSection = 'destaques' }: SidebarMenu
             EXTRAS
           </p>
         </button>
-        
-        {/* Sobremesas */}
-        <button
-          onClick={() => handleClick('sobremesas')}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#FF6B00]/10 dark:hover:bg-[#FF6B00]/20 transition-all duration-200"
-        >
-          <span className="text-lg">🍰</span>
-          <p className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
-            SOBREMESAS
-          </p>
-        </button>
       </div>
     </aside>
   );

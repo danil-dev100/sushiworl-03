@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SushiWorld - Delivery de Sushi em Santa Iria",
   description: "O melhor sushi de Santa Iria. Peça online e receba em casa!",
+  icons: {
+    icon: "/logo.webp",
+    shortcut: "/logo.webp",
+    apple: "/logo.webp",
+  },
 };
 
 export default function RootLayout({

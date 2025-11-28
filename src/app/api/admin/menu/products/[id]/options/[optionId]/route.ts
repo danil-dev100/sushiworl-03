@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { revalidatePath } from 'next/cache';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { productId: string; optionId: string } }
+  { params }: { params: { id: string; optionId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,40 +16,30 @@ export async function PUT(
     }
 
     const body = await request.json();
-
-    // Deletar escolhas antigas e criar novas
-    await prisma.productOptionChoice.deleteMany({
-      where: { optionId: params.optionId },
-    });
+    const { optionId } = params;
 
     const option = await prisma.productOption.update({
-      where: { id: params.optionId },
+      where: { id: optionId },
       data: {
         name: body.name,
         type: body.type,
         description: body.description,
-        minSelection: body.minSelection || 0,
-        maxSelection: body.maxSelection || 1,
-        allowMultiple: body.allowMultiple || false,
-        displayAt: body.displayAt || 'CART',
-        isPaid: body.isPaid || false,
-        basePrice: body.basePrice || 0,
-        isActive: body.isActive ?? true,
-        sortOrder: body.sortOrder || 0,
-        choices: {
-          create: (body.choices || []).map((choice: any, index: number) => ({
-            name: choice.name,
-            price: choice.price || 0,
-            isDefault: choice.isDefault || false,
-            isActive: choice.isActive ?? true,
-            sortOrder: choice.sortOrder ?? index,
-          })),
-        },
+        minSelection: body.minSelection,
+        maxSelection: body.maxSelection,
+        allowMultiple: body.allowMultiple,
+        displayAt: body.displayAt,
+        isPaid: body.isPaid,
+        basePrice: body.basePrice,
       },
       include: {
         choices: true,
       },
     });
+
+    // Revalidar páginas que mostram produtos
+    revalidatePath('/');
+    revalidatePath('/cardapio');
+    revalidatePath('/admin/cardapio');
 
     return NextResponse.json({ option });
   } catch (error) {
@@ -59,7 +50,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { productId: string; optionId: string } }
+  { params }: { params: { id: string; optionId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -68,14 +59,17 @@ export async function DELETE(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    await prisma.productOption.delete({
-      where: { id: params.optionId },
+    const { optionId } = params;
+
+    // Soft delete - marcar como inativo
+    await prisma.productOption.update({
+      where: { id: optionId },
+      data: { isActive: false },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[Product Options API] Erro ao deletar opção:', error);
-    return NextResponse.json({ error: 'Erro ao deletar opção' }, { status: 500 });
+    console.error('[Product Options API] Erro ao remover opção:', error);
+    return NextResponse.json({ error: 'Erro ao remover opção' }, { status: 500 });
   }
 }
-

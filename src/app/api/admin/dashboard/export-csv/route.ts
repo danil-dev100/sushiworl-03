@@ -11,16 +11,37 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    // Obter período do query param
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get('period') || '30days';
 
-    // Buscar todos os pedidos do mês atual
+    const now = new Date();
+    let startDate: Date;
+
+    switch (period) {
+      case 'today':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case '7days':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '30days':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case 'all':
+        startDate = new Date(0);
+        break;
+      default:
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
+
+    // Buscar todos os pedidos do período
     const orders = await prisma.order.findMany({
       where: {
-        createdAt: { gte: startOfMonth },
+        createdAt: { gte: startDate },
       },
       include: {
-        orderItems: {
+        items: {
           include: {
             product: true,
           },
@@ -46,11 +67,11 @@ export async function GET(request: NextRequest) {
     ];
 
     const csvRows = orders.map(order => {
-      const products = order.orderItems
+      const products = order.items
         .map(item => `${item.product?.name || 'Produto'} (${item.quantity}x)`)
         .join('; ');
 
-      const totalQuantity = order.orderItems.reduce((sum, item) => sum + item.quantity, 0);
+      const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
       return [
         order.orderNumber,

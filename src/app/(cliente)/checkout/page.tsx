@@ -1,50 +1,285 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-
-// TODO: Integrar com API de pedidos e Context do carrinho
-const carrinhoMock = [
-  {
-    id: 1,
-    name: 'Combinado SushiWorld',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBJCduwNKfLI8-f3y_C2Au66G5WT16VFNY57DhKBjs1DlvcHdW_8ObjAGdjiq1goxCasQmysZJ0TR4PnW1zhiktWM_pOg2x_EkdiklmzoMB2HSF44uPbRGNgQQctJ-4Hnvma5M1xdjS5NU88h7DoEaLvw280A_quauKGE3Lwkk5eID_I4zfaIPEHFNgIy5rsKGUPEoM3Qiwp10X9NVIrrwisjtuL6ic6IiQTBd8OvL4U1E0Ezldh29WmRvAi1iosWezYFVGWrTbOjE',
-    price: 39.90,
-    quantity: 2,
-  },
-  {
-    id: 2,
-    name: 'Coca-Cola',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCmOpkGwGt1cykkweVuAAPmSgnHURXDi5e-UTVzQ6GLPz471Ddzj12GC0V6cmBRCqjAjHByxPXr1N_gRWHSLisjSADCD7SjrwSYvEtizo0yETrSPnsOJ--M6UqDWn__nmrahDlH0EYeXBqpQWZ-4T5HU6qT12tH76Klz9PNpywdpPXLyBawY-VoHbvVnsWcONU_zl2KFSq_RGRzFlnofv4L4t1OxI9GrtmtYKT6q8laixZAxA2kdFyicycCd7R3QLd8l7xbMM5EkfQ',
-    price: 2.50,
-    quantity: 1,
-  },
-];
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCart } from '@/contexts/CartContext';
+import { toast } from 'sonner';
 
 export default function CheckoutPage() {
+  const router = useRouter();
+  const { items, additionalItems, totalPrice, clearCart } = useCart();
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [valorEntregue, setValorEntregue] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Cupom
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    id: string;
+    code: string;
+    name: string;
+    discountAmount: number;
+  } | null>(null);
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
+  // Form data
+  const [formData, setFormData] = useState({
+    nome: '',
+    sobrenome: '',
+    email: '',
+    telefone: '',
+    endereco: '',
+    nif: '',
+    observacoes: '',
+  });
+
+  // Delivery validation
+  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
+  const [deliveryValidation, setDeliveryValidation] = useState<{
+    isValid: boolean;
+    message: string;
+    area?: {
+      id: string;
+      name: string;
+      deliveryType: string;
+      deliveryFee: number;
+      minOrderValue: number | null;
+    };
+  } | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
 
   // TODO: Buscar taxa de IVA das configurações do banco de dados
   const taxaIVA = 13; // Taxa de IVA em percentual (13% conforme especificado)
-  
-  const subtotal = carrinhoMock.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+  const subtotal = totalPrice;
   const taxaEntrega = 5.00;
-  
-  // Calcular IVA incluído no subtotal (modo inclusive)
-  // Fórmula: IVA = Subtotal - (Subtotal / (1 + Taxa/100))
-  const ivaIncluido = subtotal - (subtotal / (1 + taxaIVA / 100));
-  
-  const total = subtotal + taxaEntrega;
+  const desconto = appliedCoupon?.discountAmount || 0;
+
+  const total = Math.max(0, subtotal + taxaEntrega - desconto);
 
   const troco = valorEntregue ? parseFloat(valorEntregue) - total : 0;
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error('Digite um código de cupom');
+      return;
+    }
+
+    setIsApplyingCoupon(true);
+
+    try {
+      const response = await fetch('/api/promocoes/validar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: couponCode.trim(),
+          cartTotal: subtotal,
+          customerEmail: formData.email,
+          productIds: items.map(item => item.productId),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.valid) {
+        setAppliedCoupon({
+          id: data.promotion.id,
+          code: data.promotion.code,
+          name: data.promotion.name,
+          discountAmount: data.promotion.discountAmount,
+        });
+        toast.success(`Cupom "${data.promotion.code}" aplicado! Desconto: €${data.promotion.discountAmount.toFixed(2)}`);
+      } else {
+        toast.error(data.error || 'Cupom inválido');
+      }
+    } catch (error) {
+      console.error('Erro ao validar cupom:', error);
+      toast.error('Erro ao validar cupom');
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    toast.success('Cupom removido');
+  };
+
+  // Obter localização do usuário (GPS)
+  const getUserLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocalização não suportada pelo navegador');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ latitude, longitude });
+        toast.success('Localização obtida com sucesso!');
+
+        // Validar automaticamente após obter localização
+        validateDeliveryWithCoords(latitude, longitude);
+      },
+      (error) => {
+        console.error('Erro ao obter localização:', error);
+        toast.info('Não foi possível obter sua localização. Por favor, digite o endereço completo.');
+      }
+    );
+  };
+
+  // Validar endereço de entrega com coordenadas
+  const validateDeliveryWithCoords = async (lat: number, lng: number) => {
+    setIsValidatingAddress(true);
+    try {
+      const response = await fetch('/api/validate-delivery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          latitude: lat,
+          longitude: lng,
+        }),
+      });
+
+      const data = await response.json();
+      setDeliveryValidation(data);
+
+      if (data.isValid) {
+        toast.success(data.message);
+      } else {
+        toast.error(data.message || 'Endereço fora da área de entrega');
+      }
+    } catch (error) {
+      console.error('Erro ao validar endereço:', error);
+      toast.error('Erro ao validar endereço');
+    } finally {
+      setIsValidatingAddress(false);
+    }
+  };
+
+  // Validar endereço de entrega com texto
+  const validateDeliveryAddress = async () => {
+    if (!formData.endereco.trim()) {
+      toast.error('Digite o endereço completo');
+      return;
+    }
+
+    setIsValidatingAddress(true);
+    try {
+      const response = await fetch('/api/validate-delivery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: formData.endereco,
+          ...(userLocation && {
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
+          }),
+        }),
+      });
+
+      const data = await response.json();
+      setDeliveryValidation(data);
+
+      if (data.isValid) {
+        toast.success(data.message);
+      } else {
+        toast.error(data.message || 'Endereço fora da área de entrega');
+      }
+    } catch (error) {
+      console.error('Erro ao validar endereço:', error);
+      toast.error('Erro ao validar endereço');
+    } finally {
+      setIsValidatingAddress(false);
+    }
+  };
+
+  // Carregar localização do usuário ao montar o componente
+  useEffect(() => {
+    getUserLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implementar lógica de envio do pedido
-    setShowSuccessModal(true);
+
+    // Verificar se o endereço foi validado
+    if (!deliveryValidation || !deliveryValidation.isValid) {
+      toast.error('Por favor, valide seu endereço de entrega antes de finalizar o pedido');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const orderData = {
+        customerName: formData.nome,
+        customerSurname: formData.sobrenome,
+        customerEmail: formData.email,
+        customerPhone: formData.telefone,
+        address: formData.endereco,
+        nif: formData.nif,
+        paymentMethod: paymentMethod.toUpperCase(),
+        observations: formData.observacoes,
+        items: items.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          options: item.selectedOptions,
+        })),
+        subtotal,
+        deliveryFee: taxaEntrega,
+        discount: desconto,
+        couponCode: appliedCoupon?.code || null,
+        promotionId: appliedCoupon?.id || null,
+        additionalItems: additionalItems.map(item => ({ name: item.name, price: item.price })),
+      };
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+
+        // Limpar carrinho
+        clearCart();
+
+        // Salvar dados do pedido no sessionStorage para a página de obrigado
+        sessionStorage.setItem('lastOrder', JSON.stringify({
+          id: result.order.id,
+          total: result.order.total,
+          items: result.order.items,
+          emailSent: result.emailSent,
+        }));
+
+        // Redirecionar para página de obrigado
+        router.push('/obrigado');
+      } else {
+        setShowErrorModal(true);
+      }
+    } catch (error) {
+      console.error('Erro ao enviar pedido:', error);
+      setShowErrorModal(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -58,6 +293,19 @@ export default function CheckoutPage() {
               </h1>
             </div>
 
+            {items.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <p className="text-xl text-[#333333]/70 dark:text-[#f5f1e9]/70 mb-6">
+                  Seu carrinho está vazio
+                </p>
+                <Link
+                  href="/cardapio"
+                  className="flex items-center justify-center rounded-lg h-12 px-6 bg-[#FF6B00] text-white text-base font-bold hover:opacity-90 transition-opacity"
+                >
+                  Ver Cardápio
+                </Link>
+              </div>
+            ) : (
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
                 <main className="col-span-1 flex flex-col gap-8 md:col-span-2">
@@ -73,6 +321,9 @@ export default function CheckoutPage() {
                         </p>
                         <input
                           required
+                          name="nome"
+                          value={formData.nome}
+                          onChange={handleInputChange}
                           className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
                           placeholder="Digite seu nome"
                         />
@@ -83,6 +334,9 @@ export default function CheckoutPage() {
                         </p>
                         <input
                           required
+                          name="sobrenome"
+                          value={formData.sobrenome}
+                          onChange={handleInputChange}
                           className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
                           placeholder="Digite seu sobrenome"
                         />
@@ -94,6 +348,9 @@ export default function CheckoutPage() {
                         <input
                           required
                           type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
                           className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
                           placeholder="seu.email@exemplo.com"
                         />
@@ -105,6 +362,9 @@ export default function CheckoutPage() {
                         <input
                           required
                           type="tel"
+                          name="telefone"
+                          value={formData.telefone}
+                          onChange={handleInputChange}
                           className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
                           placeholder="+351 XXX XXX XXX"
                         />
@@ -113,17 +373,85 @@ export default function CheckoutPage() {
                         <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
                           Endereço Completo*
                         </p>
-                        <input
-                          required
-                          className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
-                          placeholder="Rua, Número, Bairro, Cidade"
-                        />
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+                          <input
+                            required
+                            name="endereco"
+                            value={formData.endereco}
+                            onChange={handleInputChange}
+                            className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
+                            placeholder="Rua, Número, Bairro, Cidade"
+                          />
+                          <button
+                            type="button"
+                            onClick={validateDeliveryAddress}
+                            disabled={isValidatingAddress || !formData.endereco.trim()}
+                            className="flex h-14 items-center justify-center rounded-lg bg-[#FF6B00] px-6 text-base font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {isValidatingAddress ? 'Validando...' : '📍 Validar'}
+                          </button>
+                        </div>
+                        {/* Mensagem de validação */}
+                        {deliveryValidation && (
+                          <div
+                            className={`mt-2 flex items-start gap-2 rounded-lg border p-3 ${
+                              deliveryValidation.isValid
+                                ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                                : 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                            }`}
+                          >
+                            <span className="text-lg">
+                              {deliveryValidation.isValid ? '✓' : '✗'}
+                            </span>
+                            <div className="flex-1">
+                              <p
+                                className={`text-sm font-medium ${
+                                  deliveryValidation.isValid
+                                    ? 'text-green-700 dark:text-green-400'
+                                    : 'text-red-700 dark:text-red-400'
+                                }`}
+                              >
+                                {deliveryValidation.message}
+                              </p>
+                              {deliveryValidation.isValid && deliveryValidation.area && (
+                                <div className="mt-1 text-xs text-green-600 dark:text-green-500">
+                                  <p>Área: {deliveryValidation.area.name}</p>
+                                  <p>
+                                    Taxa de entrega:{' '}
+                                    {deliveryValidation.area.deliveryType === 'FREE'
+                                      ? 'Grátis'
+                                      : `€${deliveryValidation.area.deliveryFee.toFixed(2)}`}
+                                  </p>
+                                  {deliveryValidation.area.minOrderValue && (
+                                    <p>
+                                      Pedido mínimo: €{deliveryValidation.area.minOrderValue.toFixed(2)}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        {/* Botão para obter localização GPS */}
+                        {!userLocation && (
+                          <button
+                            type="button"
+                            onClick={getUserLocation}
+                            className="mt-2 flex items-center gap-2 text-sm text-[#FF6B00] hover:underline"
+                          >
+                            <span>📍</span>
+                            Usar minha localização atual
+                          </button>
+                        )}
                       </label>
                       <label className="flex flex-col sm:col-span-2">
                         <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
                           NIF <span className="text-sm font-normal text-[#333333]/70 dark:text-[#f5f1e9]/70">(Opcional)</span>
                         </p>
                         <input
+                          name="nif"
+                          value={formData.nif}
+                          onChange={handleInputChange}
                           className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
                           placeholder="Digite seu NIF"
                         />
@@ -198,28 +526,56 @@ export default function CheckoutPage() {
                       Detalhes do Pedido
                     </h2>
                     <div className="space-y-4 px-4 py-3">
-                      <div className="flex items-end gap-3">
-                        <label className="flex flex-1 flex-col">
-                          <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
-                            Cupom de Desconto
-                          </p>
-                          <input
-                            className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
-                            placeholder="Insira seu cupom"
-                          />
-                        </label>
-                        <button
-                          type="button"
-                          className="flex h-14 items-center justify-center rounded-lg bg-[#FF6B00]/20 px-6 text-base font-bold text-[#FF6B00] transition-colors hover:bg-[#FF6B00]/30 dark:bg-[#FF6B00]/30 dark:hover:bg-[#FF6B00]/40"
-                        >
-                          Aplicar
-                        </button>
-                      </div>
+                      {/* Cupom de Desconto */}
+                      {appliedCoupon ? (
+                        <div className="flex items-center justify-between rounded-lg border border-green-500 bg-green-50 dark:bg-green-900/20 p-4">
+                          <div>
+                            <p className="font-medium text-green-700 dark:text-green-400">
+                              Cupom aplicado: {appliedCoupon.code}
+                            </p>
+                            <p className="text-sm text-green-600 dark:text-green-500">
+                              Desconto: -€{appliedCoupon.discountAmount.toFixed(2)}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleRemoveCoupon}
+                            className="text-sm font-medium text-red-600 hover:text-red-700"
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-end gap-3">
+                          <label className="flex flex-1 flex-col">
+                            <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
+                              Cupom de Desconto
+                            </p>
+                            <input
+                              value={couponCode}
+                              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                              className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
+                              placeholder="Insira seu cupom"
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={handleApplyCoupon}
+                            disabled={isApplyingCoupon}
+                            className="flex h-14 items-center justify-center rounded-lg bg-[#FF6B00]/20 px-6 text-base font-bold text-[#FF6B00] transition-colors hover:bg-[#FF6B00]/30 dark:bg-[#FF6B00]/30 dark:hover:bg-[#FF6B00]/40 disabled:opacity-50"
+                          >
+                            {isApplyingCoupon ? 'Validando...' : 'Aplicar'}
+                          </button>
+                        </div>
+                      )}
                       <label className="flex flex-col">
                         <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
                           Observações
                         </p>
                         <textarea
+                          name="observacoes"
+                          value={formData.observacoes}
+                          onChange={handleInputChange}
                           className="form-textarea w-full resize-y rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-4 text-base font-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
                           placeholder="Ex: Sem wasabi, menos molho de soja, sem gengibre, sem cebolinho, etc."
                           rows={4}
@@ -228,40 +584,29 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Order Bump */}
+                  {/* Botão Finalizar */}
                   <div className="flex flex-col gap-6 px-4 py-3">
-                    <div className="flex items-start gap-4 rounded-lg border-2 border-dashed border-[#FF6B00]/50 bg-[#FF6B00]/10 dark:bg-[#FF6B00]/20 p-4">
-                      <input
-                        className="form-checkbox mt-1 h-5 w-5 rounded border-[#ead9cd] dark:border-[#5a4a3e] text-[#FF6B00] focus:ring-[#FF6B00]"
-                        id="order-bump"
-                        type="checkbox"
-                      />
-                      <label className="flex-1 cursor-pointer" htmlFor="order-bump">
-                        <p className="text-base font-bold text-[#333333] dark:text-[#f5f1e9]">
-                          Sim, quero adicionar molho extra por €2,50!
-                        </p>
-                      </label>
-                    </div>
                     <button
                       type="submit"
+                      disabled={isSubmitting}
                       className="h-14 w-full rounded-lg bg-[#FF6B00] text-lg font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Finalizar Pedido
+                      {isSubmitting ? 'Processando...' : 'Finalizar Pedido'}
                     </button>
                   </div>
                 </main>
 
                 {/* Resumo */}
                 <aside className="col-span-1 hidden md:block">
-                  <div className="sticky top-10 rounded-xl border border-[#ead9cd] dark:border-[#5a4a3e] bg-white dark:bg-[#23170f]/50 p-6 shadow-sm">
+                  <div className="sticky top-10 rounded-xl border border-[#ead9cd] dark:border-[#4a3c30] bg-white dark:bg-[#2a1e14] p-6 shadow-sm">
                     <h3 className="text-xl font-bold text-[#333333] dark:text-[#f5f1e9]">Resumo do Pedido</h3>
-                    <div className="mt-6 space-y-4 border-b border-[#ead9cd] dark:border-[#5a4a3e] pb-4">
-                      {carrinhoMock.map((item) => (
+                    <div className="mt-6 space-y-4 border-b border-[#ead9cd] dark:border-[#4a3c30] pb-4">
+                      {items.map((item) => (
                         <div key={item.id} className="flex items-center justify-between gap-4">
                           <div className="flex items-center gap-4">
                             <div className="relative w-14 h-14">
                               <Image
-                                src={item.image}
+                                src={item.image || '/placeholder-product.png'}
                                 alt={item.name}
                                 fill
                                 className="rounded-md object-cover"
@@ -278,6 +623,23 @@ export default function CheckoutPage() {
                           </span>
                         </div>
                       ))}
+                      {additionalItems.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="flex w-14 h-14 items-center justify-center rounded-md bg-[#FF6B00]/10">
+                              <span className="text-2xl">🛍️</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-medium text-[#333333] dark:text-[#f5f1e9]">
+                                {item.name}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="font-medium text-[#333333] dark:text-[#f5f1e9]">
+                            €{item.price.toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                     <div className="mt-4 space-y-2">
                       <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
@@ -288,15 +650,20 @@ export default function CheckoutPage() {
                         <span>Taxa de Entrega</span>
                         <span>€{taxaEntrega.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                      {appliedCoupon && (
+                        <div className="flex justify-between text-green-600 dark:text-green-400">
+                          <span>Desconto ({appliedCoupon.code})</span>
+                          <span>-€{appliedCoupon.discountAmount.toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="text-[#333333]/80 dark:text-[#f5f1e9]/80">
                         <span>IVA ({taxaIVA}% incluído)</span>
-                        <span>€{ivaIncluido.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-lg font-bold text-[#333333] dark:text-[#f5f1e9]">
                         <span>Total</span>
-                        <span>€{total.toFixed(2)}</span>
+                        <span className="text-[#FF6B00]">€{total.toFixed(2)}</span>
                       </div>
-                      <div className="mt-2 flex justify-end text-xs text-[#333333]/70 dark:text-[#f5f1e9]/70">
+                      <div className="mt-2 flex justify-end text-xs text-[#a16b45]">
                         <span>(IVA incluído)</span>
                       </div>
                     </div>
@@ -304,6 +671,7 @@ export default function CheckoutPage() {
                 </aside>
               </div>
             </form>
+            )}
           </div>
         </div>
       </div>
@@ -352,4 +720,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-

@@ -66,24 +66,6 @@ export function ProductAvailability({ form }: ProductAvailabilityProps) {
     <div className="space-y-4">
       <FormField
         control={form.control}
-        name="outOfStock"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-            <FormControl>
-              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-            </FormControl>
-            <div className="space-y-1 leading-none">
-              <FormLabel>Fora de Estoque</FormLabel>
-              <FormDescription>
-                Marque se o produto está temporariamente indisponível
-              </FormDescription>
-            </div>
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
         name="availableUntil"
         render={({ field }) => (
           <FormItem>

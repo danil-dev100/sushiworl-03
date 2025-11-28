@@ -8,6 +8,7 @@ type HomeHeroConfig = {
   headline: string;
   headlineColor: string;
   headlineSize: number;
+  bannerHeight: number;
 };
 
 const DEFAULT_HERO: HomeHeroConfig = {
@@ -18,6 +19,7 @@ const DEFAULT_HERO: HomeHeroConfig = {
   headline: 'SushiWorld: O Sabor do Japão na Sua Casa',
   headlineColor: '#FFFFFF',
   headlineSize: 4.5,
+  bannerHeight: 60,
 };
 
 function hexToRgba(hex: string, alpha: number) {
@@ -67,6 +69,8 @@ function parseHeroConfig(settings: any): HomeHeroConfig {
         : DEFAULT_HERO.headlineColor,
     headlineSize:
       typeof home.headlineSize === 'number' ? home.headlineSize : DEFAULT_HERO.headlineSize,
+    bannerHeight:
+      typeof home.bannerHeight === 'number' ? home.bannerHeight : DEFAULT_HERO.bannerHeight,
   };
 }
 
@@ -75,7 +79,10 @@ export default async function HeroBanner() {
   const hero = parseHeroConfig(settings);
 
   return (
-    <section className="relative flex min-h-[calc(100vh-73px)] w-full flex-col items-center justify-center overflow-hidden bg-cover bg-center">
+    <section
+      className="relative flex w-full flex-col items-center justify-center overflow-hidden bg-cover bg-center"
+      style={{ minHeight: `${hero.bannerHeight}vh` }}
+    >
       {hero.imageUrl && (
         <Image
           src={hero.imageUrl}

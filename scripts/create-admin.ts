@@ -3,56 +3,46 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log('🔧 Criando usuário administrador...\n');
+async function createAdminUser() {
+  try {
+    console.log('🔄 Recriando usuário admin...');
 
-  // Dados do admin
-  const email = 'admin@sushiworld.pt';
-  const password = 'admin123'; // TROCAR DEPOIS DO PRIMEIRO LOGIN
-  const name = 'Administrador';
+    // Primeiro deletar usuário existente se houver
+    await prisma.user.deleteMany({
+      where: { email: 'admin@sushiworld.pt' },
+    });
 
-  // Verificar se já existe
-  const existingUser = await prisma.user.findUnique({
-    where: { email },
-  });
+    console.log('👤 Criando usuário admin...');
 
-  if (existingUser) {
-    console.log('⚠️  Usuário admin já existe!');
-    console.log('📧 Email:', existingUser.email);
-    console.log('👤 Nome:', existingUser.name);
-    console.log('\n💡 Para resetar a senha, delete o usuário no Prisma Studio e rode este script novamente.');
-    return;
+    console.log('👤 Criando usuário admin...');
+
+    // Criar hash da senha
+    const hashedPassword = await bcrypt.hash('123sushi', 10);
+
+    // Criar usuário admin
+    const admin = await prisma.user.create({
+      data: {
+        email: 'admin@sushiworld.pt',
+        name: 'Administrador',
+        password: hashedPassword,
+        role: 'ADMIN',
+        firstLogin: true,
+        isActive: true,
+      },
+    });
+
+    console.log('✅ Usuário admin criado com sucesso!');
+    console.log(`📧 Email: ${admin.email}`);
+    console.log(`🔑 Senha: 123sushi`);
+    console.log('');
+    console.log('⚠️  IMPORTANTE: Altere a senha no primeiro login!');
+
+  } catch (error) {
+    console.error('❌ Erro ao criar/verificar usuário admin:', error);
+    process.exit(1);
+  } finally {
+    await prisma.$disconnect();
   }
-
-  // Hash da senha
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Criar admin
-  const admin = await prisma.user.create({
-    data: {
-      email,
-      name,
-      password: hashedPassword,
-      role: 'ADMIN',
-      isActive: true,
-      firstLogin: true, // Forçar troca de senha no primeiro login
-    },
-  });
-
-  console.log('✅ Administrador criado com sucesso!\n');
-  console.log('📧 Email:', admin.email);
-  console.log('👤 Nome:', admin.name);
-  console.log('🔑 Senha temporária:', password);
-  console.log('\n⚠️  IMPORTANTE: Troque a senha no primeiro login!');
-  console.log('🌐 Acesse: http://localhost:3000/login\n');
 }
 
-main()
-  .catch((error) => {
-    console.error('❌ Erro ao criar administrador:', error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
-
+createAdminUser();

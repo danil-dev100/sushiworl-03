@@ -4,6 +4,7 @@ import { CompanySettingsForm } from '@/components/admin/settings/CompanySettings
 import { getServerSession } from 'next-auth';
 import { authOptions, canManageSettings } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { TooltipHelper } from '@/components/shared/TooltipHelper';
 
 export const metadata: Metadata = {
   title: 'Configurações da Empresa | Admin - SushiWorld',
@@ -53,13 +54,16 @@ export default async function ConfiguracoesEmpresaPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <header>
-        <h1 className="text-4xl font-black text-[#FF6B00]">
-          Configurações da Empresa
-        </h1>
-        <p className="mt-1 text-sm text-[#a16b45]">
-          Configure os dados da empresa, horários e impostos
-        </p>
+      <header className="flex items-center gap-2">
+        <div>
+          <h1 className="text-4xl font-black text-[#FF6B00]">
+            Configurações da Empresa
+          </h1>
+          <p className="mt-1 text-sm text-[#a16b45]">
+            Configure os dados da empresa, horários e impostos
+          </p>
+        </div>
+        <TooltipHelper text="Configurações gerais da empresa incluindo dados fiscais, horários de funcionamento e informações de contato" />
       </header>
 
       {/* Form */}

@@ -78,3 +78,115 @@ Esta seção descreve como o sistema se integra com APIs externas de plataformas
 *   **Testes:** Botões para testar o envio de eventos para cada plataforma integrada.
 
 ...
+Via Feed (Recomendado): O site deve gerar um feed de produtos (um arquivo .txt, .csv ou .json) e fornecer a URL para o Facebook importar.
+Formato do Feed (exemplo .csv):
+O Facebook espera um arquivo .csv com colunas específicas. O formato básico para produtos de comida/delivery pode ser simplificado, mas deve incluir campos obrigatórios.
+id	title	description	availability	condition	price	link	image_link	brand	google_product_category	product_type	quantity_to_sell_on_facebook	item_group_id	checkout_url	sale_price	sale_price_effective_date	tax	shipping	shipping_weight	shipping_size	shipping_length	shipping_width	shipping_height	gender	age_group	color	size	pattern	material	return_policy_label	size_system	size_type	variant		
+
+Campos Importantes:
+
+id: SKU ou ID único do produto no seu sistema.
+title: Nome do produto (ex: "Nigiri Salmão").
+description: Descrição do produto (ex: "Nigiri de salmão fresco").
+availability: "in stock", "out of stock".
+condition: Geralmente "new".
+price: Preço no formato X.XX CURRENCY (ex: 3.50 EUR).
+link: URL da página do produto no seu site.
+image_link: URL direta para a imagem do produto (ex: https://sushiworld.pt/produtos/1.webp).
+brand: Nome da sua marca (SushiWorld).
+google_product_category: Opcional, mas recomendado. Use códigos do Google (ex: "Food & Dining > Restaurants").
+product_type: Categoria hierárquica (ex: "Sushi", "Poke").
+quantity_to_sell_on_facebook: Quantidade disponível para venda via Facebook (opcional, pode ser gerenciado no site).
+item_group_id: Para produtos com variações (ex: diferentes sabores do mesmo tipo de poke), use o mesmo item_group_id. Se não houver variações, use o id do produto.
+checkout_url: URL para finalizar a compra (opcional, geralmente o link é suficiente).
+sale_price e sale_price_effective_date: Se o produto estiver em promoção.
+tax: Informações de imposto (opcional).
+shipping: Informações de frete (opcional).
+gender, age_group, color, size, pattern, material: Geralmente não aplicáveis para comida, deixe em branco.
+return_policy_label, size_system, size_type, variant: Geralmente não aplicáveis para comida, deixe em branco.
+Como o Site Sincroniza (Código vs API):
+Código (Feed de Arquivo):
+Implementação: O painel administrativo do SushiWorld deve ter uma opção para gerar automaticamente o feed de produtos (.csv, .txt ou .json) com base nos produtos cadastrados no banco de dados.
+Exemplo: Um botão "Exportar Catálogo para Facebook" no painel.
+Configuração no Facebook: No Commerce Manager, você adiciona uma fonte de dados ao seu catálogo. Escolha "Upload de Arquivo" e forneça a URL pública onde o arquivo .csv gerado pelo site está hospedado (ex: https://sushiworld.pt/api/facebook-catalog.csv). O Facebook irá importar esse arquivo periodicamente (ex: diariamente).
+Vantagem: Mais simples de implementar inicialmente.
+Desvantagem: Menor frequência de atualização (geralmente diária), e o arquivo precisa estar disponível publicamente.
+API (Facebook Commerce API):
+Implementação: O painel administrativo deve ter uma opção para enviar/atualizar produtos diretamente para o catálogo do Facebook via API.
+Exemplo: Um botão "Sincronizar com Facebook" que faz chamadas HTTP para a API do Facebook para adicionar/alterar/excluir produtos.
+Configuração no Facebook: Você precisa configurar um Acesso de Aplicativo (App Access Token) ou Acesso de Página (Page Access Token) com as permissões corretas (catalog_management, pages_show_list, etc.). Isso é mais complexo e envolve autenticação via o facebook-graph-api.
+Vantagem: Atualizações em tempo real ou quase real, mais controle.
+Desvantagem: Implementação mais complexa, exige gerenciamento de tokens e chamadas API.
+Configuração no Painel Administrativo (SushiWorld):
+Campos para Configuração:
+IDs de Catálogos do Facebook: Permitir adicionar um ou mais IDs de catálogos do Facebook (ex: 1234567890123456).
+Token de Acesso (se for usar API): Campo para inserir o token de acesso da página ou do app com permissão de catálogo.
+URL do Feed (se for usar Feed): Campo para exibir ou configurar a URL pública do feed gerado (ex: https://sushiworld.pt/api/facebook-catalog.csv).
+Botões: "Exportar Feed" (gera .csv) e "Sincronizar via API" (envia dados via API).
+Ativação/Desativação: Permitir ativar ou desativar a sincronização com cada catálogo individualmente.
+
+Google Merchant Center (Catálogo do Google / Google Business Profile)
+Objetivo:
+Deixar o site pronto para Sincronizar produtos com o Google Merchant Center para que eles apareçam em anúncios do Google Shopping, Google Maps, Google Business Profile (perfil do Google), etc.
+Escolha o formato (recomendado: .csv ou .json).
+Criar ou Fornecer o Feed de Produtos:
+Assim como no Facebook, o Google espera um feed de produtos.
+Formato do Feed (exemplo .csv):
+id	title	description	link	image_link	content_language	target_country	channel	availability	price	sale_price	google_product_category	product_type	brand	gtin	mpn	condition	item_group_id	shipping	shipping_weight	shipping_length	shipping_width	shipping_height	color	size	gender	age_group	tax	tax_rate	tax_country	tax_region	tax_ship	is_bundle	multipack	custom_label_0	custom_label_1	custom_label_2	custom_label_3	custom_label_4	installments	installment_months	installment_amount	price_unit	sale_price_effective_date		
+
+Campos Importantes:
+
+id: SKU ou ID único do produto.
+title: Nome do produto.
+description: Descrição do produto.
+link: URL da página do produto no seu site.
+image_link: URL direta para a imagem do produto.
+content_language: Idioma do conteúdo (ex: pt).
+target_country: País alvo (ex: PT).
+channel: Geralmente online.
+availability: "in stock", "out of stock".
+price: Preço no formato X.XX CURRENCY.
+sale_price: Preço de venda promocional (opcional).
+google_product_category: Código da categoria do Google (ex: "Food & Dining > Restaurants").
+product_type: Categoria hierárquica (ex: "Sushi", "Poke").
+brand: Nome da sua marca.
+gtin, mpn: Geralmente não aplicáveis para comida feita na hora.
+condition: Geralmente "new".
+item_group_id: Para variações, mesmo conceito do Facebook.
+shipping, shipping_weight, shipping_length, shipping_width, shipping_height: Opcional, mas útil se o Google calcular frete.
+color, size, gender, age_group: Geralmente não aplicáveis.
+tax: Opcional.
+is_bundle, multipack, custom_label_0 a 4: Opcionais.
+installments, installment_months, installment_amount: Opcionais.
+price_unit: Opcional (ex: "kg").
+sale_price_effective_date: Opcional (data de início e fim da promoção).
+Como o Site Sincroniza (Código vs API):
+Código (Feed de Arquivo):
+Implementação: O painel administrativo do SushiWorld deve gerar automaticamente o feed de produtos (.csv ou .json) com base nos produtos do banco de dados.
+Configuração no Google Merchant Center: No painel do Merchant Center, você adiciona uma fonte de dados e configura para buscar o feed em uma URL específica (ex: https://sushiworld.pt/api/google-merchant-feed.csv). O Google irá importar esse feed periodicamente.
+Vantagem: Simples de implementar.
+Desvantagem: Menor frequência de atualização, o arquivo precisa estar disponível publicamente.
+API (Google Merchant Center API):
+Implementação: Envio direto de produtos via chamadas HTTP para a API do Google Merchant Center. Requer autenticação via OAuth 2.0 e o uso de uma Service Account.
+Exemplo: Um botão "Sincronizar com Google Merchant" no painel do SushiWorld que faz chamadas para a API para gerenciar os produtos.
+Vantagem: Atualizações em tempo real, mais controle.
+Desvantagem: Implementação mais complexa, envolve OAuth e Service Accounts.
+Configuração no Painel Administrativo (SushiWorld):
+Campos para Configuração:
+IDs de Conta do Merchant Center: Permitir adicionar um ou mais IDs de conta do Google Merchant Center.
+Credenciais de API (se for usar API): Campos para inserir as credenciais OAuth ou Service Account.
+URL do Feed (se for usar Feed): Campo para exibir ou configurar a URL pública do feed gerado (ex: https://sushiworld.pt/api/google-merchant-feed.csv).
+Botões: "Exportar Feed" (gera .csv) e "Sincronizar via API" (envia dados via API).
+Ativação/Desativação: Permitir ativar ou desativar a sincronização com cada conta/perfil do Google individualmente.
+Conclusão:
+Para atender ao modelo de prompt e deixar o site pronto para integração com Facebook e Google:
+
+No código do site (Next.js): Implemente funções para gerar feeds de produtos (.csv, .json) com base no banco de dados do Supabase.
+No painel administrativo (Next.js + Supabase): Crie uma seção de "Integrações" onde o administrador possa:
+Inserir IDs de catálogos do Facebook e do Google Merchant Center.
+Inserir tokens/chaves de API (se for usar API).
+Visualizar URLs dos feeds gerados.
+Acionar botões para gerar o feed ou sincronizar via API.
+Ativar/desativar cada integração.
+No Facebook Commerce Manager e Google Merchant Center: Configure as fontes de dados para apontar para os feeds gerados pelo site ou para receber dados via API, conforme configurado no painel do SushiWorld.
+Dessa forma, você terá uma solução flexível e completa para integrar os produtos do seu site com os principais canais de marketing e vendas online.

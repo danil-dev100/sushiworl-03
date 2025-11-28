@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MenuSidebar } from './MenuSidebar';
 import { ProductGrid } from './ProductGrid';
 import { ProductDialog } from './ProductDialog';
+import { TooltipHelper } from '@/components/shared/TooltipHelper';
 
 type Product = {
   id: string;
@@ -102,8 +103,11 @@ export function MenuPageContent({ initialProducts, categories }: MenuPageContent
         {/* Header */}
         <header className="mb-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-6">
-            <h1 className="text-4xl font-black text-[#FF6B00]">Cardápio</h1>
-            <div className="relative">
+            <div className="flex items-center gap-2">
+              <h1 className="text-4xl font-black text-[#FF6B00]">Cardápio</h1>
+              <TooltipHelper text="Gerencie todos os produtos do seu cardápio digital, incluindo preços, categorias e disponibilidade" />
+            </div>
+            <div className="relative flex items-center gap-2">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a16b45]" />
               <Input
                 type="text"
@@ -112,6 +116,7 @@ export function MenuPageContent({ initialProducts, categories }: MenuPageContent
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-80 pl-10"
               />
+              <TooltipHelper text="Busque produtos rapidamente por nome ou código SKU" />
             </div>
           </div>
           <Button

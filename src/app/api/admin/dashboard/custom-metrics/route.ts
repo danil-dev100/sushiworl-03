@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-
-// Simulação de banco de dados para métricas customizadas
-// Em produção, isso seria uma tabela real no banco
-let customMetrics: any[] = [];
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +11,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    return NextResponse.json({ metrics: customMetrics });
+    const metrics = await prisma.customMetric.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json({ metrics });
   } catch (error) {
     console.error('[Custom Metrics API] Erro:', error);
     return NextResponse.json(
@@ -42,18 +45,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newMetric = {
-      id: Date.now().toString(),
-      name,
-      description: description || '',
-      formula,
-      type: type || 'financial',
-      unit: unit || '€',
-      isActive: true,
-      createdAt: new Date(),
-    };
-
-    customMetrics.push(newMetric);
+    const newMetric = await prisma.customMetric.create({
+      data: {
+        name,
+        description: description || '',
+        formula,
+        type: type?.toUpperCase() || 'FINANCIAL',
+        unit: unit || '€',
+        isActive: true,
+      },
+    });
 
     return NextResponse.json({ metric: newMetric }, { status: 201 });
   } catch (error) {

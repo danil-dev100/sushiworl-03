@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions, canManageOrders } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { emitNewOrderEvent } from '@/lib/socket-emitter';
 
 function randomCustomer() {
   const names = [
@@ -99,6 +100,31 @@ export async function POST(request: NextRequest) {
             ],
           },
         },
+        include: {
+          orderItems: true,
+        },
+      });
+
+      // Emitir evento WebSocket para novo pedido
+      emitNewOrderEvent({
+        id: createdOrder.id,
+        orderNumber: createdOrder.orderNumber,
+        customerName: createdOrder.customerName,
+        customerEmail: createdOrder.customerEmail,
+        customerPhone: createdOrder.customerPhone,
+        deliveryAddress: createdOrder.deliveryAddress,
+        status: createdOrder.status,
+        total: createdOrder.total,
+        subtotal: createdOrder.subtotal,
+        deliveryFee: createdOrder.deliveryFee,
+        vatAmount: createdOrder.vatAmount,
+        createdAt: createdOrder.createdAt,
+        orderItems: createdOrder.orderItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          priceAtTime: item.priceAtTime,
+        })),
       });
 
       return NextResponse.json(createdOrder, { status: 201 });
@@ -180,6 +206,31 @@ export async function POST(request: NextRequest) {
           create: preparedItems,
         },
       },
+      include: {
+        orderItems: true,
+      },
+    });
+
+    // Emitir evento WebSocket para novo pedido manual
+    emitNewOrderEvent({
+      id: createdOrder.id,
+      orderNumber: createdOrder.orderNumber,
+      customerName: createdOrder.customerName,
+      customerEmail: createdOrder.customerEmail,
+      customerPhone: createdOrder.customerPhone,
+      deliveryAddress: createdOrder.deliveryAddress,
+      status: createdOrder.status,
+      total: createdOrder.total,
+      subtotal: createdOrder.subtotal,
+      deliveryFee: createdOrder.deliveryFee,
+      vatAmount: createdOrder.vatAmount,
+      createdAt: createdOrder.createdAt,
+      orderItems: createdOrder.orderItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        priceAtTime: item.priceAtTime,
+      })),
     });
 
     return NextResponse.json(createdOrder, { status: 201 });

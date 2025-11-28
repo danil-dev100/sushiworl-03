@@ -113,6 +113,6 @@ export function useOrdersPolling(initialData: OrdersData, interval = 2000) {
     await fetchOrders(true);
   }, [fetchOrders]);
 
-  return { data, isLoading, refetch };
+  return { data, setData, isLoading, refetch };
 }
 

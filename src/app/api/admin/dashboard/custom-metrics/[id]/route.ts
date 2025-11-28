@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-
-// Simulação de banco de dados para métricas customizadas
-// Em produção, isso seria uma tabela real no banco
-let customMetrics: any[] = [];
+import { prisma } from '@/lib/db';
 
 export async function PATCH(
   request: NextRequest,
@@ -21,17 +18,23 @@ export async function PATCH(
     const body = await request.json();
     const { isActive } = body;
 
-    const metricIndex = customMetrics.findIndex(m => m.id === id);
-    if (metricIndex === -1) {
+    const metric = await prisma.customMetric.findUnique({
+      where: { id },
+    });
+
+    if (!metric) {
       return NextResponse.json(
         { error: 'Métrica não encontrada' },
         { status: 404 }
       );
     }
 
-    customMetrics[metricIndex].isActive = isActive;
+    const updatedMetric = await prisma.customMetric.update({
+      where: { id },
+      data: { isActive },
+    });
 
-    return NextResponse.json({ metric: customMetrics[metricIndex] });
+    return NextResponse.json({ metric: updatedMetric });
   } catch (error) {
     console.error('[Custom Metrics API] Erro ao atualizar:', error);
     return NextResponse.json(
@@ -54,15 +57,20 @@ export async function DELETE(
 
     const { id } = params;
 
-    const metricIndex = customMetrics.findIndex(m => m.id === id);
-    if (metricIndex === -1) {
+    const metric = await prisma.customMetric.findUnique({
+      where: { id },
+    });
+
+    if (!metric) {
       return NextResponse.json(
         { error: 'Métrica não encontrada' },
         { status: 404 }
       );
     }
 
-    const deletedMetric = customMetrics.splice(metricIndex, 1)[0];
+    const deletedMetric = await prisma.customMetric.delete({
+      where: { id },
+    });
 
     return NextResponse.json({ metric: deletedMetric });
   } catch (error) {

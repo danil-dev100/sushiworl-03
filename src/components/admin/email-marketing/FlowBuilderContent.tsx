@@ -3,12 +3,12 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Node, Edge } from 'reactflow';
-import FlowEditor from './FlowEditor';
+import FlowCanvas from './FlowCanvas';
 import NodePalette from './NodePalette';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
 type EmailAutomation = {
@@ -38,117 +38,119 @@ export default function FlowBuilderContent({ automation, templates }: FlowBuilde
   const router = useRouter();
   const [name, setName] = useState(automation.name);
   const [description, setDescription] = useState(automation.description || '');
-  const [isSaving, setIsSaving] = useState(false);
 
   const initialFlow = automation.flow as { nodes: Node[]; edges: Edge[] } | null;
   const [nodes, setNodes] = useState<Node[]>(initialFlow?.nodes || []);
-  const [edges, setEdges] = useState<Edge[]>(initialFlow?.edges || []);
 
-  const handleAddNode = useCallback((nodeTemplate: any) => {
-    const newNode: Node = {
-      id: `node-${Date.now()}`,
-      type: nodeTemplate.type,
-      position: { x: 250, y: nodes.length * 100 + 50 },
-      data: {
-        label: nodeTemplate.label,
-        ...nodeTemplate.data,
-      },
-    };
+  const handleAddNode = useCallback(
+    (nodeTemplate: any) => {
+      const newNode: Node = {
+        id: `node-${Date.now()}`,
+        type: nodeTemplate.type,
+        position: { x: 250, y: nodes.length * 120 + 100 },
+        data: {
+          label: nodeTemplate.label,
+          ...nodeTemplate.data,
+        },
+      };
 
-    setNodes((nds) => [...nds, newNode]);
-  }, [nodes.length]);
+      setNodes((nds) => [...nds, newNode]);
+      toast.success(`Nó "${nodeTemplate.label}" adicionado`);
+    },
+    [nodes.length]
+  );
 
-  const handleSave = useCallback(async (updatedNodes: Node[], updatedEdges: Edge[]) => {
-    setIsSaving(true);
-    try {
-      const response = await fetch(`/api/admin/marketing/email/automations/${automation.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          description,
-          flow: {
-            nodes: updatedNodes,
-            edges: updatedEdges,
-          },
-        }),
-      });
+  const handleSave = useCallback(
+    async (updatedNodes: Node[], updatedEdges: Edge[], isActive: boolean) => {
+      setIsSaving(true);
+      try {
+        const response = await fetch(`/api/admin/marketing/email/automations/${automation.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            description,
+            flow: {
+              nodes: updatedNodes,
+              edges: updatedEdges,
+            },
+            isActive,
+            isDraft: false,
+          }),
+        });
 
-      if (!response.ok) throw new Error('Erro ao salvar');
+        if (!response.ok) throw new Error('Erro ao salvar');
 
-      toast.success('Automação salva com sucesso!');
-      router.refresh();
-    } catch (error) {
-      console.error('Erro ao salvar:', error);
-      toast.error('Erro ao salvar automação');
-    } finally {
-      setIsSaving(false);
-    }
-  }, [automation.id, name, description, router]);
+        toast.success('Automação salva com sucesso!');
+        router.refresh();
+      } catch (error) {
+        console.error('Erro ao salvar:', error);
+        toast.error('Erro ao salvar automação');
+        throw error;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [automation.id, name, description, router]
+  );
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white dark:bg-[#2a1e14] border-b border-[#e5d5b5] dark:border-[#3d2e1f] p-4">
+      <div className="bg-white dark:bg-[#2a1e14] border-b border-[#e5d5b5] dark:border-[#3d2e1f] p-4 shadow-sm">
         <div className="flex items-center justify-between mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/admin/marketing/email')}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/admin/marketing/email')}
+              className="hover:bg-gray-100"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar
+            </Button>
 
-          <Button
-            size="sm"
-            onClick={() => handleSave(nodes, edges)}
-            disabled={isSaving}
-            className="bg-[#FF6B00] hover:bg-[#FF6B00]/90"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {isSaving ? 'Salvando...' : 'Salvar Tudo'}
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Nome da Automação
-            </label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Boas-vindas novos clientes"
-              className="mt-1"
-            />
+            <div className="border-l border-gray-300 pl-4">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0 bg-transparent"
+                placeholder="Nome da automação"
+              />
+            </div>
           </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Descrição (opcional)
-            </label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descreva o objetivo desta automação..."
-              className="mt-1"
-              rows={1}
-            />
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push('/admin/marketing/email/settings')}
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              SMTP
+            </Button>
           </div>
         </div>
+
+        <Textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="text-sm text-gray-500 border-gray-200 resize-none"
+          placeholder="Descrição desta automação (opcional)"
+          rows={1}
+        />
       </div>
 
       {/* Editor */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         <NodePalette onAddNode={handleAddNode} />
-        <FlowEditor
+        <FlowCanvas
           initialNodes={nodes}
           initialEdges={edges}
           onSave={handleSave}
-          onNodeClick={(node) => {
-            console.log('Node clicked:', node);
-            // Aqui você pode abrir um modal para editar o nó
-          }}
+          templates={templates}
+          flowId={automation.id}
+          initialIsActive={automation.isActive}
         />
       </div>
     </div>

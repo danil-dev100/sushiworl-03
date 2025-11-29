@@ -91,6 +91,9 @@ function FlowBuilderInner({
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
 
+  // Estado para conexão por click
+  const [connectionStart, setConnectionStart] = useState<{ nodeId: string; handleType: 'source' | 'target' } | null>(null);
+
   // Validações
   const hasValidTrigger = useMemo(() => {
     return nodes.some((node) => node.type === 'trigger');
@@ -201,10 +204,40 @@ function FlowBuilderInner({
     toast.success(isActive ? 'Fluxo desativado' : 'Fluxo ativado');
   }, [isActive, hasValidTrigger]);
 
-  // Selecionar nó
+  // Selecionar nó + Conexão por click
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
-    setSelectedNode(node);
-  }, []);
+    // Se estiver em modo de configuração (botão direito ou normal), abre painel
+    if (_event.button === 2 || !_event.shiftKey) {
+      setSelectedNode(node);
+      return;
+    }
+
+    // Shift + Click = Modo de conexão
+    if (!connectionStart) {
+      // Primeiro click: iniciar conexão
+      setConnectionStart({ nodeId: node.id, handleType: 'source' });
+      toast.info(`Conexão iniciada de "${node.data.label}". Clique + Shift em outro nó para conectar.`);
+    } else {
+      // Segundo click: completar conexão
+      if (connectionStart.nodeId === node.id) {
+        toast.error('Não é possível conectar um nó a si mesmo');
+        setConnectionStart(null);
+        return;
+      }
+
+      // Criar a conexão
+      const newEdge = {
+        id: `edge-${connectionStart.nodeId}-${node.id}`,
+        source: connectionStart.nodeId,
+        target: node.id,
+        ...defaultEdgeOptions,
+      };
+
+      setEdges((eds) => [...eds, newEdge]);
+      toast.success('Nós conectados!');
+      setConnectionStart(null);
+    }
+  }, [connectionStart, setEdges, defaultEdgeOptions]);
 
   // Atualizar nó
   const handleUpdateNode = useCallback(
@@ -424,14 +457,27 @@ function FlowBuilderInner({
 
             {/* Toolbar Inferior */}
             <Panel position="bottom-center" className="flex items-center gap-2 bg-white dark:bg-[#2a1e14] p-3 rounded-lg shadow-lg border border-[#e5d5b5]">
-              {!hasValidTrigger && (
+              {connectionStart && (
+                <div className="flex items-center gap-2 text-blue-600 bg-blue-50 px-3 py-1 rounded-full mr-2 animate-pulse">
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-sm">Shift + Click em outro nó para conectar</span>
+                  <button
+                    onClick={() => setConnectionStart(null)}
+                    className="ml-2 text-blue-800 hover:text-blue-900"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {!hasValidTrigger && !connectionStart && (
                 <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-3 py-1 rounded-full mr-2">
                   <AlertTriangle className="w-4 h-4" />
                   <span className="text-sm">Adicione um gatilho</span>
                 </div>
               )}
 
-              {hasOrphanNodes && (
+              {hasOrphanNodes && !connectionStart && (
                 <div className="flex items-center gap-2 text-orange-600 bg-orange-50 px-3 py-1 rounded-full mr-2">
                   <AlertTriangle className="w-4 h-4" />
                   <span className="text-sm">Nós desconectados</span>

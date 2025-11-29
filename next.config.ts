@@ -27,12 +27,6 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
   },
-  experimental: {
-    // Ativar esbuild para melhor performance
-    esbuild: {
-      // Configurações adicionais do esbuild podem ser adicionadas aqui
-    },
-  },
   // Configurações adicionais do esbuild para desenvolvimento
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {

@@ -8,15 +8,15 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  searchParams: {
+  searchParams: Promise<{
     status?: string;
     search?: string;
     date?: string;
-  };
+  }>;
 }
 
-async function getOrders(searchParams: PageProps['searchParams']) {
-  const { status, search, date } = searchParams;
+async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
+  const { status, search, date} = searchParams;
 
   const where: any = {};
 
@@ -123,8 +123,9 @@ async function getOrders(searchParams: PageProps['searchParams']) {
 }
 
 export default async function PedidosPage({ searchParams }: PageProps) {
+  const resolvedSearchParams = await searchParams;
   const [{ orders, counts }, products] = await Promise.all([
-    getOrders(searchParams),
+    getOrders(resolvedSearchParams),
     prisma.product.findMany({
       orderBy: { createdAt: 'desc' },
       take: 50,

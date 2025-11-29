@@ -1,72 +1,87 @@
 'use client';
 
-import { Handle, Position } from 'reactflow';
-import { Zap, ShoppingCart, Calendar, UserPlus, XCircle } from 'lucide-react';
+import { memo } from 'react';
+import { Handle, Position, NodeProps } from 'reactflow';
+import { Zap, Clock, ShoppingCart, UserPlus, Truck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
-type TriggerType = 'NEW_ORDER' | 'ORDER_CANCELLED' | 'CART_ABANDONED' | 'USER_REGISTERED' | 'BIRTHDAY';
-
-interface TriggerNodeProps {
-  data: {
-    label: string;
-    triggerType?: TriggerType;
-    config?: Record<string, unknown>;
-  };
-  selected: boolean;
+interface TriggerNodeData {
+  label: string;
+  eventType?: string;
+  waitMinutes?: number;
+  filters?: Record<string, any>;
 }
 
-const triggerIcons = {
-  NEW_ORDER: ShoppingCart,
-  ORDER_CANCELLED: XCircle,
-  CART_ABANDONED: ShoppingCart,
-  USER_REGISTERED: UserPlus,
-  BIRTHDAY: Calendar,
-};
+function TriggerNode({ data, selected }: NodeProps<TriggerNodeData>) {
+  const getIcon = () => {
+    switch (data.eventType) {
+      case 'order_created':
+        return <ShoppingCart className="h-4 w-4" />;
+      case 'cart_abandoned':
+        return <Clock className="h-4 w-4" />;
+      case 'user_registered':
+        return <UserPlus className="h-4 w-4" />;
+      case 'order_delivered':
+        return <Truck className="h-4 w-4" />;
+      default:
+        return <Zap className="h-4 w-4" />;
+    }
+  };
 
-const triggerColors = {
-  NEW_ORDER: '#10B981',
-  ORDER_CANCELLED: '#EF4444',
-  CART_ABANDONED: '#F59E0B',
-  USER_REGISTERED: '#3B82F6',
-  BIRTHDAY: '#8B5CF6',
-};
-
-export default function TriggerNode({ data, selected }: TriggerNodeProps) {
-  const Icon = data.triggerType ? triggerIcons[data.triggerType] : Zap;
-  const color = data.triggerType ? triggerColors[data.triggerType] : '#FF6B00';
+  const getEventLabel = () => {
+    switch (data.eventType) {
+      case 'order_created':
+        return 'Novo Pedido';
+      case 'cart_abandoned':
+        return `Carrinho Abandonado (${data.waitMinutes}min)`;
+      case 'user_registered':
+        return 'Novo Cadastro';
+      case 'order_delivered':
+        return 'Pedido Entregue';
+      default:
+        return data.label || 'Gatilho';
+    }
+  };
 
   return (
-    <div
-      className={`px-4 py-3 rounded-lg border-2 bg-white shadow-lg min-w-[200px] transition-all ${
-        selected ? 'border-[#FF6B00] ring-2 ring-[#FF6B00] ring-opacity-50' : 'border-gray-300'
-      }`}
-      style={{ borderColor: selected ? '#FF6B00' : color }}
-    >
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3" style={{ background: color }} />
-
+    <div className={`
+      px-4 py-3 shadow-lg rounded-lg bg-white border-2 transition-all duration-200 min-w-[200px]
+      ${selected ? 'border-[#FF6B00] shadow-[#FF6B00]/20' : 'border-orange-300 hover:border-[#FF6B00]/70'}
+    `}>
+      {/* Header */}
       <div className="flex items-center gap-2 mb-2">
-        <div
-          className="p-2 rounded-full"
-          style={{ backgroundColor: `${color}20` }}
-        >
-          <Icon className="w-4 h-4" style={{ color }} />
+        <div className="p-1.5 rounded bg-orange-100 text-orange-600">
+          {getIcon()}
         </div>
         <div className="flex-1">
-          <div className="text-xs font-semibold text-gray-500 uppercase">Gatilho</div>
-          <div className="text-sm font-bold text-gray-800">{data.label}</div>
+          <div className="text-sm font-semibold text-gray-900">
+            {getEventLabel()}
+          </div>
+          <Badge variant="outline" className="text-xs text-orange-600 border-orange-600">
+            Gatilho
+          </Badge>
         </div>
       </div>
 
-      {data.config && Object.keys(data.config).length > 0 && (
-        <div className="mt-2 pt-2 border-t border-gray-200">
-          <div className="text-xs text-gray-600">
-            {Object.entries(data.config).slice(0, 2).map(([key, value]) => (
-              <div key={key} className="truncate">
-                <span className="font-medium">{key}:</span> {String(value)}
-              </div>
-            ))}
-          </div>
+      {/* Filters indicator */}
+      {data.filters && Object.keys(data.filters).length > 0 && (
+        <div className="text-xs text-gray-500 mb-2">
+          {Object.keys(data.filters).length} filtro(s) ativo(s)
         </div>
       )}
+
+      {/* Handles */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="w-3 h-3 bg-orange-500 border-2 border-white"
+        style={{ bottom: -6 }}
+      />
+
+      {/* Status indicator */}
+      <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white"></div>
     </div>
   );
 }
+
+export default memo(TriggerNode);

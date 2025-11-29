@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell, LogOut, User } from 'lucide-react';
-import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 
 type AdminHeaderProps = {
@@ -14,6 +14,7 @@ type AdminHeaderProps = {
 
 export function AdminHeader({ user }: AdminHeaderProps) {
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const router = useRouter();
 
   const roleLabel = useMemo(() => {
     if (user?.role === 'ADMIN') {
@@ -65,23 +66,21 @@ export function AdminHeader({ user }: AdminHeaderProps) {
             </div>
             
             <div className="flex items-center gap-2">
-              <Link 
-                href="/admin/perfil"
+              <button
+                onClick={() => router.push('/admin/perfil')}
                 className="rounded-full p-2 hover:bg-[#f5f1e9] dark:hover:bg-[#23170f]"
                 aria-label="Perfil"
               >
                 <User className="h-5 w-5 text-[#a16b45]" />
-              </Link>
+              </button>
               
-              <button
-                onClick={handleSignOut}
-                className="rounded-full p-2 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:cursor-not-allowed disabled:opacity-70"
+              <div
+                className="rounded-full p-2 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20"
                 title="Sair"
                 aria-label="Sair"
-                disabled={isSigningOut}
               >
                 <LogOut className="h-5 w-5 text-red-600" />
-              </button>
+              </div>
             </div>
           </div>
         </div>

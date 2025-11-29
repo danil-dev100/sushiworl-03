@@ -2,16 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { Node } from 'reactflow';
-import { X, Mail, Clock, GitBranch, Database, Zap, Calendar, ShoppingCart, UserPlus, XCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { X, Save, Trash2, Plus, Tag, Percent } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface NodeConfigPanelProps {
-  selectedNode: Node | null;
+  selectedNode: Node;
   onClose: () => void;
   onUpdate: (nodeId: string, data: any) => void;
   templates?: Array<{ id: string; name: string; subject: string }>;
@@ -21,155 +24,94 @@ export default function NodeConfigPanel({
   selectedNode,
   onClose,
   onUpdate,
-  templates = [],
+  templates = []
 }: NodeConfigPanelProps) {
-  const [nodeData, setNodeData] = useState<any>({});
+  const [config, setConfig] = useState(selectedNode.data);
+  const [newTag, setNewTag] = useState('');
 
   useEffect(() => {
-    if (selectedNode) {
-      setNodeData(selectedNode.data || {});
-    }
-  }, [selectedNode]);
-
-  if (!selectedNode) return null;
+    setConfig(selectedNode.data);
+  }, [selectedNode.data]);
 
   const handleSave = () => {
-    onUpdate(selectedNode.id, nodeData);
-    onClose();
+    onUpdate(selectedNode.id, config);
+    toast.success('Configuração salva!');
   };
 
-  const updateData = (key: string, value: any) => {
-    setNodeData((prev: any) => ({ ...prev, [key]: value }));
-  };
-
-  // Renderiza configurações específicas por tipo de nó
-  const renderConfig = () => {
-    switch (selectedNode.type) {
-      case 'trigger':
-        return <TriggerConfig data={nodeData} onChange={updateData} />;
-      case 'email':
-        return <EmailConfig data={nodeData} onChange={updateData} templates={templates} />;
-      case 'delay':
-        return <DelayConfig data={nodeData} onChange={updateData} />;
-      case 'condition':
-        return <ConditionConfig data={nodeData} onChange={updateData} />;
-      case 'action':
-        return <ActionConfig data={nodeData} onChange={updateData} />;
-      default:
-        return <div className="text-sm text-gray-500">Tipo de nó não reconhecido</div>;
+  const handleAddTag = () => {
+    if (newTag.trim() && !config.tags?.includes(newTag.trim())) {
+      setConfig({
+        ...config,
+        tags: [...(config.tags || []), newTag.trim()]
+      });
+      setNewTag('');
     }
   };
 
-  return (
-    <div className="w-96 h-full bg-white dark:bg-[#2a1e14] border-l border-[#e5d5b5] dark:border-[#3d2e1f] overflow-y-auto flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-[#e5d5b5] dark:border-[#3d2e1f] flex items-center justify-between sticky top-0 bg-white dark:bg-[#2a1e14] z-10">
-        <h3 className="font-semibold text-[#333333] dark:text-[#f5f1e9]">
-          Configurar Nó
-        </h3>
-        <Button variant="ghost" size="sm" onClick={onClose}>
-          <X className="w-4 h-4" />
-        </Button>
-      </div>
+  const handleRemoveTag = (tagToRemove: string) => {
+    setConfig({
+      ...config,
+      tags: config.tags?.filter((tag: string) => tag !== tagToRemove)
+    });
+  };
 
-      {/* Content */}
-      <div className="flex-1 p-4 space-y-4">
-        {/* Nome do Nó */}
-        <div className="space-y-2">
-          <Label>Nome do Nó</Label>
-          <Input
-            value={nodeData.label || ''}
-            onChange={(e) => updateData('label', e.target.value)}
-            placeholder="Ex: Enviar email de boas-vindas"
-          />
-        </div>
-
-        {/* Configurações específicas */}
-        {renderConfig()}
-      </div>
-
-      {/* Footer com botões */}
-      <div className="p-4 border-t border-[#e5d5b5] dark:border-[#3d2e1f] flex gap-2 sticky bottom-0 bg-white dark:bg-[#2a1e14]">
-        <Button variant="outline" onClick={onClose} className="flex-1">
-          Cancelar
-        </Button>
-        <Button onClick={handleSave} className="flex-1 bg-[#FF6B00] hover:bg-[#FF6B00]/90">
-          Salvar
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// ========================================
-// COMPONENTES DE CONFIGURAÇÃO POR TIPO
-// ========================================
-
-function TriggerConfig({ data, onChange }: any) {
-  const triggers = [
-    { value: 'NEW_ORDER', label: 'Novo Pedido', icon: ShoppingCart },
-    { value: 'ORDER_CANCELLED', label: 'Pedido Cancelado', icon: XCircle },
-    { value: 'CART_ABANDONED', label: 'Carrinho Abandonado', icon: ShoppingCart },
-    { value: 'USER_REGISTERED', label: 'Usuário Registrado', icon: UserPlus },
-    { value: 'BIRTHDAY', label: 'Aniversário', icon: Calendar },
-  ];
-
-  return (
+  const renderTriggerConfig = () => (
     <div className="space-y-4">
       <div>
-        <Label>Tipo de Gatilho</Label>
+        <Label htmlFor="eventType">Tipo de Evento</Label>
         <Select
-          value={data.triggerType || ''}
-          onValueChange={(value) => onChange('triggerType', value)}
+          value={config.eventType || ''}
+          onValueChange={(value) => setConfig({ ...config, eventType: value })}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Selecione o gatilho" />
+            <SelectValue placeholder="Selecione o evento" />
           </SelectTrigger>
           <SelectContent>
-            {triggers.map((trigger) => (
-              <SelectItem key={trigger.value} value={trigger.value}>
-                <div className="flex items-center gap-2">
-                  <trigger.icon className="w-4 h-4" />
-                  {trigger.label}
-                </div>
-              </SelectItem>
-            ))}
+            <SelectItem value="order_created">Novo Pedido</SelectItem>
+            <SelectItem value="cart_abandoned">Carrinho Abandonado</SelectItem>
+            <SelectItem value="user_registered">Novo Cadastro</SelectItem>
+            <SelectItem value="order_delivered">Pedido Entregue</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {data.triggerType === 'CART_ABANDONED' && (
+      {config.eventType === 'cart_abandoned' && (
         <div>
-          <Label>Aguardar (horas)</Label>
+          <Label htmlFor="waitMinutes">Tempo de Espera (minutos)</Label>
           <Input
+            id="waitMinutes"
             type="number"
-            value={data.abandonedHours || 24}
-            onChange={(e) => onChange('abandonedHours', parseInt(e.target.value))}
+            value={config.waitMinutes || 30}
+            onChange={(e) => setConfig({ ...config, waitMinutes: parseInt(e.target.value) })}
             min="1"
+            max="1440"
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Tempo para considerar o carrinho abandonado
-          </p>
         </div>
       )}
     </div>
   );
-}
 
-function EmailConfig({ data, onChange, templates }: any) {
-  return (
+  const renderEmailConfig = () => (
     <div className="space-y-4">
       <div>
-        <Label>Template de Email</Label>
+        <Label htmlFor="templateId">Template de Email</Label>
         <Select
-          value={data.templateId || ''}
-          onValueChange={(value) => onChange('templateId', value)}
+          value={config.templateId || ''}
+          onValueChange={(value) => {
+            const template = templates.find(t => t.id === value);
+            setConfig({
+              ...config,
+              templateId: value,
+              templateName: template?.name,
+              subject: template?.subject
+            });
+          }}
         >
           <SelectTrigger>
             <SelectValue placeholder="Selecione um template" />
           </SelectTrigger>
           <SelectContent>
-            {templates.map((template: any) => (
+            {templates.map((template) => (
               <SelectItem key={template.id} value={template.id}>
                 {template.name}
               </SelectItem>
@@ -179,194 +121,258 @@ function EmailConfig({ data, onChange, templates }: any) {
       </div>
 
       <div>
-        <Label>Assunto do Email</Label>
+        <Label htmlFor="subject">Assunto do Email</Label>
         <Input
-          value={data.subject || ''}
-          onChange={(e) => onChange('subject', e.target.value)}
-          placeholder="Ex: Bem-vindo ao SushiWorld!"
+          id="subject"
+          value={config.subject || ''}
+          onChange={(e) => setConfig({ ...config, subject: e.target.value })}
+          placeholder="Assunto personalizado (opcional)"
         />
       </div>
 
       <div>
-        <Label>Remetente</Label>
-        <Input
-          value={data.fromName || 'SushiWorld'}
-          onChange={(e) => onChange('fromName', e.target.value)}
-          placeholder="Nome do remetente"
+        <Label htmlFor="customContent">Conteúdo Personalizado</Label>
+        <Textarea
+          id="customContent"
+          value={config.customContent || ''}
+          onChange={(e) => setConfig({ ...config, customContent: e.target.value })}
+          placeholder="Conteúdo adicional (opcional)"
+          rows={4}
         />
-      </div>
-
-      <div className="flex items-center justify-between">
-        <Label>Incluir botão de ação</Label>
-        <Switch
-          checked={data.includeButton || false}
-          onCheckedChange={(checked) => onChange('includeButton', checked)}
-        />
-      </div>
-
-      {data.includeButton && (
-        <>
-          <div>
-            <Label>Texto do Botão</Label>
-            <Input
-              value={data.buttonText || ''}
-              onChange={(e) => onChange('buttonText', e.target.value)}
-              placeholder="Ex: Ver Pedido"
-            />
-          </div>
-          <div>
-            <Label>URL do Botão</Label>
-            <Input
-              value={data.buttonUrl || ''}
-              onChange={(e) => onChange('buttonUrl', e.target.value)}
-              placeholder="https://..."
-            />
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-function DelayConfig({ data, onChange }: any) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <Label>Aguardar</Label>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Input
-              type="number"
-              value={data.delayDays || 0}
-              onChange={(e) => onChange('delayDays', parseInt(e.target.value) || 0)}
-              min="0"
-              placeholder="Dias"
-            />
-          </div>
-          <div>
-            <Input
-              type="number"
-              value={data.delayHours || 0}
-              onChange={(e) => onChange('delayHours', parseInt(e.target.value) || 0)}
-              min="0"
-              max="23"
-              placeholder="Horas"
-            />
-          </div>
-        </div>
-        <p className="text-xs text-gray-500 mt-1">
-          Total: {(data.delayDays || 0) * 24 + (data.delayHours || 0)} horas
-        </p>
       </div>
     </div>
   );
-}
 
-function ConditionConfig({ data, onChange }: any) {
-  return (
+  const renderDelayConfig = () => (
     <div className="space-y-4">
       <div>
-        <Label>Campo a Verificar</Label>
+        <Label htmlFor="delayValue">Valor do Delay</Label>
+        <Input
+          id="delayValue"
+          type="number"
+          value={config.delayValue || 60}
+          onChange={(e) => setConfig({ ...config, delayValue: parseInt(e.target.value) })}
+          min="1"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="delayType">Unidade de Tempo</Label>
         <Select
-          value={data.conditionField || ''}
-          onValueChange={(value) => onChange('conditionField', value)}
+          value={config.delayType || 'minutes'}
+          onValueChange={(value) => setConfig({ ...config, delayType: value })}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Selecione o campo" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="orderTotal">Valor do Pedido</SelectItem>
-            <SelectItem value="orderCount">Número de Pedidos</SelectItem>
-            <SelectItem value="customerType">Tipo de Cliente</SelectItem>
-            <SelectItem value="productCategory">Categoria do Produto</SelectItem>
+            <SelectItem value="minutes">Minutos</SelectItem>
+            <SelectItem value="hours">Horas</SelectItem>
+            <SelectItem value="days">Dias</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+
+  const renderConditionConfig = () => (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="conditionType">Tipo de Condição</Label>
+        <Select
+          value={config.conditionType || ''}
+          onValueChange={(value) => setConfig({ ...config, conditionType: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione o tipo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="order_value">Valor do Pedido</SelectItem>
+            <SelectItem value="order_items">Quantidade de Itens</SelectItem>
+            <SelectItem value="customer_type">Tipo de Cliente</SelectItem>
+            <SelectItem value="time_since_registration">Tempo desde Cadastro</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>Operador</Label>
+        <Label htmlFor="operator">Operador</Label>
         <Select
-          value={data.conditionOperator || ''}
-          onValueChange={(value) => onChange('conditionOperator', value)}
+          value={config.operator || ''}
+          onValueChange={(value) => setConfig({ ...config, operator: value })}
         >
           <SelectTrigger>
             <SelectValue placeholder="Selecione o operador" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="gt">Maior que</SelectItem>
-            <SelectItem value="gte">Maior ou igual</SelectItem>
-            <SelectItem value="lt">Menor que</SelectItem>
-            <SelectItem value="lte">Menor ou igual</SelectItem>
-            <SelectItem value="eq">Igual a</SelectItem>
-            <SelectItem value="neq">Diferente de</SelectItem>
+            <SelectItem value="equals">Igual (=)</SelectItem>
+            <SelectItem value="not_equals">Diferente (≠)</SelectItem>
+            <SelectItem value="greater_than">Maior que (&gt;)</SelectItem>
+            <SelectItem value="less_than">Menor que (&lt;)</SelectItem>
+            <SelectItem value="contains">Contém</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>Valor</Label>
+        <Label htmlFor="value">Valor</Label>
         <Input
-          value={data.conditionValue || ''}
-          onChange={(e) => onChange('conditionValue', e.target.value)}
-          placeholder="Ex: 50"
+          id="value"
+          value={config.value || ''}
+          onChange={(e) => setConfig({ ...config, value: e.target.value })}
+          placeholder="Digite o valor para comparação"
         />
       </div>
     </div>
   );
-}
 
-function ActionConfig({ data, onChange }: any) {
-  return (
+  const renderActionConfig = () => (
     <div className="space-y-4">
       <div>
-        <Label>Tipo de Ação</Label>
+        <Label htmlFor="actionType">Tipo de Ação</Label>
         <Select
-          value={data.actionType || ''}
-          onValueChange={(value) => onChange('actionType', value)}
+          value={config.actionType || ''}
+          onValueChange={(value) => setConfig({ ...config, actionType: value })}
         >
           <SelectTrigger>
             <SelectValue placeholder="Selecione a ação" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="UPDATE_STATUS">Atualizar Status</SelectItem>
-            <SelectItem value="ADD_TAG">Adicionar Tag</SelectItem>
-            <SelectItem value="SEND_NOTIFICATION">Enviar Notificação</SelectItem>
-            <SelectItem value="UPDATE_FIELD">Atualizar Campo</SelectItem>
+            <SelectItem value="update_tags">Atualizar Tags do Cliente</SelectItem>
+            <SelectItem value="apply_discount">Aplicar Desconto</SelectItem>
+            <SelectItem value="end_flow">Finalizar Fluxo</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {data.actionType === 'ADD_TAG' && (
-        <div>
-          <Label>Nome da Tag</Label>
-          <Input
-            value={data.tagName || ''}
-            onChange={(e) => onChange('tagName', e.target.value)}
-            placeholder="Ex: cliente-vip"
-          />
+      {config.actionType === 'update_tags' && (
+        <div className="space-y-3">
+          <Label>Tags do Cliente</Label>
+          <div className="flex gap-2">
+            <Input
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              placeholder="Digite uma tag"
+              onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
+            />
+            <Button type="button" onClick={handleAddTag} size="sm">
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {config.tags?.map((tag: string, index: number) => (
+              <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                <Tag className="h-3 w-3" />
+                {tag}
+                <X
+                  className="h-3 w-3 cursor-pointer hover:text-red-500"
+                  onClick={() => handleRemoveTag(tag)}
+                />
+              </Badge>
+            ))}
+          </div>
         </div>
       )}
 
-      {data.actionType === 'UPDATE_FIELD' && (
-        <>
+      {config.actionType === 'apply_discount' && (
+        <div className="space-y-4">
           <div>
-            <Label>Campo</Label>
+            <Label htmlFor="discountType">Tipo de Desconto</Label>
+            <Select
+              value={config.discountType || 'percentage'}
+              onValueChange={(value) => setConfig({ ...config, discountType: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="percentage">Porcentagem (%)</SelectItem>
+                <SelectItem value="fixed">Valor Fixo (R$)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="discountValue">Valor do Desconto</Label>
             <Input
-              value={data.fieldName || ''}
-              onChange={(e) => onChange('fieldName', e.target.value)}
-              placeholder="Ex: customerType"
+              id="discountValue"
+              type="number"
+              value={config.discountValue || 0}
+              onChange={(e) => setConfig({ ...config, discountValue: parseFloat(e.target.value) })}
+              min="0"
+              step={config.discountType === 'percentage' ? '1' : '0.01'}
             />
           </div>
+
           <div>
-            <Label>Novo Valor</Label>
+            <Label htmlFor="expiresIn">Expira em (dias)</Label>
             <Input
-              value={data.fieldValue || ''}
-              onChange={(e) => onChange('fieldValue', e.target.value)}
-              placeholder="Ex: VIP"
+              id="expiresIn"
+              type="number"
+              value={config.expiresIn || 7}
+              onChange={(e) => setConfig({ ...config, expiresIn: parseInt(e.target.value) })}
+              min="1"
             />
           </div>
-        </>
+        </div>
       )}
+    </div>
+  );
+
+  const renderConfig = () => {
+    switch (selectedNode.type) {
+      case 'trigger':
+        return renderTriggerConfig();
+      case 'email':
+        return renderEmailConfig();
+      case 'delay':
+        return renderDelayConfig();
+      case 'condition':
+        return renderConditionConfig();
+      case 'action':
+        return renderActionConfig();
+      default:
+        return <p className="text-gray-500">Este tipo de nó não tem configurações.</p>;
+    }
+  };
+
+  return (
+    <div className="absolute right-0 top-0 h-full w-96 bg-white border-l border-gray-200 shadow-xl z-50 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <h3 className="text-lg font-semibold">Configurar Nó</h3>
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              {selectedNode.data.label}
+              <Badge variant="outline" className="text-xs">
+                {selectedNode.type}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {renderConfig()}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-gray-200 flex gap-2">
+        <Button onClick={handleSave} className="flex-1 bg-[#FF6B00] hover:bg-[#FF6B00]/90">
+          <Save className="h-4 w-4 mr-2" />
+          Salvar
+        </Button>
+        <Button variant="outline" onClick={onClose}>
+          Cancelar
+        </Button>
+      </div>
     </div>
   );
 }

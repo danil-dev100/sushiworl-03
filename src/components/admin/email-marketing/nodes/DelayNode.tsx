@@ -1,58 +1,77 @@
 'use client';
 
-import { Handle, Position } from 'reactflow';
+import { memo } from 'react';
+import { Handle, Position, NodeProps } from 'reactflow';
 import { Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
-interface DelayNodeProps {
-  data: {
-    label: string;
-    delayDays?: number;
-    delayHours?: number;
-    config?: Record<string, unknown>;
-  };
-  selected: boolean;
+interface DelayNodeData {
+  label: string;
+  delayType?: 'minutes' | 'hours' | 'days';
+  delayValue?: number;
 }
 
-export default function DelayNode({ data, selected }: DelayNodeProps) {
+function DelayNode({ data, selected }: NodeProps<DelayNodeData>) {
   const getDelayText = () => {
-    const days = data.delayDays || 0;
-    const hours = data.delayHours || 0;
+    const value = data.delayValue || 1;
+    const type = data.delayType || 'hours';
 
-    if (days > 0 && hours > 0) {
-      return `${days}d ${hours}h`;
-    } else if (days > 0) {
-      return `${days} dia${days > 1 ? 's' : ''}`;
-    } else if (hours > 0) {
-      return `${hours} hora${hours > 1 ? 's' : ''}`;
+    switch (type) {
+      case 'minutes':
+        return `${value} ${value === 1 ? 'minuto' : 'minutos'}`;
+      case 'hours':
+        return `${value} ${value === 1 ? 'hora' : 'horas'}`;
+      case 'days':
+        return `${value} ${value === 1 ? 'dia' : 'dias'}`;
+      default:
+        return `${value} ${type}`;
     }
-    return 'Configurar';
   };
 
   return (
-    <div
-      className={`px-4 py-3 rounded-lg border-2 bg-white shadow-lg min-w-[200px] transition-all ${
-        selected ? 'border-[#FF6B00] ring-2 ring-[#FF6B00] ring-opacity-50' : 'border-amber-500'
-      }`}
-    >
-      <Handle type="target" position={Position.Top} className="w-3 h-3 bg-amber-500" />
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-amber-500" />
-
+    <div className={`
+      px-4 py-3 shadow-lg rounded-lg bg-white border-2 transition-all duration-200 min-w-[200px]
+      ${selected ? 'border-[#3B82F6] shadow-[#3B82F6]/20' : 'border-blue-300 hover:border-[#3B82F6]/70'}
+    `}>
+      {/* Header */}
       <div className="flex items-center gap-2 mb-2">
-        <div className="p-2 rounded-full bg-amber-100">
-          <Clock className="w-4 h-4 text-amber-600" />
+        <div className="p-1.5 rounded bg-blue-100 text-blue-600">
+          <Clock className="h-4 w-4" />
         </div>
         <div className="flex-1">
-          <div className="text-xs font-semibold text-gray-500 uppercase">Aguardar</div>
-          <div className="text-sm font-bold text-gray-800">{data.label}</div>
+          <div className="text-sm font-semibold text-gray-900">
+            {data.label || 'Aguardar'}
+          </div>
+          <Badge variant="outline" className="text-xs text-blue-600 border-blue-600">
+            Delay
+          </Badge>
         </div>
       </div>
 
-      <div className="mt-2 pt-2 border-t border-gray-200">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-amber-600">{getDelayText()}</div>
-          <div className="text-xs text-gray-500 mt-1">antes de continuar</div>
-        </div>
+      {/* Delay info */}
+      <div className="text-sm font-medium text-blue-700 mb-2">
+        Aguardar {getDelayText()}
       </div>
+
+      {/* Handles */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="w-3 h-3 bg-blue-500 border-2 border-white"
+        style={{ top: -6 }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="w-3 h-3 bg-blue-500 border-2 border-white"
+        style={{ bottom: -6 }}
+      />
+
+      {/* Status indicator */}
+      <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white"></div>
     </div>
   );
 }
+
+export default memo(DelayNode);

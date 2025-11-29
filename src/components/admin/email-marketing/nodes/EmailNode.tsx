@@ -1,54 +1,89 @@
 'use client';
 
-import { Handle, Position } from 'reactflow';
-import { Mail } from 'lucide-react';
+import { memo } from 'react';
+import { Handle, Position, NodeProps } from 'reactflow';
+import { Mail, FileText, Send } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
-interface EmailNodeProps {
-  data: {
-    label: string;
-    subject?: string;
-    templateId?: string;
-    config?: Record<string, unknown>;
-  };
-  selected: boolean;
+interface EmailNodeData {
+  label: string;
+  templateId?: string;
+  templateName?: string;
+  subject?: string;
+  customContent?: string;
 }
 
-export default function EmailNode({ data, selected }: EmailNodeProps) {
-  return (
-    <div
-      className={`px-4 py-3 rounded-lg border-2 bg-white shadow-lg min-w-[200px] transition-all ${
-        selected ? 'border-[#FF6B00] ring-2 ring-[#FF6B00] ring-opacity-50' : 'border-blue-500'
-      }`}
-    >
-      <Handle type="target" position={Position.Top} className="w-3 h-3 bg-blue-500" />
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-blue-500" />
+function EmailNode({ data, selected }: NodeProps<EmailNodeData>) {
+  const hasTemplate = data.templateId && data.templateName;
+  const hasCustomContent = data.customContent && data.customContent.trim();
 
+  return (
+    <div className={`
+      px-4 py-3 shadow-lg rounded-lg bg-white border-2 transition-all duration-200 min-w-[200px]
+      ${selected ? 'border-[#10B981] shadow-[#10B981]/20' : 'border-green-300 hover:border-[#10B981]/70'}
+    `}>
+      {/* Header */}
       <div className="flex items-center gap-2 mb-2">
-        <div className="p-2 rounded-full bg-blue-100">
-          <Mail className="w-4 h-4 text-blue-600" />
+        <div className="p-1.5 rounded bg-green-100 text-green-600">
+          <Mail className="h-4 w-4" />
         </div>
         <div className="flex-1">
-          <div className="text-xs font-semibold text-gray-500 uppercase">Ação</div>
-          <div className="text-sm font-bold text-gray-800">{data.label}</div>
+          <div className="text-sm font-semibold text-gray-900">
+            {data.label || 'Enviar Email'}
+          </div>
+          <Badge variant="outline" className="text-xs text-green-600 border-green-600">
+            Email
+          </Badge>
         </div>
       </div>
 
-      {data.subject && (
-        <div className="mt-2 pt-2 border-t border-gray-200">
-          <div className="text-xs text-gray-600">
-            <div className="font-medium">Assunto:</div>
-            <div className="truncate mt-1">{data.subject}</div>
+      {/* Content */}
+      <div className="space-y-1 mb-2">
+        {hasTemplate && (
+          <div className="flex items-center gap-1 text-xs text-gray-600">
+            <FileText className="h-3 w-3" />
+            <span className="truncate">{data.templateName}</span>
           </div>
-        </div>
-      )}
+        )}
 
-      {data.templateId && (
-        <div className="mt-1">
-          <div className="text-xs text-gray-500">
-            Template: <span className="font-medium">#{data.templateId.slice(0, 8)}</span>
+        {data.subject && (
+          <div className="text-xs text-gray-500 truncate">
+            Assunto: {data.subject}
           </div>
-        </div>
-      )}
+        )}
+
+        {hasCustomContent && (
+          <div className="text-xs text-gray-500">
+            Conteúdo personalizado
+          </div>
+        )}
+
+        {!hasTemplate && !hasCustomContent && (
+          <div className="text-xs text-gray-400 italic">
+            Configure um template
+          </div>
+        )}
+      </div>
+
+      {/* Handles */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="w-3 h-3 bg-green-500 border-2 border-white"
+        style={{ top: -6 }}
+      />
+
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="w-3 h-3 bg-green-500 border-2 border-white"
+        style={{ bottom: -6 }}
+      />
+
+      {/* Status indicator */}
+      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
     </div>
   );
 }
+
+export default memo(EmailNode);

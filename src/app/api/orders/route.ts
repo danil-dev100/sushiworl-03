@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { emitNewOrderEvent } from '@/lib/socket-emitter';
 import { geocodeAddress, isPointInPolygon } from '@/lib/geo-utils';
+import { triggersService } from '@/lib/triggers-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -284,6 +285,15 @@ export async function POST(request: NextRequest) {
     // Verificar se email está configurado
     let emailSent = false;
     // TODO: Implementar envio real de email quando SMTP estiver configurado
+
+    // Disparar trigger de email marketing para novo pedido
+    try {
+      await triggersService.triggerOrderCreated(order.id);
+      console.log('📧 Trigger de email marketing disparado para novo pedido');
+    } catch (triggerError) {
+      console.error('Erro ao disparar trigger de email marketing:', triggerError);
+      // Não falha a criação do pedido se o trigger falhar
+    }
 
     return NextResponse.json({
       success: true,

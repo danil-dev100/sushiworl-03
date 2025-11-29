@@ -1,188 +1,291 @@
 'use client';
 
-import { Zap, Mail, Clock, GitBranch, Database, ShoppingCart, Calendar, UserPlus, XCircle } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Zap,
+  Mail,
+  Clock,
+  GitBranch,
+  Play,
+  Search,
+  Plus,
+  Info
+} from 'lucide-react';
 
-type NodeTemplate = {
-  type: string;
+interface NodeTemplate {
+  type: 'trigger' | 'email' | 'delay' | 'condition' | 'action';
   label: string;
-  icon: React.ElementType;
-  color: string;
   description: string;
-  data?: Record<string, unknown>;
-};
-
-const nodeTemplates: NodeTemplate[] = [
-  // Gatilhos
-  {
-    type: 'trigger',
-    label: 'Novo Pedido',
-    icon: ShoppingCart,
-    color: '#10B981',
-    description: 'Dispara quando um novo pedido é criado',
-    data: { triggerType: 'NEW_ORDER' },
-  },
-  {
-    type: 'trigger',
-    label: 'Pedido Cancelado',
-    icon: XCircle,
-    color: '#EF4444',
-    description: 'Dispara quando um pedido é cancelado',
-    data: { triggerType: 'ORDER_CANCELLED' },
-  },
-  {
-    type: 'trigger',
-    label: 'Carrinho Abandonado',
-    icon: ShoppingCart,
-    color: '#F59E0B',
-    description: 'Dispara quando o carrinho é abandonado por 24h',
-    data: { triggerType: 'CART_ABANDONED' },
-  },
-  {
-    type: 'trigger',
-    label: 'Usuário Registrado',
-    icon: UserPlus,
-    color: '#3B82F6',
-    description: 'Dispara quando um novo usuário se registra',
-    data: { triggerType: 'USER_REGISTERED' },
-  },
-  {
-    type: 'trigger',
-    label: 'Aniversário',
-    icon: Calendar,
-    color: '#8B5CF6',
-    description: 'Dispara no dia do aniversário do cliente',
-    data: { triggerType: 'BIRTHDAY' },
-  },
-
-  // Ações
-  {
-    type: 'email',
-    label: 'Enviar Email',
-    icon: Mail,
-    color: '#3B82F6',
-    description: 'Envia um email para o cliente',
-  },
-  {
-    type: 'delay',
-    label: 'Aguardar',
-    icon: Clock,
-    color: '#F59E0B',
-    description: 'Aguarda um período antes de continuar',
-    data: { delayDays: 1, delayHours: 0 },
-  },
-  {
-    type: 'condition',
-    label: 'Condição',
-    icon: GitBranch,
-    color: '#8B5CF6',
-    description: 'Toma decisões com base em condições',
-  },
-  {
-    type: 'action',
-    label: 'Atualizar Status',
-    icon: Database,
-    color: '#14B8A6',
-    description: 'Atualiza informações no banco de dados',
-    data: { actionType: 'UPDATE_STATUS' },
-  },
-];
+  icon: any;
+  color: string;
+  data?: Record<string, any>;
+}
 
 interface NodePaletteProps {
   onAddNode: (nodeTemplate: NodeTemplate) => void;
 }
 
 export default function NodePalette({ onAddNode }: NodePaletteProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const nodeTemplates: NodeTemplate[] = [
+    // Triggers
+    {
+      type: 'trigger',
+      label: 'Novo Pedido',
+      description: 'Dispara quando um novo pedido é confirmado',
+      icon: Zap,
+      color: '#FF6B00',
+      data: {
+        eventType: 'order_created',
+        filters: {}
+      }
+    },
+    {
+      type: 'trigger',
+      label: 'Carrinho Abandonado',
+      description: 'Dispara quando cliente abandona carrinho por mais de 30min',
+      icon: Zap,
+      color: '#FF6B00',
+      data: {
+        eventType: 'cart_abandoned',
+        waitMinutes: 30,
+        filters: {}
+      }
+    },
+    {
+      type: 'trigger',
+      label: 'Novo Cadastro',
+      description: 'Dispara quando cliente se cadastra no site',
+      icon: Zap,
+      color: '#FF6B00',
+      data: {
+        eventType: 'user_registered',
+        filters: {}
+      }
+    },
+    {
+      type: 'trigger',
+      label: 'Pedido Entregue',
+      description: 'Dispara quando pedido é marcado como entregue',
+      icon: Zap,
+      color: '#FF6B00',
+      data: {
+        eventType: 'order_delivered',
+        filters: {}
+      }
+    },
+
+    // Actions
+    {
+      type: 'email',
+      label: 'Enviar Email',
+      description: 'Envia um email para o cliente usando template',
+      icon: Mail,
+      color: '#10B981',
+      data: {
+        templateId: '',
+        subject: '',
+        customContent: ''
+      }
+    },
+    {
+      type: 'delay',
+      label: 'Aguardar',
+      description: 'Espera um período antes de continuar o fluxo',
+      icon: Clock,
+      color: '#3B82F6',
+      data: {
+        delayType: 'minutes',
+        delayValue: 60
+      }
+    },
+    {
+      type: 'condition',
+      label: 'Condição',
+      description: 'Verifica condição e direciona fluxo',
+      icon: GitBranch,
+      color: '#8B5CF6',
+      data: {
+        conditionType: 'order_value',
+        operator: 'greater_than',
+        value: 50
+      }
+    },
+    {
+      type: 'action',
+      label: 'Atualizar Cliente',
+      description: 'Atualiza dados do cliente (tags, status, etc)',
+      icon: Play,
+      color: '#F59E0B',
+      data: {
+        actionType: 'update_tags',
+        tags: [],
+        status: ''
+      }
+    },
+    {
+      type: 'action',
+      label: 'Aplicar Desconto',
+      description: 'Aplica cupom de desconto para o cliente',
+      icon: Play,
+      color: '#F59E0B',
+      data: {
+        actionType: 'apply_discount',
+        discountType: 'percentage',
+        discountValue: 10,
+        expiresIn: 7
+      }
+    },
+    {
+      type: 'action',
+      label: 'Finalizar Fluxo',
+      description: 'Encerra o fluxo de automação',
+      icon: Play,
+      color: '#EF4444',
+      data: {
+        actionType: 'end_flow',
+        reason: 'completed'
+      }
+    }
+  ];
+
+  const filteredNodes = nodeTemplates.filter(node =>
+    node.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    node.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleAddNode = (nodeTemplate: NodeTemplate) => {
+    onAddNode(nodeTemplate);
+  };
+
+  const getNodeIcon = (icon: any, color: string) => {
+    const IconComponent = icon;
+    return <IconComponent className="h-5 w-5" style={{ color }} />;
+  };
+
+  const groupedNodes = filteredNodes.reduce((acc, node) => {
+    if (!acc[node.type]) {
+      acc[node.type] = [];
+    }
+    acc[node.type].push(node);
+    return acc;
+  }, {} as Record<string, NodeTemplate[]>);
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'trigger': return 'Gatilhos';
+      case 'email': return 'Email';
+      case 'delay': return 'Aguardar';
+      case 'condition': return 'Condições';
+      case 'action': return 'Ações';
+      default: return type;
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'trigger': return 'bg-orange-100 text-orange-800';
+      case 'email': return 'bg-green-100 text-green-800';
+      case 'delay': return 'bg-blue-100 text-blue-800';
+      case 'condition': return 'bg-purple-100 text-purple-800';
+      case 'action': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
-    <div className="w-80 bg-white dark:bg-[#2a1e14] border-r border-[#e5d5b5] dark:border-[#3d2e1f] p-4 overflow-y-auto">
-      <h3 className="text-lg font-semibold text-[#333333] dark:text-[#f5f1e9] mb-4">
-        Componentes
-      </h3>
+    <div className="w-80 bg-white dark:bg-[#2a1e14] border-r border-[#e5d5b5] dark:border-[#3d2e1f] flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b border-[#e5d5b5] dark:border-[#3d2e1f]">
+        <h2 className="text-lg font-semibold text-[#FF6B00] mb-2">
+          Nós Disponíveis
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          Arraste os nós para criar seu fluxo de automação
+        </p>
 
-      <div className="space-y-2">
-        {/* Gatilhos */}
-        <div>
-          <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-2">
-            <Zap className="w-4 h-4" />
-            Gatilhos
-          </h4>
-          <div className="space-y-2 mb-4">
-            {nodeTemplates
-              .filter((t) => t.type === 'trigger')
-              .map((template, index) => (
-                <Card
-                  key={index}
-                  className="p-3 cursor-pointer hover:shadow-md transition-all border-2 hover:border-[#FF6B00]"
-                  onClick={() => onAddNode(template)}
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('application/reactflow', JSON.stringify(template));
-                    e.dataTransfer.effectAllowed = 'move';
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="p-2 rounded-full"
-                      style={{ backgroundColor: `${template.color}20` }}
-                    >
-                      <template.icon className="w-4 h-4" style={{ color: template.color }} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                        {template.label}
-                      </div>
-                      <div className="text-xs text-gray-500">{template.description}</div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-          </div>
-        </div>
-
-        {/* Ações */}
-        <div>
-          <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-2">
-            <Mail className="w-4 h-4" />
-            Ações
-          </h4>
-          <div className="space-y-2">
-            {nodeTemplates
-              .filter((t) => ['email', 'delay', 'condition', 'action'].includes(t.type))
-              .map((template, index) => (
-                <Card
-                  key={index}
-                  className="p-3 cursor-pointer hover:shadow-md transition-all border-2 hover:border-[#FF6B00]"
-                  onClick={() => onAddNode(template)}
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('application/reactflow', JSON.stringify(template));
-                    e.dataTransfer.effectAllowed = 'move';
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="p-2 rounded-full"
-                      style={{ backgroundColor: `${template.color}20` }}
-                    >
-                      <template.icon className="w-4 h-4" style={{ color: template.color }} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                        {template.label}
-                      </div>
-                      <div className="text-xs text-gray-500">{template.description}</div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-          </div>
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Buscar nós..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
       </div>
 
-      <div className="mt-6 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-        <p className="text-xs text-blue-800 dark:text-blue-200">
-          💡 <strong>Dica:</strong> Arraste os componentes para o canvas ou clique para adicionar.
-        </p>
+      {/* Node List */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {Object.entries(groupedNodes).map(([type, nodes]) => (
+          <div key={type} className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className={getTypeColor(type)}>
+                {getTypeLabel(type)}
+              </Badge>
+              <span className="text-sm text-gray-500">
+                {nodes.length} {nodes.length === 1 ? 'nó' : 'nós'}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {nodes.map((node) => (
+                <Card
+                  key={`${type}-${node.label}`}
+                  className="cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-[#FF6B00]/50 group"
+                  onClick={() => handleAddNode(node)}
+                >
+                  <CardContent className="p-3">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="p-2 rounded-lg flex-shrink-0"
+                        style={{ backgroundColor: `${node.color}20` }}
+                      >
+                        {getNodeIcon(node.icon, node.color)}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm text-gray-900 dark:text-white group-hover:text-[#FF6B00] transition-colors">
+                          {node.label}
+                        </h4>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                          {node.description}
+                        </p>
+                      </div>
+
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Plus className="h-4 w-4 text-[#FF6B00]" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {filteredNodes.length === 0 && (
+          <div className="text-center py-8">
+            <Info className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+            <p className="text-sm text-gray-500">
+              Nenhum nó encontrado para "{searchTerm}"
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-[#e5d5b5] dark:border-[#3d2e1f] bg-gray-50 dark:bg-[#1a1814]">
+        <div className="text-xs text-gray-500 space-y-1">
+          <p><strong>Dica:</strong> Clique em um nó para adicioná-lo ao fluxo</p>
+          <p>Conecte os nós arrastando de uma saída para uma entrada</p>
+        </div>
       </div>
     </div>
   );

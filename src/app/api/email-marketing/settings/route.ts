@@ -12,11 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const settings = await prisma.emailSmtpConfig.findFirst({
-      where: {
-        createdBy: session.user.id
-      },
-    });
+    const settings = await prisma.smtpSettings.findFirst();
 
     if (!settings) {
       // Retornar configurações padrão vazias
@@ -28,11 +24,11 @@ export async function GET(request: NextRequest) {
           smtpPassword: '',
           useTls: true,
           defaultFromName: 'SushiWorld',
-          defaultFromEmail: 'pedidos@sushiworld.com',
-          minDelaySeconds: 60,
-          maxDelaySeconds: 300,
-          maxEmailsPerHour: 100,
-          emailRetentionDays: 30,
+          defaultFromEmail: 'pedidosushiworld@gmail.com',
+          minDelaySeconds: '60',
+          maxDelaySeconds: '300',
+          maxEmailsPerHour: '100',
+          emailRetentionDays: '30',
         }
       });
     }
@@ -40,16 +36,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       settings: {
         smtpServer: settings.smtpServer,
-        smtpPort: settings.smtpPort,
-        smtpUser: settings.smtpUser,
-        smtpPassword: settings.smtpPassword, // Em produção, não retornar a senha
+        smtpPort: String(settings.smtpPort),
+        smtpUser: settings.smtpUser || '',
+        smtpPassword: settings.smtpPassword || '', // Em produção, não retornar a senha
         useTls: settings.useTls,
         defaultFromName: settings.defaultFromName,
         defaultFromEmail: settings.defaultFromEmail,
-        minDelaySeconds: settings.minDelaySeconds,
-        maxDelaySeconds: settings.maxDelaySeconds,
-        maxEmailsPerHour: settings.maxEmailsPerHour,
-        emailRetentionDays: settings.emailRetentionDays,
+        minDelaySeconds: String(settings.minDelaySeconds),
+        maxDelaySeconds: String(settings.maxDelaySeconds),
+        maxEmailsPerHour: String(settings.maxEmailsPerHour),
+        emailRetentionDays: String(settings.emailRetentionDays),
       }
     });
 
@@ -136,16 +132,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar se já existe uma configuração para este usuário
-    const existingConfig = await prisma.emailSmtpConfig.findFirst({
-      where: {
-        createdBy: session.user.id
-      },
-    });
+    // Verificar se já existe uma configuração (tabela global, sem createdBy)
+    const existingConfig = await prisma.smtpSettings.findFirst();
 
     const configData = {
       smtpServer: smtpServer.trim(),
-      smtpPort: smtpPort.trim(),
+      smtpPort: parseInt(smtpPort) || 587,
       smtpUser: smtpUser.trim(),
       smtpPassword, // Em produção, criptografar
       useTls: useTls ?? true,
@@ -155,20 +147,19 @@ export async function POST(request: NextRequest) {
       maxDelaySeconds: Math.max(1, parseInt(maxDelaySeconds) || 300),
       maxEmailsPerHour: Math.max(1, parseInt(maxEmailsPerHour) || 100),
       emailRetentionDays: Math.max(1, parseInt(emailRetentionDays) || 30),
-      createdBy: session.user.id,
     };
 
     let savedConfig;
 
     if (existingConfig) {
       // Atualizar configuração existente
-      savedConfig = await prisma.emailSmtpConfig.update({
+      savedConfig = await prisma.smtpSettings.update({
         where: { id: existingConfig.id },
         data: configData,
       });
     } else {
       // Criar nova configuração
-      savedConfig = await prisma.emailSmtpConfig.create({
+      savedConfig = await prisma.smtpSettings.create({
         data: configData,
       });
     }
@@ -177,15 +168,15 @@ export async function POST(request: NextRequest) {
       success: true,
       settings: {
         smtpServer: savedConfig.smtpServer,
-        smtpPort: savedConfig.smtpPort,
-        smtpUser: savedConfig.smtpUser,
+        smtpPort: String(savedConfig.smtpPort),
+        smtpUser: savedConfig.smtpUser || '',
         useTls: savedConfig.useTls,
         defaultFromName: savedConfig.defaultFromName,
         defaultFromEmail: savedConfig.defaultFromEmail,
-        minDelaySeconds: savedConfig.minDelaySeconds,
-        maxDelaySeconds: savedConfig.maxDelaySeconds,
-        maxEmailsPerHour: savedConfig.maxEmailsPerHour,
-        emailRetentionDays: savedConfig.emailRetentionDays,
+        minDelaySeconds: String(savedConfig.minDelaySeconds),
+        maxDelaySeconds: String(savedConfig.maxDelaySeconds),
+        maxEmailsPerHour: String(savedConfig.maxEmailsPerHour),
+        emailRetentionDays: String(savedConfig.emailRetentionDays),
       }
     });
 

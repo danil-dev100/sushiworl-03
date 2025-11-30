@@ -35,7 +35,7 @@ export async function POST(
       data: {
         name: `${originalFlow.name} (Cópia)`,
         description: originalFlow.description,
-        flow: originalFlow.flow,
+        flow: originalFlow.flow ?? {},
         isActive: false, // Sempre criar como inativo
         isDraft: true, // Sempre criar como rascunho
         createdBy: session.user.id,

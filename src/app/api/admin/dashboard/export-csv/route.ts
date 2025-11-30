@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
     const response = new NextResponse(csvContent, {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename=relatorio-pedidos-${today.toISOString().split('T')[0]}.csv`,
+        'Content-Disposition': `attachment; filename=relatorio-pedidos-${now.toISOString().split('T')[0]}.csv`,
       },
     });
 

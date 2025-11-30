@@ -88,11 +88,17 @@ const METRIC_TEMPLATES = [
 export function CustomMetricsDialog({ open, onOpenChange }: CustomMetricsDialogProps) {
   const [metrics, setMetrics] = useState<CustomMetric[]>([]);
   const [isCreating, setIsCreating] = useState(false);
-  const [newMetric, setNewMetric] = useState({
+  const [newMetric, setNewMetric] = useState<{
+    name: string;
+    description: string;
+    formula: string;
+    type: 'financial' | 'operational' | 'marketing' | 'customer';
+    unit: string;
+  }>({
     name: '',
     description: '',
     formula: '',
-    type: 'financial' as const,
+    type: 'financial',
     unit: '€',
   });
 

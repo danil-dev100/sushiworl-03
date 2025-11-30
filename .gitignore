@@ -76,6 +76,10 @@ temp/
 secrets/
 credentials/
 
+# Supabase temporary files (CONTÉM CREDENCIAIS!)
+supabase/.temp/
+supabase/.temp/*
+
 # User uploads (se houver upload de usuários)
 /public/uploads/
 

@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
             secret: data.secret || null,
             isActive: data.isActive ?? true,
             direction: data.direction || 'OUTBOUND',
-          } as Record<string, unknown>,
+          },
         });
         return NextResponse.json(webhook);
       }
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
             headers: data.headers,
             secret: data.secret,
             isActive: data.isActive,
-          } as Record<string, unknown>,
+          },
         });
         return NextResponse.json(updatedWebhook);
       }

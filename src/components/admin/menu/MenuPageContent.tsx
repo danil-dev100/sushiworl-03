@@ -44,7 +44,7 @@ type Product = {
   sugar: number | null;
   salt: number | null;
   orderCount: number;
-  productOptions: any[];
+  productOptions?: any[];
 };
 
 interface MenuPageContentProps {

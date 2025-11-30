@@ -53,8 +53,7 @@ export async function GET(
           id: log.id,
           status: log.status,
           executedAt: log.executedAt.toISOString(),
-          error: log.error,
-          metadata: log.metadata,
+          errorMessage: log.errorMessage,
         })),
       }
     });

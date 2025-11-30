@@ -7,6 +7,43 @@ export const metadata: Metadata = {
   description: 'Gerencie os pedidos do restaurante',
 };
 
+type OrderItem = {
+  id: string;
+  name: string;
+  quantity: number;
+  priceAtTime: number;
+  productId: string;
+  orderId: string;
+  createdAt: Date;
+  product?: {
+    name: string | null;
+    imageUrl: string | null;
+  } | null;
+  selectedOptions?: Record<string, unknown> | null;
+};
+
+type Order = {
+  id: string;
+  orderNumber: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  customerNif?: string | null;
+  status: string;
+  total: number;
+  subtotal: number;
+  discount: number;
+  deliveryFee: number;
+  paymentMethod: string;
+  createdAt: Date;
+  observations?: string | null;
+  deliveryAddress?: Record<string, unknown> | null;
+  deliveryArea?: {
+    name: string | null;
+  } | null;
+  orderItems: OrderItem[];
+};
+
 interface PageProps {
   searchParams: Promise<{
     status?: string;
@@ -71,7 +108,7 @@ async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
   }
   // Se status for 'all' ou outro status específico (pending, confirmed, etc) sem data, não aplicar filtro de data
 
-  const orders = await prisma.order.findMany({
+  const ordersFromDb = await prisma.order.findMany({
     where,
     orderBy: { createdAt: 'desc' },
     take: 50,
@@ -93,6 +130,37 @@ async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
       },
     },
   });
+
+  // Mapear para o tipo esperado pelo componente
+  const orders: Order[] = ordersFromDb.map(order => ({
+    id: order.id,
+    orderNumber: order.orderNumber,
+    customerName: order.customerName,
+    customerEmail: order.customerEmail,
+    customerPhone: order.customerPhone,
+    customerNif: order.customerNif,
+    status: order.status,
+    total: order.total,
+    subtotal: order.subtotal,
+    discount: order.discount,
+    deliveryFee: order.deliveryFee,
+    paymentMethod: order.paymentMethod,
+    createdAt: order.createdAt,
+    observations: order.observations,
+    deliveryAddress: order.deliveryAddress ? (order.deliveryAddress as Record<string, unknown>) : null,
+    deliveryArea: order.deliveryArea,
+    orderItems: order.orderItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      quantity: item.quantity,
+      priceAtTime: item.priceAtTime,
+      productId: item.productId,
+      orderId: item.orderId,
+      createdAt: item.createdAt,
+      product: item.product,
+      selectedOptions: item.selectedOptions ? (item.selectedOptions as Record<string, unknown>) : null,
+    })),
+  }));
 
   // Contar pedidos por status (usando os mesmos filtros, exceto status)
   const countWhere: any = {};

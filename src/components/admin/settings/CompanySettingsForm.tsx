@@ -480,7 +480,7 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
                       Arraste os elementos aqui para montar seu recibo
                     </div>
                   ) : (
-                    formData.printSettings.layout.map((itemId, index) => {
+                    formData.printSettings.layout.map((itemId: string, index: number) => {
                       const item = availableItems.find(i => i.id === itemId);
                       if (!item) return null;
 

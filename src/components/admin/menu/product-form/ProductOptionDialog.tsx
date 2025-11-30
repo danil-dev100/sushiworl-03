@@ -46,14 +46,14 @@ const optionSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(80),
   type: z.enum(['REQUIRED', 'OPTIONAL']),
   description: z.string().max(150).optional().nullable(),
-  minSelection: z.coerce.number().min(0).default(0),
-  maxSelection: z.coerce.number().min(1).default(1),
-  allowMultiple: z.boolean().default(false),
-  displayAt: z.enum(['SITE', 'CART']).default('CART'),
-  isPaid: z.boolean().default(false),
-  basePrice: z.coerce.number().min(0).default(0),
-  isActive: z.boolean().default(true),
-  sortOrder: z.coerce.number().default(0),
+  minSelection: z.coerce.number().min(0),
+  maxSelection: z.coerce.number().min(1),
+  allowMultiple: z.boolean(),
+  displayAt: z.enum(['SITE', 'CART']),
+  isPaid: z.boolean(),
+  basePrice: z.coerce.number().min(0),
+  isActive: z.boolean(),
+  sortOrder: z.coerce.number(),
 });
 
 type OptionFormData = z.infer<typeof optionSchema>;
@@ -85,7 +85,7 @@ export function ProductOptionDialog({
   const [choices, setChoices] = useState<Choice[]>([]);
 
   const form = useForm<OptionFormData>({
-    resolver: zodResolver(optionSchema),
+    resolver: zodResolver(optionSchema) as any,
     defaultValues: {
       name: '',
       type: 'OPTIONAL',

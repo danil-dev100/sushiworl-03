@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
     const productSales: { [key: string]: { name: string; count: number } } = {};
 
     orders.forEach(order => {
-      order.items.forEach(item => {
+      order.orderItems.forEach(item => {
         if (item.product) {
           if (!productSales[item.productId]) {
             productSales[item.productId] = {

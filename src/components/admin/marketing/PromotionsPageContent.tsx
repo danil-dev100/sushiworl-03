@@ -257,8 +257,8 @@ const promotionFormSchema = z.object({
       },
       'Limite deve ser um número inteiro positivo'
     ),
-  isActive: z.boolean().default(true),
-  isFirstPurchaseOnly: z.boolean().default(false),
+  isActive: z.boolean(),
+  isFirstPurchaseOnly: z.boolean(),
   triggerType: z
     .enum(['PRODUCT', 'CATEGORY', 'CART', 'CART_VALUE'])
     .optional()
@@ -1263,7 +1263,7 @@ function PromotionFormDialog({
   const [showCode, setShowCode] = useState(false);
 
   const form = useForm<PromotionFormValues>({
-    resolver: zodResolver(promotionFormSchema),
+    resolver: zodResolver(promotionFormSchema) as any,
     defaultValues: getDefaultFormValues(presetType, promotion),
   });
 

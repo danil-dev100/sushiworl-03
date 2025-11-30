@@ -47,8 +47,8 @@ export async function GET(
         createdAt: flow.createdAt.toISOString(),
         updatedAt: flow.updatedAt.toISOString(),
         totalExecutions: flow.logs.length,
-        successCount: flow.logs.filter(log => log.status === 'success').length,
-        failureCount: flow.logs.filter(log => log.status === 'failure').length,
+        successCount: flow.logs.filter(log => log.status === 'SUCCESS').length,
+        failureCount: flow.logs.filter(log => log.status === 'FAILED').length,
         logs: flow.logs.map(log => ({
           id: log.id,
           status: log.status,

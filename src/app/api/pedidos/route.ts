@@ -43,11 +43,30 @@ export async function POST(request: Request) {
       }
     });
 
+    // Calcular subtotal
+    const subtotal = validatedData.items.reduce((sum, item) => {
+      const price = parseFloat(item.price.replace('€', '').replace(',', '.'));
+      return sum + (price * item.quantity);
+    }, 0);
+
+    const vatAmount = subtotal * 0.13; // 13% IVA
+    const total = subtotal + vatAmount;
+
     // Criar o pedido
     const order = await prisma.order.create({
       data: {
         userId: user.id,
-        total: validatedData.total,
+        customerName: validatedData.customerName,
+        customerEmail: validatedData.customerEmail,
+        customerPhone: validatedData.customerPhone || '',
+        deliveryAddress: {
+          street: 'A definir',
+          city: 'Lisboa',
+          postalCode: '1000-000'
+        },
+        subtotal,
+        vatAmount,
+        total,
         orderItems: {
           create: validatedData.items.map(item => ({
             product: {

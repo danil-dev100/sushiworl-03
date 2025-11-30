@@ -17,7 +17,6 @@ export async function GET() {
       );
     }
 
-    // @ts-expect-error - TrackingEvent será gerado após prisma generate
     const events = await prisma.trackingEvent.findMany({
       orderBy: { createdAt: 'desc' },
       take: 100,

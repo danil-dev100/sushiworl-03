@@ -1,8 +1,8 @@
 import PrinterSettingsEditor from '@/components/admin/orders/PrinterSettingsEditor';
 
 export default async function PrinterSettingsPage() {
-  // Configuração inicial é null - será carregada do banco via API no componente cliente
-  const initialConfig = null;
+  // Configuração inicial é undefined - será carregada do banco via API no componente cliente
+  const initialConfig = undefined;
 
   return (
     <div className="space-y-6">

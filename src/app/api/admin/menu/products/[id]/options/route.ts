@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,9 +15,11 @@ export async function GET(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const options = await prisma.productOption.findMany({
       where: {
-        productId: params.id,
+        productId: id,
         isActive: true,
       },
       include: {
@@ -44,7 +46,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -53,8 +55,10 @@ export async function POST(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const body = await request.json();
-    const productId = params.id;
+    const productId = id;
 
     // Verificar se o produto existe
     const product = await prisma.product.findUnique({

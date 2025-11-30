@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db';
 // GET /api/email-marketing/flows/[id] - Buscar fluxo específico
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,8 +15,10 @@ export async function GET(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const flow = await prisma.emailAutomation.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         logs: {
           orderBy: { executedAt: 'desc' },
@@ -69,7 +71,7 @@ export async function GET(
 // PUT /api/email-marketing/flows/[id] - Atualizar fluxo
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -78,12 +80,14 @@ export async function PUT(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const body = await request.json();
     const { name, description, flow, isActive, isDraft } = body;
 
     // Verificar se o fluxo existe e pertence ao usuário
     const existingFlow = await prisma.emailAutomation.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!existingFlow) {
@@ -102,7 +106,7 @@ export async function PUT(
     }
 
     const updatedFlow = await prisma.emailAutomation.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         ...(name !== undefined && { name: name.trim() }),
         ...(description !== undefined && { description: description?.trim() || null }),
@@ -136,7 +140,7 @@ export async function PUT(
 // PATCH /api/email-marketing/flows/[id] - Atualização parcial (ex: alternar status)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -145,11 +149,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const body = await request.json();
 
     // Verificar se o fluxo existe e pertence ao usuário
     const existingFlow = await prisma.emailAutomation.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!existingFlow) {
@@ -161,7 +167,7 @@ export async function PATCH(
     }
 
     const updatedFlow = await prisma.emailAutomation.update({
-      where: { id: params.id },
+      where: { id: id },
       data: body,
     });
 
@@ -186,7 +192,7 @@ export async function PATCH(
 // DELETE /api/email-marketing/flows/[id] - Excluir fluxo
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -195,9 +201,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     // Verificar se o fluxo existe e pertence ao usuário
     const existingFlow = await prisma.emailAutomation.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!existingFlow) {
@@ -210,7 +218,7 @@ export async function DELETE(
 
     // Excluir o fluxo (os logs serão excluídos automaticamente devido ao cascade)
     await prisma.emailAutomation.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     return NextResponse.json({ success: true });

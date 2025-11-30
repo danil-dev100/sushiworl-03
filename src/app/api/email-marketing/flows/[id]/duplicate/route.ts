@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db';
 // POST /api/email-marketing/flows/[id]/duplicate - Duplicar fluxo
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,9 +15,11 @@ export async function POST(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     // Buscar o fluxo original
     const originalFlow = await prisma.emailAutomation.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!originalFlow) {

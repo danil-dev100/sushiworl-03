@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; optionId: string } }
+  { params }: { params: Promise<{ id: string; optionId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,7 +16,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { optionId } = params;
+    const { optionId } = await params;
 
     const option = await prisma.productOption.update({
       where: { id: optionId },
@@ -50,7 +50,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; optionId: string } }
+  { params }: { params: Promise<{ id: string; optionId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -59,7 +59,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const { optionId } = params;
+    const { optionId } = await params;
 
     // Soft delete - marcar como inativo
     await prisma.productOption.update({

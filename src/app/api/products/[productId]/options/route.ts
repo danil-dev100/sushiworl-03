@@ -3,12 +3,14 @@ import { prisma } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
+    const { productId } = await params;
+
     const options = await prisma.productOption.findMany({
       where: {
-        productId: params.productId,
+        productId: productId,
         isActive: true,
       },
       include: {

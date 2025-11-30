@@ -32,6 +32,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const body = await request.json();
     const { name, email, role, managerLevel, isActive, password } = body;
 
@@ -53,7 +55,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     } else if (managerLevel) {
       // Se apenas managerLevel for enviado, valide que usuário é manager
       const existing = await prisma.user.findUnique({
-        where: { id: params.id },
+        where: { id: id },
         select: { role: true },
       });
 
@@ -87,7 +89,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     // Impedir que usuário remova a si mesmo
-    if (session.user.id === params.id && data.role && data.role !== 'ADMIN') {
+    if (session.user.id === id && data.role && data.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Você não pode alterar seu próprio cargo' },
         { status: 400 }
@@ -95,7 +97,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id: id },
       data,
       select: {
         id: true,
@@ -133,7 +135,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    if (session.user.id === params.id) {
+    const { id } = await params;
+
+    if (session.user.id === id) {
       return NextResponse.json(
         { error: 'Você não pode remover o seu próprio usuário' },
         { status: 400 }
@@ -141,7 +145,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     await prisma.user.delete({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     revalidatePath('/admin/configuracoes/usuarios');

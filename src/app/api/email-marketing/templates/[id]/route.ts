@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db';
 // GET /api/email-marketing/templates/[id] - Buscar template específico
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,8 +15,10 @@ export async function GET(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     const template = await prisma.emailTemplate.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!template) {
@@ -57,7 +59,7 @@ export async function GET(
 // PUT /api/email-marketing/templates/[id] - Atualizar template
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -65,6 +67,8 @@ export async function PUT(
     if (!session?.user || !canManageMarketing(session.user.role, session.user.managerLevel ?? null)) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
+
+    const { id } = await params;
 
     const body = await request.json();
     const {
@@ -81,7 +85,7 @@ export async function PUT(
 
     // Verificar se o template existe e pertence ao usuário
     const existingTemplate = await prisma.emailTemplate.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!existingTemplate) {
@@ -115,7 +119,7 @@ export async function PUT(
     }
 
     const updatedTemplate = await prisma.emailTemplate.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         ...(name !== undefined && { name: name.trim() }),
         ...(subject !== undefined && { subject: subject.trim() }),
@@ -163,7 +167,7 @@ export async function PUT(
 // DELETE /api/email-marketing/templates/[id] - Excluir template
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -172,9 +176,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
+    const { id } = await params;
+
     // Verificar se o template existe e pertence ao usuário
     const existingTemplate = await prisma.emailTemplate.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     });
 
     if (!existingTemplate) {
@@ -187,7 +193,7 @@ export async function DELETE(
 
     // Soft delete - marcar como inativo
     await prisma.emailTemplate.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { isActive: false },
     });
 

@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -20,8 +20,10 @@ export async function POST(
       );
     }
 
+    const { id } = await params;
+
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       select: {
         id: true,
       },

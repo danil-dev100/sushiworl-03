@@ -15,7 +15,6 @@ export async function GET(request: NextRequest) {
     const templates = await prisma.emailTemplate.findMany({
       where: {
         isActive: true,
-        createdBy: session.user.id
       },
       select: {
         id: true,
@@ -101,7 +100,6 @@ export async function POST(request: NextRequest) {
         buttonUrl: buttonUrl?.trim() || null,
         buttonColor: buttonColor?.trim() || '#FF6B00',
         isActive: true,
-        createdBy: session.user.id,
       },
       select: {
         id: true,

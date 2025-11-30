@@ -114,11 +114,11 @@ export default function HomeClient() {
                 <div className="flex justify-center">
                   <div className="w-full max-w-sm">
                     <ProductCard
+                      productId={favoriteProduct.id.toString()}
                       name={favoriteProduct.name}
                       description={favoriteProduct.description}
                       price={favoriteProduct.price}
                       imageUrl={favoriteProduct.image}
-                      sku={favoriteProduct.id.toString()}
                     />
                   </div>
                 </div>

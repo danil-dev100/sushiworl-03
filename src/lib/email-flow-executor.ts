@@ -481,16 +481,11 @@ export class EmailFlowExecutor {
       await prisma.emailAutomationLog.create({
         data: {
           automationId,
-          customerEmail: context.customerEmail,
-          customerId: context.customerId,
-          status,
-          error: status === 'failure' ? message : null,
-          metadata: {
-            ...metadata,
-            triggerType: context.triggerType,
-            orderId: context.orderId,
-            orderValue: context.orderValue,
-          },
+          email: context.customerEmail,
+          trigger: context.triggerType || 'manual',
+          nodeId: metadata?.nodeId || 'unknown',
+          status: status === 'success' ? 'SUCCESS' : 'FAILED',
+          errorMessage: status === 'failure' ? message : null,
         },
       });
     } catch (error) {

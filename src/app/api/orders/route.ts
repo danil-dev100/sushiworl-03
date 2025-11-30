@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import { emitNewOrderEvent } from '@/lib/socket-emitter';
 import { geocodeAddress, isPointInPolygon } from '@/lib/geo-utils';
 import { triggersService } from '@/lib/triggers-service';
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
             name: item.name,
             quantity: item.quantity,
             priceAtTime: item.price,
-            selectedOptions: item.options || null,
+            selectedOptions: item.options || Prisma.JsonNull,
           })),
         },
       },

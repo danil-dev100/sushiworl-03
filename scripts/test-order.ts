@@ -5,7 +5,7 @@
  * Insere os dados do pedido #SW00006 baseado no HTML fornecido
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -96,7 +96,7 @@ async function createTestOrder() {
         name: product.name,
         quantity: 2,
         priceAtTime: product.price,
-        selectedOptions: null,
+        selectedOptions: Prisma.JsonNull,
       }
     });
 

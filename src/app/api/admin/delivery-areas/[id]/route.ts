@@ -5,9 +5,9 @@ import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 // PATCH - Atualizar área de entrega

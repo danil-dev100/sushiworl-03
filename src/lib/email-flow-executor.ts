@@ -30,7 +30,7 @@ export class EmailFlowExecutor {
 
   async loadSMTPConfig(userId: string): Promise<boolean> {
     try {
-      const config = await prisma.emailSmtpConfig.findFirst({
+      const config = await prisma.smtpSettings.findFirst({
         where: { createdBy: userId },
       });
 

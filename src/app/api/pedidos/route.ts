@@ -48,17 +48,17 @@ export async function POST(request: Request) {
       data: {
         userId: user.id,
         total: validatedData.total,
-        items: {
+        orderItems: {
           create: validatedData.items.map(item => ({
             productId: item.id,
             name: item.name,
-            price: parseFloat(item.price.replace('€', '').replace(',', '.')),
+            priceAtTime: parseFloat(item.price.replace('€', '').replace(',', '.')),
             quantity: item.quantity
           }))
         }
       },
       include: {
-        items: true
+        orderItems: true
       }
     });
 
@@ -67,9 +67,9 @@ export async function POST(request: Request) {
       id: order.id,
       customerName: user.name,
       customerEmail: user.email,
-      items: order.items.map((item: any) => ({
+      items: order.orderItems.map((item: any) => ({
         name: item.name,
-        price: item.price,
+        price: item.priceAtTime,
         quantity: item.quantity
       })),
       total: order.total,

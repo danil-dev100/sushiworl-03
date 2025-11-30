@@ -53,6 +53,7 @@ export default async function PromocoesPage() {
                 name: true,
                 sku: true,
                 category: true,
+                price: true,
               },
             },
           },

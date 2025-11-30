@@ -6,9 +6,9 @@ import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 async function ensurePermissions() {

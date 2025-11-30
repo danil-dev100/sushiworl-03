@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 
 export async function GET() {
   try {
-    const config = await prisma.emailMarketingConfig.findFirst();
+    const config = await prisma.smtpSettings.findFirst();
     return NextResponse.json(config);
   } catch (error) {
     console.error('Erro ao buscar configurações SMTP:', error);
@@ -36,12 +36,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar configuração existente
-    const existing = await prisma.emailMarketingConfig.findFirst();
+    const existing = await prisma.smtpSettings.findFirst();
 
     let config;
     if (existing) {
       // Atualizar
-      config = await prisma.emailMarketingConfig.update({
+      config = await prisma.smtpSettings.update({
         where: { id: existing.id },
         data: {
           smtpServer,
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       });
     } else {
       // Criar novo
-      config = await prisma.emailMarketingConfig.create({
+      config = await prisma.smtpSettings.create({
         data: {
           smtpServer,
           smtpPort,

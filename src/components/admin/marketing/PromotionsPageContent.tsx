@@ -370,6 +370,7 @@ export function PromotionsPageContent({
         headline: data.hero.headline,
         headlineColor: data.hero.headlineColor,
         headlineSize: data.hero.headlineSize,
+        bannerHeight: data.hero.bannerHeight,
       };
 
       setHomeHeroBaseline(heroPayload);

@@ -1,4 +1,7 @@
 import React from 'react';
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { authOptions } from '@/lib/auth';
 import AdminLayoutClient from './layout-client';
 
 export default async function AdminLayout({

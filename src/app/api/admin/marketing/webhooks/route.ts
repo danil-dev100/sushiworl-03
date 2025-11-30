@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
         where,
         orderBy: { createdAt: 'desc' },
       }),
-      // @ts-expect-error - WebhookLog model will be available after prisma generate
       prisma.webhookLog.findMany({
         orderBy: { triggeredAt: 'desc' },
         take: 50,

@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
         createdAt: { gte: startDate },
       },
       include: {
-        items: {
+        orderItems: {
           include: {
             product: true,
           },
@@ -67,11 +67,11 @@ export async function GET(request: NextRequest) {
     ];
 
     const csvRows = orders.map(order => {
-      const products = order.items
+      const products = order.orderItems
         .map(item => `${item.product?.name || 'Produto'} (${item.quantity}x)`)
         .join('; ');
 
-      const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
+      const totalQuantity = order.orderItems.reduce((sum, item) => sum + item.quantity, 0);
 
       return [
         order.orderNumber,

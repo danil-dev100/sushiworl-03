@@ -74,7 +74,7 @@ export class EmailFlowExecutor {
       }
 
       // Carregar configuração SMTP
-      if (!await this.loadSMTPConfig(flow.createdBy)) {
+      if (!await this.loadSMTPConfig(flow.createdBy || '')) {
         throw new Error('Configuração SMTP não encontrada');
       }
 

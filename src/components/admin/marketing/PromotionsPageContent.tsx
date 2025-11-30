@@ -224,8 +224,10 @@ const promotionFormSchema = z.object({
     .string()
     .min(1, 'Informe o valor do desconto')
     .regex(/^\d+([,.]\d{1,2})?$/, 'Use números válidos')
-    .transform((value) => Number(value.replace(',', '.')))
-    .refine((value) => value > 0, 'O valor deve ser maior que 0'),
+    .refine((value) => {
+      const num = Number(value.replace(',', '.'));
+      return !Number.isNaN(num) && num > 0;
+    }, 'O valor deve ser maior que 0'),
   code: z
     .string()
     .trim()
@@ -236,17 +238,23 @@ const promotionFormSchema = z.object({
   minOrderValue: z
     .string()
     .optional()
-    .transform((value) => (value && value.trim() !== '' ? Number(value.replace(',', '.')) : null))
     .refine(
-      (value) => value === null || (!Number.isNaN(value) && value >= 0),
+      (value) => {
+        if (!value || value.trim() === '') return true;
+        const num = Number(value.replace(',', '.'));
+        return !Number.isNaN(num) && num >= 0;
+      },
       'Informe um valor válido'
     ),
   usageLimit: z
     .string()
     .optional()
-    .transform((value) => (value && value.trim() !== '' ? Number(value) : null))
     .refine(
-      (value) => value === null || (Number.isInteger(value) && value > 0),
+      (value) => {
+        if (!value || value.trim() === '') return true;
+        const num = Number(value);
+        return Number.isInteger(num) && num > 0;
+      },
       'Limite deve ser um número inteiro positivo'
     ),
   isActive: z.boolean().default(true),
@@ -263,7 +271,7 @@ const promotionFormSchema = z.object({
   promotionItems: z.array(z.string()).optional(),
 });
 
-type PromotionFormValues = z.output<typeof promotionFormSchema>;
+type PromotionFormValues = z.infer<typeof promotionFormSchema>;
 
 export function PromotionsPageContent({
   initialPromotions,
@@ -2006,9 +2014,13 @@ function transformFormPayload(values: PromotionFormValues, promotionId?: string)
     type: values.type,
     code: values.code?.trim() || null,
     discountType: values.discountType,
-    discountValue: values.discountValue,
-    minOrderValue: values.minOrderValue,
-    usageLimit: values.usageLimit,
+    discountValue: Number(values.discountValue.replace(',', '.')),
+    minOrderValue: values.minOrderValue && values.minOrderValue.trim() !== ''
+      ? Number(values.minOrderValue.replace(',', '.'))
+      : null,
+    usageLimit: values.usageLimit && values.usageLimit.trim() !== ''
+      ? Number(values.usageLimit)
+      : null,
     isActive: values.isActive,
     isFirstPurchaseOnly: values.isFirstPurchaseOnly,
     triggerType: values.triggerType || null,

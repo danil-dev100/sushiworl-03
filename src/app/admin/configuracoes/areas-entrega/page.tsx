@@ -3,11 +3,22 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { DeliveryAreasPageContent } from '@/components/admin/delivery/DeliveryAreasPageContent';
-import Script from 'next/script';
 
 export const metadata = {
   title: 'Áreas de Entrega | SushiWorld Admin',
   description: 'Gerencie áreas de entrega e taxas',
+};
+
+type DeliveryAreaWithPolygon = {
+  id: string;
+  name: string;
+  polygon: number[][];
+  color: string;
+  deliveryType: 'FREE' | 'PAID';
+  deliveryFee: number;
+  minOrderValue: number | null;
+  isActive: boolean;
+  sortOrder: number;
 };
 
 export default async function AreasEntregaPage() {
@@ -24,6 +35,19 @@ export default async function AreasEntregaPage() {
   // Buscar configurações do restaurante para localização
   const settings = await prisma.settings.findFirst();
 
+  // Converter polygon de JsonValue para number[][]
+  const areasWithTypedPolygon: DeliveryAreaWithPolygon[] = deliveryAreas.map(area => ({
+    id: area.id,
+    name: area.name,
+    polygon: area.polygon as number[][],
+    color: area.color,
+    deliveryType: area.deliveryType as 'FREE' | 'PAID',
+    deliveryFee: area.deliveryFee,
+    minOrderValue: area.minOrderValue,
+    isActive: area.isActive,
+    sortOrder: area.sortOrder,
+  }));
+
   return (
     <>
       <link
@@ -33,7 +57,7 @@ export default async function AreasEntregaPage() {
         crossOrigin=""
       />
       <DeliveryAreasPageContent
-        initialAreas={deliveryAreas}
+        initialAreas={areasWithTypedPolygon}
         restaurantAddress={settings?.address || ''}
       />
     </>

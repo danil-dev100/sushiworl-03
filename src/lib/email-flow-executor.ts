@@ -440,7 +440,7 @@ export class EmailFlowExecutor {
       throw new Error('Configuração SMTP não carregada');
     }
 
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       host: this.smtpConfig.smtpServer,
       port: parseInt(this.smtpConfig.smtpPort),
       secure: this.smtpConfig.smtpPort === '465',

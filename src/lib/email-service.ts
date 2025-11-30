@@ -209,3 +209,5 @@ export class EmailService {
 
 // Instância singleton
 export const emailService = new EmailService();
+
+

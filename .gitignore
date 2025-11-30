@@ -82,6 +82,18 @@ credentials/
 # Cache
 .cache/
 
+# Arquivos temporários e de teste na raiz
+temp_file.tsx
+temp_*.tsx
+test.txt
+testfile.txt
+test-api.js
+*.tsbuildinfo
+
+# SQL schemas (não enviar estrutura do banco)
+schema.sql
+*.sql
+
 # Documentação de desenvolvimento (não enviar para produção)
 /docs/TESTE-*.md
 /docs/DEBUG-*.md

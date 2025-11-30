@@ -16,3 +16,5 @@ export async function initEmailMarketing() {
     console.error('❌ Erro ao inicializar módulo de Email Marketing:', error);
   }
 }
+
+

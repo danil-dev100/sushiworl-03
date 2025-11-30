@@ -1,8 +1,14 @@
 import type { NextConfig } from "next";
 
-const remotePatterns = [
+type RemotePattern = {
+  protocol: 'https' | 'http';
+  hostname: string;
+  pathname: string;
+};
+
+const remotePatterns: RemotePattern[] = [
   {
-    protocol: 'https' as const,
+    protocol: 'https',
     hostname: 'lh3.googleusercontent.com',
     pathname: '/aida-public/**',
   },
@@ -13,8 +19,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 if (supabaseUrl) {
   try {
     const url = new URL(supabaseUrl);
+    const protocol = url.protocol.replace(':', '');
     remotePatterns.push({
-      protocol: (url.protocol.replace(':', '') || 'https') as 'http' | 'https',
+      protocol: (protocol === 'http' || protocol === 'https') ? protocol : 'https',
       hostname: url.hostname,
       pathname: '/storage/v1/object/public/**',
     });

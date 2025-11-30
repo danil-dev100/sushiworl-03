@@ -50,7 +50,9 @@ export async function POST(request: Request) {
         total: validatedData.total,
         orderItems: {
           create: validatedData.items.map(item => ({
-            productId: item.id,
+            product: {
+              connect: { id: String(item.id) }
+            },
             name: item.name,
             priceAtTime: parseFloat(item.price.replace('€', '').replace(',', '.')),
             quantity: item.quantity

@@ -11,7 +11,7 @@
  * npx tsx scripts/importar-cardapio.ts
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ProductStatus } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
 
@@ -85,7 +85,7 @@ async function importarCardapio() {
         price: precoBase,
         category: categoriaMap[categoria] || categoria,
         imageUrl: `/produtos.webp/${id}.webp`,
-        status: 'AVAILABLE',
+        status: ProductStatus.AVAILABLE,
         isVisible: true,
         outOfStock: false,
         // Detectar características automaticamente

@@ -244,6 +244,20 @@ export function canManageMarketing(
 }
 
 /**
+ * Verifica se pode gerenciar cardápio (menu)
+ */
+export function canManageMenu(
+  role: string,
+  managerLevel: string | null
+): boolean {
+  // Admin tem acesso total
+  if (isAdmin(role)) return true;
+
+  // Manager FULL pode gerenciar cardápio
+  return hasManagerLevel(role, managerLevel, 'FULL');
+}
+
+/**
  * Verifica se pode imprimir pedidos
  */
 export function canPrintOrders(

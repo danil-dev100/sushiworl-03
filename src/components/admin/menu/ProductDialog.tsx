@@ -34,27 +34,27 @@ const productSchema = z.object({
   ogDescription: z.string().max(300).optional().nullable(),
   
   // Status
-  isVisible: z.boolean().default(true),
-  isFeatured: z.boolean().default(false),
-  isTopSeller: z.boolean().default(false),
-  outOfStock: z.boolean().default(false),
+  isVisible: z.boolean(),
+  isFeatured: z.boolean(),
+  isTopSeller: z.boolean(),
+  outOfStock: z.boolean(),
   availableUntil: z.string().optional().nullable(),
-  
+
   // Configurações
-  isHot: z.boolean().default(false),
-  isHalal: z.boolean().default(false),
-  isVegan: z.boolean().default(false),
-  isVegetarian: z.boolean().default(false),
-  isDairyFree: z.boolean().default(false),
-  isRaw: z.boolean().default(false),
-  isGlutenFree: z.boolean().default(false),
-  isNutFree: z.boolean().default(false),
-  
+  isHot: z.boolean(),
+  isHalal: z.boolean(),
+  isVegan: z.boolean(),
+  isVegetarian: z.boolean(),
+  isDairyFree: z.boolean(),
+  isRaw: z.boolean(),
+  isGlutenFree: z.boolean(),
+  isNutFree: z.boolean(),
+
   // Detalhes
   ingredients: z.string().max(2000).optional().nullable(),
   additives: z.string().max(2000).optional().nullable(),
-  allergens: z.array(z.string()).default([]),
-  tags: z.array(z.string()).default([]),
+  allergens: z.array(z.string()),
+  tags: z.array(z.string()),
   
   // Nutrição
   nutritionPer: z.enum(['PER_SERVING', 'PER_100G']).optional().nullable(),
@@ -87,7 +87,7 @@ export function ProductDialog({
   const [activeTab, setActiveTab] = useState('basic');
 
   const form = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(productSchema) as any,
     defaultValues: {
       sku: '',
       name: '',

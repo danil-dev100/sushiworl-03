@@ -12,8 +12,8 @@ function parseHomeHero(settings: any) {
     overlayOpacity: 0.4,
     headline: 'SushiWorld: O Sabor do Japão na Sua Casa',
     headlineColor: '#ffffff',
-    headlineSize: 'large' as const,
-    bannerHeight: 'medium' as const,
+    headlineSize: 4.5,
+    bannerHeight: 60,
   };
 
   const banners = (settings?.banners as Record<string, any>) ?? {};
@@ -34,12 +34,12 @@ function parseHomeHero(settings: any) {
     headlineColor:
       typeof home.headlineColor === 'string' ? home.headlineColor : DEFAULT.headlineColor,
     headlineSize:
-      typeof home.headlineSize === 'string' && ['small', 'medium', 'large'].includes(home.headlineSize)
-        ? (home.headlineSize as 'small' | 'medium' | 'large')
+      typeof home.headlineSize === 'number'
+        ? Math.min(Math.max(home.headlineSize, 2.5), 6)
         : DEFAULT.headlineSize,
     bannerHeight:
-      typeof home.bannerHeight === 'string' && ['small', 'medium', 'large'].includes(home.bannerHeight)
-        ? (home.bannerHeight as 'small' | 'medium' | 'large')
+      typeof home.bannerHeight === 'number'
+        ? Math.min(Math.max(home.bannerHeight, 30), 100)
         : DEFAULT.bannerHeight,
   };
 }

@@ -12,7 +12,7 @@ export async function POST(
 
     if (
       !session ||
-      !canManageOrders(session.user.role, session.user.managerLevel)
+      !canManageOrders(session.user.role, session.user.managerLevel ?? null)
     ) {
       return NextResponse.json(
         { error: 'Não autorizado' },

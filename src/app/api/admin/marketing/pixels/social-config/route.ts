@@ -17,7 +17,6 @@ export async function GET() {
       );
     }
 
-    // @ts-expect-error - SocialShareConfig será gerado após prisma generate
     const config = await prisma.socialShareConfig.findFirst({
       where: { isActive: true },
     });
@@ -50,7 +49,6 @@ export async function POST(request: NextRequest) {
     const { action, data } = body;
 
     if (action === 'create') {
-      // @ts-expect-error - SocialShareConfig será gerado após prisma generate
       const config = await prisma.socialShareConfig.create({
         data: {
           ogTitle: data.ogTitle,
@@ -68,7 +66,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'update') {
-      // @ts-expect-error - SocialShareConfig será gerado após prisma generate
       const config = await prisma.socialShareConfig.update({
         where: { id: data.id },
         data: {

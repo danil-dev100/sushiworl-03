@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
     const activeOrders = await prisma.order.count({
       where: {
         status: {
-          in: ['CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY'],
+          in: ['CONFIRMED', 'PREPARING', 'DELIVERING'],
         },
       },
     });

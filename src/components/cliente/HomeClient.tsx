@@ -130,11 +130,11 @@ export default function HomeClient() {
               {products.map((product) => (
                 <ProductCard
                   key={product.id}
+                  productId={product.id.toString()}
                   name={product.name}
                   description={product.description}
                   price={product.price}
                   imageUrl={product.image}
-                  sku={product.id.toString()}
                 />
               ))}
             </div>

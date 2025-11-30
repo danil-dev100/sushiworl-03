@@ -54,7 +54,7 @@ export class EmailFlowExecutor {
           logs: {
             where: {
               email: context.customerEmail,
-              createdAt: {
+              executedAt: {
                 gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Últimas 24h
               },
             },

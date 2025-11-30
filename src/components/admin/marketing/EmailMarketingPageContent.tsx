@@ -840,7 +840,7 @@ export function EmailMarketingPageContent({
                                 <Input
                                   type="number"
                                   placeholder="2"
-                                  defaultValue={selectedStep.config?.delay || "2"}
+                                  defaultValue={(selectedStep.config as any)?.delay || "2"}
                                   onChange={(e) => {
                                     const newSteps = flowSteps.map(s =>
                                       s.id === selectedStep.id
@@ -851,7 +851,7 @@ export function EmailMarketingPageContent({
                                   }}
                                 />
                                 <Select
-                                  defaultValue={selectedStep.config?.unit || "days"}
+                                  defaultValue={(selectedStep.config as any)?.unit || "days"}
                                   onValueChange={(value) => {
                                     const newSteps = flowSteps.map(s =>
                                       s.id === selectedStep.id
@@ -881,7 +881,7 @@ export function EmailMarketingPageContent({
                                 <TooltipHelper text="Selecione qual modelo de email será enviado" />
                               </Label>
                               <Select
-                                value={selectedStep.config?.templateId || ""}
+                                value={(selectedStep.config as any)?.templateId || ""}
                                 onValueChange={(value) => {
                                   const newSteps = flowSteps.map(s =>
                                     s.id === selectedStep.id
@@ -913,7 +913,7 @@ export function EmailMarketingPageContent({
                                   <TooltipHelper text="Defina a condição a ser verificada" />
                                 </Label>
                                 <Select
-                                  value={selectedStep.config?.condition || ""}
+                                  value={(selectedStep.config as any)?.condition || ""}
                                   onValueChange={(value) => {
                                     const newSteps = flowSteps.map(s =>
                                       s.id === selectedStep.id

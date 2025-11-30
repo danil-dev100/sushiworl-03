@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     if (
       !session ||
-      !canManageOrders(session.user.role, session.user.managerLevel)
+      !canManageOrders(session.user.role, session.user.managerLevel ?? null)
     ) {
       return NextResponse.json(
         { error: 'Não autorizado' },

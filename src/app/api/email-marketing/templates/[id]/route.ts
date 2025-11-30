@@ -25,11 +25,6 @@ export async function GET(
       return NextResponse.json({ error: 'Template não encontrado' }, { status: 404 });
     }
 
-    // Verificar se o usuário tem permissão para ver este template
-    if (template.createdBy !== session.user.id) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
-    }
-
     return NextResponse.json({
       template: {
         id: template.id,
@@ -90,10 +85,6 @@ export async function PUT(
 
     if (!existingTemplate) {
       return NextResponse.json({ error: 'Template não encontrado' }, { status: 404 });
-    }
-
-    if (existingTemplate.createdBy !== session.user.id) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
     }
 
     // Validações
@@ -185,10 +176,6 @@ export async function DELETE(
 
     if (!existingTemplate) {
       return NextResponse.json({ error: 'Template não encontrado' }, { status: 404 });
-    }
-
-    if (existingTemplate.createdBy !== session.user.id) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
     }
 
     // Soft delete - marcar como inativo

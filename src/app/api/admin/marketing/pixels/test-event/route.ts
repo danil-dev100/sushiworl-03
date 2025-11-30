@@ -116,7 +116,6 @@ export async function POST(request: NextRequest) {
       });
 
       // Salvar log do evento
-      // @ts-expect-error - TrackingEvent será gerado após prisma generate
       await prisma.trackingEvent.create({
         data: {
           integrationId: integration.id,

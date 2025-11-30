@@ -263,7 +263,7 @@ const promotionFormSchema = z.object({
   promotionItems: z.array(z.string()).optional(),
 });
 
-type PromotionFormValues = z.infer<typeof promotionFormSchema>;
+type PromotionFormValues = z.output<typeof promotionFormSchema>;
 
 export function PromotionsPageContent({
   initialPromotions,

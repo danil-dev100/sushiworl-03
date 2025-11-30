@@ -21,7 +21,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 
 // Importação condicional dos componentes
-let TriggerNode, EmailNode, DelayNode, ConditionNode, ActionNode, NodePalette, NodeConfigPanel;
+let TriggerNode: any, EmailNode: any, DelayNode: any, ConditionNode: any, ActionNode: any, NodePalette: any, NodeConfigPanel: any;
 
 try {
   TriggerNode = require('./nodes/TriggerNode').default;

@@ -100,7 +100,7 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
   };
 
   const removeFromLayout = (item: string) => {
-    const newLayout = formData.printSettings.layout.filter(i => i !== item);
+    const newLayout = formData.printSettings.layout.filter((i: string) => i !== item);
     setFormData({
       ...formData,
       printSettings: { ...formData.printSettings, layout: newLayout }

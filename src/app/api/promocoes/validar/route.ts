@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
             product: true,
           },
         },
-        suggestedProduct: true,
       },
     });
 

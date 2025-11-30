@@ -10,7 +10,7 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || !canManageOrders(session.user.role, session.user.managerLevel)) {
+    if (!session || !canManageOrders(session.user.role, session.user.managerLevel ?? null)) {
       return NextResponse.json(
         { error: 'Não autorizado' },
         { status: 401 }
@@ -71,7 +71,7 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || !canManageOrders(session.user.role, session.user.managerLevel)) {
+    if (!session || !canManageOrders(session.user.role, session.user.managerLevel ?? null)) {
       return NextResponse.json(
         { error: 'Não autorizado' },
         { status: 401 }

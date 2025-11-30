@@ -4,6 +4,22 @@ import { authOptions, canManageMarketing } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { PixelsAdsPageContent } from '@/components/admin/marketing/PixelsAdsPageContent';
 
+type PixelIntegration = {
+  id: string;
+  name: string | null;
+  platform: string;
+  type: string;
+  apiKey: string | null;
+  apiSecret: string | null;
+  pixelId: string | null;
+  measurementId: string | null;
+  accessToken: string | null;
+  config: Record<string, unknown> | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export default async function PixelsAdsPage() {
   const session = await getServerSession(authOptions);
 
@@ -15,9 +31,26 @@ export default async function PixelsAdsPage() {
   }
 
   try {
-    const integrations = await prisma.integration.findMany({
+    const integrationsFromDb = await prisma.integration.findMany({
       orderBy: { createdAt: 'desc' },
     });
+
+    // Mapear para o tipo esperado pelo componente
+    const integrations: PixelIntegration[] = integrationsFromDb.map(integration => ({
+      id: integration.id,
+      name: integration.name,
+      platform: integration.platform,
+      type: integration.type,
+      apiKey: integration.apiKey,
+      apiSecret: integration.apiSecret,
+      pixelId: integration.pixelId,
+      measurementId: integration.measurementId,
+      accessToken: integration.accessToken,
+      config: integration.config ? integration.config as Record<string, unknown> : null,
+      isActive: integration.isActive,
+      createdAt: integration.createdAt,
+      updatedAt: integration.updatedAt,
+    }));
 
     return (
       <PixelsAdsPageContent
@@ -26,15 +59,7 @@ export default async function PixelsAdsPage() {
           role: session.user.role,
           managerLevel: session.user.managerLevel ?? null,
         }}
-        integrations={integrations as Array<{
-          id: string;
-          platform: string;
-          name: string;
-          config: Record<string, unknown> | null;
-          isActive: boolean;
-          createdAt: Date;
-          updatedAt: Date;
-        }>}
+        integrations={integrations}
       />
     );
   } catch (error) {

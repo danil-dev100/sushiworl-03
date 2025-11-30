@@ -213,7 +213,7 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
   const generatePrintPreview = () => {
     // Gerar conteúdo baseado na ordem do layout personalizado
     const content = formData.printSettings.layout
-      .map(itemId => renderReceiptItem(itemId))
+      .map((itemId: string) => renderReceiptItem(itemId))
       .join('')
       .trim();
 

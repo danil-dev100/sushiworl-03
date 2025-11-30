@@ -4,6 +4,20 @@ import { authOptions, canManageUsers } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { UsersPageContent } from '@/components/admin/users/UsersPageContent';
 
+type AdminRole = 'ADMIN' | 'MANAGER';
+type AdminManagerLevel = 'BASIC' | 'INTERMEDIATE' | 'FULL';
+
+type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: AdminRole;
+  managerLevel: AdminManagerLevel | null;
+  isActive: boolean;
+  firstLogin: boolean;
+  createdAt: Date;
+};
+
 export default async function UsuariosSettingsPage() {
   const session = await getServerSession(authOptions);
 
@@ -11,7 +25,7 @@ export default async function UsuariosSettingsPage() {
     redirect('/admin/dashboard');
   }
 
-  const users = await prisma.user.findMany({
+  const usersFromDb = await prisma.user.findMany({
     where: {
       role: {
         in: ['ADMIN', 'MANAGER'],
@@ -31,6 +45,18 @@ export default async function UsuariosSettingsPage() {
       createdAt: true,
     },
   });
+
+  // Mapear para o tipo esperado pelo componente
+  const users: AdminUser[] = usersFromDb.map(user => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role as AdminRole,
+    managerLevel: user.managerLevel as AdminManagerLevel | null,
+    isActive: user.isActive,
+    firstLogin: user.firstLogin,
+    createdAt: user.createdAt,
+  }));
 
   return (
     <UsersPageContent

@@ -38,9 +38,11 @@ export default function FlowBuilderContent({ automation, templates }: FlowBuilde
   const router = useRouter();
   const [name, setName] = useState(automation.name);
   const [description, setDescription] = useState(automation.description || '');
+  const [isSaving, setIsSaving] = useState(false);
 
   const initialFlow = automation.flow as { nodes: Node[]; edges: Edge[] } | null;
   const [nodes, setNodes] = useState<Node[]>(initialFlow?.nodes || []);
+  const [edges] = useState<Edge[]>(initialFlow?.edges || []);
 
   const handleAddNode = useCallback(
     (nodeTemplate: any) => {

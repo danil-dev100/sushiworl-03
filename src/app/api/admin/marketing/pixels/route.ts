@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     if (
       !session ||
-      !canManageMarketing(session.user.role, session.user.managerLevel)
+      !canManageMarketing(session.user.role, session.user.managerLevel ?? null)
     ) {
       return NextResponse.json(
         { error: 'Não autorizado' },
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     if (
       !session ||
-      !canManageMarketing(session.user.role, session.user.managerLevel)
+      !canManageMarketing(session.user.role, session.user.managerLevel ?? null)
     ) {
       return NextResponse.json(
         { error: 'Não autorizado' },

@@ -155,19 +155,19 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(result);
 
-    } catch (geocodeError) {
+    } catch (geocodeError: unknown) {
       clearTimeout(timeoutId);
-      
-      if (geocodeError.name === 'AbortError') {
+
+      if (geocodeError instanceof Error && geocodeError.name === 'AbortError') {
         return NextResponse.json(
-          { 
+          {
             error: 'Tempo limite excedido ao geocodificar endereço',
-            delivers: false 
+            delivers: false
           },
           { status: 408 }
         );
       }
-      
+
       throw geocodeError;
     }
 

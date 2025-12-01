@@ -109,18 +109,6 @@ export default async function HeroBanner() {
           {hero.headline}
         </h1>
       </div>
-      <div className="absolute bottom-4 left-0 right-0 p-4">
-        <p
-          className="text-center text-xs font-medium md:text-sm"
-          style={{
-            color: hero.headlineColor,
-            textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-          }}
-        >
-          Alergias alimentares ou necessidades dietéticas especiais: Antes de realizar o seu pedido,
-          por favor contate diretamente o restaurante.
-        </p>
-      </div>
     </section>
   );
 }

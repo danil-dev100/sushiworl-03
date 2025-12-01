@@ -69,6 +69,22 @@ export default function CheckoutPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Validação automática do endereço com debounce
+    if (name === 'endereco' && value.trim().length > 10) {
+      // Limpar timeout anterior se existir
+      if ((window as any).addressValidationTimeout) {
+        clearTimeout((window as any).addressValidationTimeout);
+      }
+
+      // Criar novo timeout para validação após 1.5 segundos
+      (window as any).addressValidationTimeout = setTimeout(() => {
+        validateDeliveryAddress(value.trim());
+      }, 1500);
+    } else if (name === 'endereco' && value.trim().length <= 10) {
+      // Limpar validação se o endereço for muito curto
+      setDeliveryValidation(null);
+    }
   };
 
   const handleApplyCoupon = async () => {
@@ -171,37 +187,41 @@ export default function CheckoutPage() {
   };
 
   // Validar endereço de entrega com texto
-  const validateDeliveryAddress = async () => {
-    if (!formData.endereco.trim()) {
-      toast.error('Digite o endereço completo');
+  const validateDeliveryAddress = async (address?: string) => {
+    const addressToValidate = address || formData.endereco.trim();
+
+    if (!addressToValidate) {
       return;
     }
 
     setIsValidatingAddress(true);
     try {
-      const response = await fetch('/api/validate-delivery', {
+      const response = await fetch('/api/delivery/check-area', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          address: formData.endereco,
-          ...(userLocation && {
-            latitude: userLocation.latitude,
-            longitude: userLocation.longitude,
-          }),
+          address: addressToValidate,
         }),
       });
 
       const data = await response.json();
-      setDeliveryValidation(data);
 
-      if (data.isValid) {
-        toast.success(data.message);
-      } else {
-        toast.error(data.message || 'Endereço fora da área de entrega');
-      }
+      // Mapear resposta da API para formato esperado
+      setDeliveryValidation({
+        isValid: data.delivers || false,
+        message: data.delivers
+          ? `Entregamos em ${data.area?.name || 'sua região'}! Taxa: €${(data.area?.deliveryFee || 0).toFixed(2)}`
+          : data.message || 'Desculpe, não entregamos neste endereço.',
+        area: data.area,
+      });
+
+      // Não mostrar toast automaticamente para validação em tempo real
     } catch (error) {
       console.error('Erro ao validar endereço:', error);
-      toast.error('Erro ao validar endereço');
+      setDeliveryValidation({
+        isValid: false,
+        message: 'Erro ao validar endereço. Tente novamente.',
+      });
     } finally {
       setIsValidatingAddress(false);
     }
@@ -373,23 +393,20 @@ export default function CheckoutPage() {
                         <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
                           Endereço Completo*
                         </p>
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+                        <div className="relative">
                           <input
                             required
                             name="endereco"
                             value={formData.endereco}
                             onChange={handleInputChange}
-                            className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
-                            placeholder="Rua, Número, Bairro, Cidade"
+                            className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] pr-12 text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
+                            placeholder="rua do castelo"
                           />
-                          <button
-                            type="button"
-                            onClick={validateDeliveryAddress}
-                            disabled={isValidatingAddress || !formData.endereco.trim()}
-                            className="flex h-14 items-center justify-center rounded-lg bg-[#FF6B00] px-6 text-base font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50 whitespace-nowrap"
-                          >
-                            {isValidatingAddress ? 'Validando...' : '📍 Validar'}
-                          </button>
+                          {isValidatingAddress && (
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#FF6B00] border-t-transparent"></div>
+                            </div>
+                          )}
                         </div>
                         {/* Mensagem de validação */}
                         {deliveryValidation && (

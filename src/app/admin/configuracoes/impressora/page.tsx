@@ -1,8 +1,8 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 
-const PrinterSettingsEditor = dynamic(
+const PrinterSettingsEditor = dynamicImport(
   () => import('@/components/admin/orders/PrinterSettingsEditor'),
   { ssr: false }
 );

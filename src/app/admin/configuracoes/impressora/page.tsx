@@ -1,6 +1,13 @@
-import PrinterSettingsEditor from '@/components/admin/orders/PrinterSettingsEditor';
+'use client';
 
-export default async function PrinterSettingsPage() {
+import dynamic from 'next/dynamic';
+
+const PrinterSettingsEditor = dynamic(
+  () => import('@/components/admin/orders/PrinterSettingsEditor'),
+  { ssr: false }
+);
+
+export default function PrinterSettingsPage() {
   // Configuração inicial é undefined - será carregada do banco via API no componente cliente
   const initialConfig = undefined;
 

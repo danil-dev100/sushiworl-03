@@ -43,6 +43,13 @@ const nextConfig: NextConfig = {
         minimize: false, // Desabilitar minificação em dev para melhor debugging
       };
     }
+
+    // Excluir react-to-print do SSR para evitar erros de file system
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push('react-to-print');
+    }
+
     return config;
   },
 };

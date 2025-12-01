@@ -255,22 +255,25 @@ model PrintHistory {
 model DeliveryArea {
   id              String   @id @default(cuid())
   name            String
-  
+
   // Polígono (array de coordenadas)
   polygon         Json // [[lat, lng], [lat, lng], ...]
   color           String   @default("#3B82F6") // Cor no mapa
-  
+
   // Configuração de entrega
   deliveryType    DeliveryType
   deliveryFee     Float    @default(0)
   minOrderValue   Float?   // Valor mínimo para frete grátis
-  
+
+  // Contextos de busca para geocodificação (cidades/concelhos)
+  searchContexts  String[] @default([]) // Melhora precisão da busca de endereços
+
   isActive        Boolean  @default(true)
   sortOrder       Int      @default(0)
-  
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  
+
   orders          Order[]
 }
 

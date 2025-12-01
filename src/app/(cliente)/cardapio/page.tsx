@@ -7,7 +7,8 @@ export const metadata: Metadata = {
   description: 'Confira nosso cardápio completo com combinados, hots, sashimi, nigiri e muito mais. Peça online!',
 };
 
-// Force rebuild after removing react-to-print and styled-jsx
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getProducts() {
   try {

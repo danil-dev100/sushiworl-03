@@ -80,11 +80,15 @@ export default function CheckoutPage() {
 
       // Criar novo timeout para validação após 1.5 segundos
       (window as any).addressValidationTimeout = setTimeout(() => {
-        const fullAddress = name === 'endereco'
-          ? `${value.trim()}, ${formData.codigoPostal}`
-          : `${formData.endereco}, ${value.trim()}`;
+        // Construir endereço completo (CEP é opcional)
+        const addressParts = name === 'endereco'
+          ? [value.trim(), formData.codigoPostal].filter(Boolean)
+          : [formData.endereco, value.trim()].filter(Boolean);
 
-        if (formData.endereco.length > 10 && (name === 'codigoPostal' ? value.trim().length >= 4 : formData.codigoPostal.length >= 4)) {
+        const fullAddress = addressParts.join(', ');
+
+        // Validar se endereço tem tamanho mínimo (CEP agora é opcional)
+        if (formData.endereco.length > 10) {
           validateDeliveryAddress(fullAddress);
         }
       }, 1500);
@@ -252,12 +256,16 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
+      // Construir endereço completo (CEP é opcional)
+      const addressParts = [formData.endereco, formData.codigoPostal].filter(Boolean);
+      const fullAddress = addressParts.join(', ');
+
       const orderData = {
         customerName: formData.nome,
         customerSurname: formData.sobrenome,
         customerEmail: formData.email,
         customerPhone: formData.telefone,
-        address: `${formData.endereco}, ${formData.codigoPostal}`,
+        address: fullAddress,
         nif: formData.nif,
         paymentMethod: paymentMethod.toUpperCase(),
         observations: formData.observacoes,
@@ -418,10 +426,9 @@ export default function CheckoutPage() {
                       </label>
                       <label className="flex flex-col">
                         <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
-                          Código Postal*
+                          Código Postal <span className="text-sm font-normal text-[#333333]/70 dark:text-[#f5f1e9]/70">(Opcional)</span>
                         </p>
                         <input
-                          required
                           name="codigoPostal"
                           value={formData.codigoPostal}
                           onChange={handleInputChange}

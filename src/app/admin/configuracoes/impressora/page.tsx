@@ -7,6 +7,8 @@ const PrinterSettingsEditor = dynamic(
   { ssr: false }
 );
 
+export const dynamic = 'force-dynamic';
+
 export default function PrinterSettingsPage() {
   // Configuração inicial é undefined - será carregada do banco via API no componente cliente
   const initialConfig = undefined;

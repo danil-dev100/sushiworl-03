@@ -8,7 +8,6 @@ import { Switch } from '@/components/ui/switch';
 import OrderReceiptPreview, { OrderReceiptConfig } from './OrderReceiptPreview';
 import PrintStyles from './PrintStyles';
 import { toast } from 'sonner';
-import { useReactToPrint } from 'react-to-print';
 
 interface PrinterSettingsEditorProps {
   initialConfig?: OrderReceiptConfig;
@@ -124,22 +123,11 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
   }, []);
 
   // Função de impressão
-  const handlePrint = useReactToPrint({
-    contentRef: printRef,
-    documentTitle: `Teste-Recibo-${new Date().getTime()}`,
-    pageStyle: `
-      @page {
-        size: 80mm auto;
-        margin: 0;
-      }
-      @media print {
-        body {
-          margin: 0;
-          padding: 0;
-        }
-      }
-    `,
-  });
+  const handlePrint = () => {
+    if (typeof window !== 'undefined') {
+      window.print();
+    }
+  };
 
   const handleDragStart = (index: number) => {
     setDraggedItem(index);

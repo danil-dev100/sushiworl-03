@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 
 // Função utilitária para disparar webhooks (a ser chamada de outros lugares do sistema)
 export async function triggerWebhooks(
@@ -77,7 +78,7 @@ export async function triggerWebhooks(
             statusCode,
             errorMessage,
             duration,
-            requestBody: payload as Record<string, unknown>,
+            requestBody: payload as Prisma.InputJsonValue,
           },
         });
 

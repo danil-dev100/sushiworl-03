@@ -34,7 +34,6 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
   },
-  serverExternalPackages: ['react-to-print'],
   // Configurações adicionais do esbuild para desenvolvimento
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {

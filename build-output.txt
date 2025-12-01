@@ -1,0 +1,440 @@
+
+> next-template@0.1.0 build
+> rm -rf .next && next build
+
+   ▲ Next.js 15.3.4
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings in 3.5min
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/build/webpack/loaders/css-loader/src/runtime/api.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\css-loader\src\runtime\api.js
+    Used by 2 module(s), i. e.
+    c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\css-loader\src\index.js??ruleSet[1].rules[13].oneOf[10].use[2]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\postcss-loader\src\index.js??ruleSet[1].rules[13].oneOf[10].use[3]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\reactflow@11.11.4_@types+re_31c5231eb48430342bd16faf36f05c50\node_modules\reactflow\dist\style.css
+* c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\css-loader\src\runtime\api.js
+    Used by 4 module(s), i. e.
+    c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\css-loader\src\index.js??ruleSet[1].rules[13].oneOf[2].use[1]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-font-loader\index.js??ruleSet[1].rules[13].oneOf[2].use[2]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\font\google\target.css?{"path":"src\\app\\layout.tsx","import":"Geist","arguments":[{"variable":"--font-geist-sans","subsets":["latin"]}],"variableName":"geistSans"}
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/build/webpack/loaders/css-loader/src/runtime/api.js
+./node_modules/.pnpm/reactflow@11.11.4_@types+re_31c5231eb48430342bd16faf36f05c50/node_modules/reactflow/dist/style.css.webpack[javascript/auto]!=!./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./node_modules/.pnpm/reactflow@11.11.4_@types+re_31c5231eb48430342bd16faf36f05c50/node_modules/reactflow/dist/style.css
+./node_modules/.pnpm/reactflow@11.11.4_@types+re_31c5231eb48430342bd16faf36f05c50/node_modules/reactflow/dist/style.css
+./src/components/admin/email-marketing/FlowBuilder.tsx
+./src/app/admin/marketing/email/[id]/page.tsx
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/lib/is-error.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\lib\is-error.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\lib\is-error.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/lib/is-error.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/lib/pretty-bytes.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\lib\pretty-bytes.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\lib\pretty-bytes.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/lib/pretty-bytes.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\get-page-files.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\get-page-files.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/htmlescape.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\htmlescape.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\htmlescape.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/htmlescape.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/lib/trace/constants.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\lib\trace\constants.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\lib\trace\tracer.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\lib\trace\constants.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\lib\trace\tracer.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/lib/trace/constants.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/lib/trace/tracer.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/lib/trace/tracer.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\lib\trace\tracer.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\lib\trace\tracer.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/lib/trace/tracer.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/lib/trace/utils.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\lib\trace\utils.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\lib\trace\utils.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/lib/trace/utils.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/utils.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\utils.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\utils.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/utils.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/pages/_app.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_app.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_app.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_app.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js?kind=PAGES&page=%2F_error&preferredRegion=&absolutePagePath=next%2Fdist%2Fpages%2F_error&absoluteAppPath=next%2Fdist%2Fpages%2F_app&absoluteDocumentPath=next%2Fdist%2Fpages%2F_document&middlewareConfigBase64=e30%3D!|pages-dir-node
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/pages/_document.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js?kind=PAGES&page=%2F_error&preferredRegion=&absolutePagePath=next%2Fdist%2Fpages%2F_error&absoluteAppPath=next%2Fdist%2Fpages%2F_app&absoluteDocumentPath=next%2Fdist%2Fpages%2F_document&middlewareConfigBase64=e30%3D!|pages-dir-node
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/constants.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\constants.js|pages-dir-node
+    Used by 3 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\constants.js|pages-dir-node
+    Used by 3 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/constants.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/encode-uri-path.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\encode-uri-path.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\encode-uri-path.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_document.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/encode-uri-path.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/is-plain-object.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\is-plain-object.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\lib\is-error.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\is-plain-object.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\lib\is-error.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/is-plain-object.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/lib/is-error.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/is-thenable.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\is-thenable.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\lib\trace\tracer.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\is-thenable.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\lib\trace\tracer.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/is-thenable.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/lib/trace/tracer.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/modern-browserslist-target.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\modern-browserslist-target.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\constants.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\modern-browserslist-target.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\constants.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/modern-browserslist-target.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/constants.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/denormalize-page-path.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\denormalize-page-path.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\get-page-files.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\denormalize-page-path.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\get-page-files.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/denormalize-page-path.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/ensure-leading-slash.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\ensure-leading-slash.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\normalize-page-path.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\ensure-leading-slash.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\normalize-page-path.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/ensure-leading-slash.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/normalize-page-path.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/normalize-page-path.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\normalize-page-path.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\get-page-files.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\normalize-page-path.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\server\get-page-files.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/normalize-page-path.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/normalize-path-sep.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\normalize-path-sep.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\denormalize-page-path.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\normalize-path-sep.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\denormalize-page-path.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/normalize-path-sep.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/denormalize-page-path.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/app-paths.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\app-paths.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\interception-routes.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\app-paths.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\interception-routes.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/app-paths.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/interception-routes.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/is-dynamic.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/index.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/denormalize-page-path.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\index.js|pages-dir-node
+    Used by 3 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\denormalize-page-path.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\index.js|pages-dir-node
+    Used by 3 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\page-path\denormalize-page-path.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/index.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/denormalize-page-path.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/interception-routes.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\interception-routes.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\is-dynamic.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\interception-routes.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\is-dynamic.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/interception-routes.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/is-dynamic.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/index.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/denormalize-page-path.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/is-dynamic.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\is-dynamic.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\index.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\is-dynamic.js|pages-dir-node
+    Used by 1 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\index.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/is-dynamic.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/index.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/denormalize-page-path.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/sorted-routes.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\sorted-routes.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\index.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\sorted-routes.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\index.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/sorted-routes.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/index.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/denormalize-page-path.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/segment.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\segment.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\app-paths.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\segment.js|pages-dir-node
+    Used by 2 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\router\utils\app-paths.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/segment.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/app-paths.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/interception-routes.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/is-dynamic.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/router/utils/index.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/page-path/denormalize-page-path.js
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/server/get-page-files.js
+
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/utils.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\utils.js|pages-dir-node
+    Used by 3 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_app.js|pages-dir-node
+* javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\shared\lib\utils.js|pages-dir-node
+    Used by 3 module(s), i. e.
+    javascript/auto|c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[15].oneOf[8].use[0]!c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\pages\_app.js|pages-dir-node
+
+Import trace for requested module:
+./node_modules/.pnpm/next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/next/dist/shared/lib/utils.js
+
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/91) ...
+TypeError: Cannot read properties of null (reading 'use')
+    at i (c:\Projetos\sushi_03\sushiworld_3\.next\server\chunks\3428.js:1:15609)
+TypeError: Cannot read properties of null (reading 'use')
+    at i (c:\Projetos\sushi_03\sushiworld_3\.next\server\chunks\3428.js:1:15609)
+Error occurred prerendering page "/_not-found". Read more: https://nextjs.org/docs/messages/prerender-error
+TypeError: Cannot read properties of null (reading 'useState')
+    at t.useState (C:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:124:6905)
+    at t.SessionProvider (c:\Projetos\sushi_03\sushiworld_3\.next\server\chunks\3428.js:1:51271)
+    at nF (c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:46843)
+    at nH (c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:48618)
+    at nW (c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:67762)
+    at nz (c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:65337)
+    at nB (c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:47195)
+    at nH (c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:48664)
+    at nH (c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:64688)
+    at nW (c:\Projetos\sushi_03\sushiworld_3\node_modules\.pnpm\next@15.3.4_react-dom@19.2.0_react@19.2.0__react@19.2.0\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:76:67762)
+Export encountered an error on /_not-found/page: /_not-found, exiting the build.
+ ⨯ Next.js build worker exited with code: 1 and signal: null

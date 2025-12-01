@@ -483,7 +483,7 @@ export default function CheckoutPage() {
                             Usar minha localização atual
                           </button>
                         )}
-                      </label>
+                      </div>
                       <label className="flex flex-col sm:col-span-2">
                         <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
                           NIF <span className="text-sm font-normal text-[#333333]/70 dark:text-[#f5f1e9]/70">(Opcional)</span>

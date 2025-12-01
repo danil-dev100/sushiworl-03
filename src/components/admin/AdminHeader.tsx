@@ -67,20 +67,22 @@ export function AdminHeader({ user }: AdminHeaderProps) {
             
             <div className="flex items-center gap-2">
               <button
-                onClick={() => router.push('/admin/perfil')}
+                onClick={() => router.push('/admin/configuracoes/usuarios')}
                 className="rounded-full p-2 hover:bg-[#f5f1e9] dark:hover:bg-[#23170f]"
                 aria-label="Perfil"
               >
                 <User className="h-5 w-5 text-[#a16b45]" />
               </button>
               
-              <div
-                className="rounded-full p-2 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20"
+              <button
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+                className="rounded-full p-2 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
                 title="Sair"
                 aria-label="Sair"
               >
                 <LogOut className="h-5 w-5 text-red-600" />
-              </div>
+              </button>
             </div>
           </div>
         </div>

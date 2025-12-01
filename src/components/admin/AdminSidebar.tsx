@@ -33,7 +33,7 @@ const menuItems = [
     href: '/admin/cardapio',
   },
   {
-    label: 'Clientes',
+    label: 'Usuários',
     icon: Users,
     href: '/admin/configuracoes/usuarios',
   },

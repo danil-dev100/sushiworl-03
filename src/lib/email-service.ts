@@ -48,7 +48,7 @@ export class EmailService {
       };
 
       // Criar transporter
-      this.transporter = nodemailer.createTransporter({
+      this.transporter = nodemailer.createTransport({
         host: this.config.smtpServer,
         port: this.config.smtpPort,
         secure: this.config.useTls && this.config.smtpPort === 465, // true para 465, false para outros
@@ -209,5 +209,6 @@ export class EmailService {
 
 // Instância singleton
 export const emailService = new EmailService();
+
 
 

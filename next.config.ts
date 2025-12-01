@@ -34,6 +34,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
   },
+  serverExternalPackages: ['react-to-print'],
   // Configurações adicionais do esbuild para desenvolvimento
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
@@ -42,12 +43,6 @@ const nextConfig: NextConfig = {
         ...config.optimization,
         minimize: false, // Desabilitar minificação em dev para melhor debugging
       };
-    }
-
-    // Excluir react-to-print do SSR para evitar erros de file system
-    if (isServer) {
-      config.externals = config.externals || [];
-      config.externals.push('react-to-print');
     }
 
     return config;

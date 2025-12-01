@@ -26,6 +26,21 @@ function pointInPolygon(point: [number, number], polygon: number[][]): boolean {
   return inside;
 }
 
+// Função para calcular distância entre dois pontos (em km)
+function calculateDistance(coord1: [number, number], coord2: [number, number]): number {
+  const [lat1, lon1] = coord1;
+  const [lat2, lon2] = coord2;
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
 // POST - Verificar se endereço está em área de entrega (OTIMIZADO)
 export async function POST(request: NextRequest) {
   try {
@@ -84,8 +99,8 @@ export async function POST(request: NextRequest) {
     try {
       const geocodeResponse = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          address + ', Portugal'
-        )}&limit=1`,
+          address + ', Santa Iria, Portugal'
+        )}&limit=5`,
         {
           signal: controller.signal,
           headers: {
@@ -103,17 +118,49 @@ export async function POST(request: NextRequest) {
           delivers: false,
           coordinates: null
         };
-        
+
         addressCache.set(cacheKey, {
           data: result,
           timestamp: Date.now()
         });
-        
+
         return NextResponse.json(result, { status: 404 });
       }
 
-      const { lat, lon } = geocodeData[0];
+      // Filtrar resultados para garantir que estão em Santa Iria ou área próxima
+      const validResults = geocodeData.filter((result: any) => {
+        const displayName = result.display_name.toLowerCase();
+        return displayName.includes('santa iria') ||
+               displayName.includes('santa iria de azóia') ||
+               displayName.includes('são joão da talha') ||
+               displayName.includes('póvoa de santa iria') ||
+               displayName.includes('2690'); // Código postal da área
+      });
+
+      let selectedResult = validResults.length > 0 ? validResults[0] : geocodeData[0];
+      const { lat, lon } = selectedResult;
       const coordinates: [number, number] = [parseFloat(lat), parseFloat(lon)];
+
+      // Coordenadas de referência de Santa Iria
+      const santaIriaRef: [number, number] = [38.8500, -9.0600];
+      const distance = calculateDistance(coordinates, santaIriaRef);
+
+      // Se a distância for maior que 10km, provavelmente é endereço errado
+      if (distance > 10) {
+        const result = {
+          delivers: false,
+          message: 'O endereço parece estar fora de Santa Iria. Por favor, verifique o endereço e código postal.',
+          coordinates,
+          warning: 'localizacao_improvavel'
+        };
+
+        addressCache.set(cacheKey, {
+          data: result,
+          timestamp: Date.now()
+        });
+
+        return NextResponse.json(result);
+      }
 
       // Verificar em qual área o ponto está (usando polígonos pré-convertidos)
       for (const area of deliveryAreas) {

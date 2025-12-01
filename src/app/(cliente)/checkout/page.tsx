@@ -33,6 +33,7 @@ export default function CheckoutPage() {
     email: '',
     telefone: '',
     endereco: '',
+    codigoPostal: '',
     nif: '',
     observacoes: '',
   });
@@ -71,7 +72,7 @@ export default function CheckoutPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
 
     // Validação automática do endereço com debounce
-    if (name === 'endereco' && value.trim().length > 10) {
+    if ((name === 'endereco' || name === 'codigoPostal') && value.trim().length > 3) {
       // Limpar timeout anterior se existir
       if ((window as any).addressValidationTimeout) {
         clearTimeout((window as any).addressValidationTimeout);
@@ -79,9 +80,15 @@ export default function CheckoutPage() {
 
       // Criar novo timeout para validação após 1.5 segundos
       (window as any).addressValidationTimeout = setTimeout(() => {
-        validateDeliveryAddress(value.trim());
+        const fullAddress = name === 'endereco'
+          ? `${value.trim()}, ${formData.codigoPostal}`
+          : `${formData.endereco}, ${value.trim()}`;
+
+        if (formData.endereco.length > 10 && (name === 'codigoPostal' ? value.trim().length >= 4 : formData.codigoPostal.length >= 4)) {
+          validateDeliveryAddress(fullAddress);
+        }
       }, 1500);
-    } else if (name === 'endereco' && value.trim().length <= 10) {
+    } else if ((name === 'endereco' || name === 'codigoPostal') && value.trim().length <= 3) {
       // Limpar validação se o endereço for muito curto
       setDeliveryValidation(null);
     }
@@ -250,7 +257,7 @@ export default function CheckoutPage() {
         customerSurname: formData.sobrenome,
         customerEmail: formData.email,
         customerPhone: formData.telefone,
-        address: formData.endereco,
+        address: `${formData.endereco}, ${formData.codigoPostal}`,
         nif: formData.nif,
         paymentMethod: paymentMethod.toUpperCase(),
         observations: formData.observacoes,
@@ -389,7 +396,7 @@ export default function CheckoutPage() {
                           placeholder="+351 XXX XXX XXX"
                         />
                       </label>
-                      <label className="flex flex-col sm:col-span-2">
+                      <label className="flex flex-col">
                         <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
                           Endereço Completo*
                         </p>
@@ -400,7 +407,7 @@ export default function CheckoutPage() {
                             value={formData.endereco}
                             onChange={handleInputChange}
                             className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] pr-12 text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
-                            placeholder="rua do castelo"
+                            placeholder="Rua, Número, Bairro"
                           />
                           {isValidatingAddress && (
                             <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -408,6 +415,22 @@ export default function CheckoutPage() {
                             </div>
                           )}
                         </div>
+                      </label>
+                      <label className="flex flex-col">
+                        <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
+                          Código Postal*
+                        </p>
+                        <input
+                          required
+                          name="codigoPostal"
+                          value={formData.codigoPostal}
+                          onChange={handleInputChange}
+                          maxLength={8}
+                          className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
+                          placeholder="2690-XXX"
+                        />
+                      </label>
+                      <div className="sm:col-span-2">
                         {/* Mensagem de validação */}
                         {deliveryValidation && (
                           <div

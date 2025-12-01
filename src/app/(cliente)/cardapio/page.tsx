@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'Confira nosso cardápio completo com combinados, hots, sashimi, nigiri e muito mais. Peça online!',
 };
 
+// Force rebuild after removing react-to-print and styled-jsx
+
 async function getProducts() {
   try {
     const products = await prisma.product.findMany({

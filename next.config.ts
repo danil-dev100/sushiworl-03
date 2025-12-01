@@ -34,6 +34,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
   },
+  // Externalizar jsdom e DOMPurify para evitar erros de file system no build
+  serverExternalPackages: ['jsdom', 'isomorphic-dompurify'],
   // Configurações adicionais do esbuild para desenvolvimento
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {

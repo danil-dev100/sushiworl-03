@@ -474,7 +474,7 @@ export class FlowExecutionService {
 
     const totalExecutions = logs.length;
     const successCount = logs.filter(log => log.status === 'SUCCESS').length;
-    const failureCount = logs.filter(log => log.status === 'FAILURE').length;
+    const failureCount = logs.filter(log => log.status === 'FAILED').length;
 
     await prisma.emailAutomation.update({
       where: { id: flowId },

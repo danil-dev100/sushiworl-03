@@ -53,7 +53,7 @@ export class FlowExecutionService {
         const recentExecutions = flow.logs.filter(log =>
           log.userId === context.userId &&
           log.trigger === eventType &&
-          log.status === 'success'
+          log.status === 'SUCCESS'
         );
 
         if (recentExecutions.length > 0) {

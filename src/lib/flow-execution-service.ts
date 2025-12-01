@@ -149,7 +149,7 @@ export class FlowExecutionService {
     edges: any[],
     context: FlowExecutionContext
   ): Promise<void> {
-    let currentNodeId = startNodeId;
+    let currentNodeId: string | null = startNodeId;
     const executedNodes = new Set<string>();
 
     while (currentNodeId && !executedNodes.has(currentNodeId)) {

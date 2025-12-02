@@ -139,17 +139,76 @@ model ProductOption {
 model ProductOptionChoice {
   id          String   @id @default(cuid())
   optionId    String
-  
+
   name        String   @db.VarChar(80)
   price       Float    @default(0) // Valor adicional
   isDefault   Boolean  @default(false) // Pré-selecionado
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   option      ProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// OPÇÕES GLOBAIS (Biblioteca de Opções Reutilizáveis)
+// ============================================
+
+model GlobalOption {
+  id            String                    @id @default(cuid())
+  name          String                    @db.VarChar(80)
+  type          OptionType                @default(OPTIONAL)
+  description   String?                   @db.VarChar(150)
+  displayAt     DisplayAt                 @default(CART)
+  isPaid        Boolean                   @default(false)
+  basePrice     Float                     @default(0)
+  isActive      Boolean                   @default(true)
+  sortOrder     Int                       @default(0)
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  choices       GlobalOptionChoice[]
+  assignments   GlobalOptionAssignment[]
+
+  @@index([isActive])
+}
+
+model GlobalOptionChoice {
+  id          String       @id @default(cuid())
+  optionId    String
+  name        String       @db.VarChar(80)
+  price       Float        @default(0)
+  isDefault   Boolean      @default(false)
+  isActive    Boolean      @default(true)
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  option      GlobalOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@index([optionId])
+}
+
+model GlobalOptionAssignment {
+  id              String         @id @default(cuid())
+  globalOptionId  String
+  assignmentType  AssignmentType
+  targetId        String?        // categoryId ou productId (null se SITE_WIDE)
+  minSelection    Int            @default(0)
+  maxSelection    Int            @default(1)
+  allowMultiple   Boolean        @default(false)
+  sortOrder       Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  globalOption    GlobalOption   @relation(fields: [globalOptionId], references: [id], onDelete: Cascade)
+
+  @@unique([globalOptionId, assignmentType, targetId])
+  @@index([globalOptionId])
+  @@index([assignmentType])
+  @@index([targetId])
 }
 
 // ============================================
@@ -840,6 +899,12 @@ enum OptionType {
 enum DisplayAt {
   SITE
   CART
+}
+
+enum AssignmentType {
+  SITE_WIDE   // Aplica em todos os produtos
+  CATEGORY    // Aplica em produtos de uma categoria
+  PRODUCT     // Aplica em um produto específico
 }
 
 enum OrderStatus {

@@ -41,9 +41,24 @@ export default function ProductCard({
 
   const priceNumber = parseFloat(price.replace('€', '').replace(',', '.'));
 
+  // Debug: monitorar mudanças de estado
+  useEffect(() => {
+    console.log('[ProductCard] 🔄 Estado mudou:', {
+      isDialogOpen,
+      productOptionsCount: productOptions.length,
+      productName: name
+    });
+  }, [isDialogOpen, productOptions, name]);
+
   const handleAddToCart = async () => {
-    console.log('[ProductCard] 🛒 Botão "Adicionar" clicado');
-    console.log('[ProductCard] Produto:', { id: productId, name, price: priceNumber });
+    console.log('═══════════════════════════════════════');
+    console.log('🎯 BOTÃO ADICIONAR CLICADO');
+    console.log('📦 Produto:', {
+      id: productId,
+      name,
+      price: priceNumber
+    });
+    console.log('═══════════════════════════════════════');
 
     // Verificar se a loja está aberta
     if (storeStatus && !storeStatus.isOpen) {
@@ -56,40 +71,17 @@ export default function ProductCard({
     }
 
     setIsLoadingOptions(true);
-    console.log('[ProductCard] 🔍 Buscando opções do produto...');
 
     try {
+      // 1. Buscar opções
+      console.log('🔍 Iniciando busca de opções...');
+      console.log('📡 URL:', `/api/products/${productId}/options`);
+
       const response = await fetch(`/api/products/${productId}/options`);
-      console.log('[ProductCard] Response status:', response.status);
+      console.log('📊 Status da resposta:', response.status, response.statusText);
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('[ProductCard] 📦 Dados recebidos:', data);
-
-        const activeOptions = data.options?.filter((opt: any) =>
-          opt.isActive && opt.displayAt === 'SITE'
-        );
-
-        console.log(`[ProductCard] 🎯 Opções SITE ativas: ${activeOptions?.length || 0}`);
-
-        if (activeOptions && activeOptions.length > 0) {
-          console.log('[ProductCard] ✅ Abrindo popup de opções...');
-          console.log('[ProductCard] Opções:', activeOptions.map((o: any) => ({ name: o.name, choices: o.choices.length })));
-          setProductOptions(activeOptions);
-          setIsDialogOpen(true);
-        } else {
-          console.log('[ProductCard] ➕ Sem opções SITE, adicionando direto ao carrinho');
-          addItem({
-            productId,
-            name,
-            price: priceNumber,
-            quantity: 1,
-            image: imageUrl,
-          });
-          toast.success(`${name} adicionado ao carrinho!`);
-        }
-      } else {
-        console.log('[ProductCard] ⚠️ Erro na resposta, adicionando sem opções');
+      if (!response.ok) {
+        console.log('⚠️ Resposta não OK, adicionando sem opções');
         addItem({
           productId,
           name,
@@ -98,9 +90,85 @@ export default function ProductCard({
           image: imageUrl,
         });
         toast.success(`${name} adicionado ao carrinho!`);
+        return;
       }
-    } catch (error) {
-      console.error('[ProductCard] ❌ Erro ao buscar opções:', error);
+
+      const data = await response.json();
+      console.log('📦 Dados recebidos:', JSON.stringify(data, null, 2));
+
+      if (!data.success) {
+        console.error('❌ API retornou success=false');
+        console.error('Erro:', data.error);
+        addItem({
+          productId,
+          name,
+          price: priceNumber,
+          quantity: 1,
+          image: imageUrl,
+        });
+        toast.success(`${name} adicionado ao carrinho!`);
+        return;
+      }
+
+      console.log('✅ API retornou success=true');
+      console.log('📊 Total de opções:', data.options?.length || 0);
+
+      // 2. Analisar cada opção
+      const allOptions = data.options || [];
+      console.log('\n🔎 ANALISANDO CADA OPÇÃO:');
+
+      allOptions.forEach((opt: any, index: number) => {
+        console.log(`\n  Opção ${index + 1}:`);
+        console.log(`    Nome: ${opt.name}`);
+        console.log(`    Tipo: ${opt.type}`);
+        console.log(`    Ativa: ${opt.isActive}`);
+        console.log(`    Exibir em: ${opt.displayAt}`);
+        console.log(`    Escolhas: ${opt.choices?.length || 0}`);
+        console.log(`    É paga: ${opt.isPaid}`);
+        console.log(`    Preço base: €${opt.basePrice}`);
+      });
+
+      // 3. Filtrar opções para SITE
+      const activeOptions = allOptions.filter((opt: any) => {
+        const isValid = opt.displayAt === 'SITE' &&
+                       opt.isActive === true &&
+                       opt.choices?.length > 0;
+
+        console.log(`\n  ✓ ${opt.name}: ${isValid ? 'VÁLIDA ✅' : 'INVÁLIDA ❌'}`);
+        if (!isValid) {
+          if (opt.displayAt !== 'SITE') console.log(`    ↳ Motivo: displayAt é "${opt.displayAt}" (precisa ser "SITE")`);
+          if (!opt.isActive) console.log(`    ↳ Motivo: isActive é false`);
+          if (!opt.choices?.length) console.log(`    ↳ Motivo: sem escolhas`);
+        }
+
+        return isValid;
+      });
+
+      console.log('\n═══════════════════════════════════════');
+      console.log('📱 OPÇÕES VÁLIDAS PARA SITE:', activeOptions.length);
+      console.log('═══════════════════════════════════════');
+
+      // 4. Abrir popup se tiver opções
+      if (activeOptions && activeOptions.length > 0) {
+        console.log('🎨 TENTANDO ABRIR POPUP...');
+        console.log('📦 Salvando opções no estado...');
+
+        setProductOptions(activeOptions);
+        console.log('✅ setProductOptions chamado com', activeOptions.length, 'opções');
+
+        setIsDialogOpen(true);
+        console.log('✅ setIsDialogOpen(true) chamado');
+
+        console.log('📊 Estado atual:');
+        console.log('   - isDialogOpen será:', true);
+        console.log('   - productOptions terá:', activeOptions.length, 'opções');
+        console.log('═══════════════════════════════════════');
+        return;
+      }
+
+      // 5. Sem opções, adicionar direto
+      console.log('⚠️ SEM OPÇÕES VÁLIDAS - Adicionando direto ao carrinho');
+      console.log('═══════════════════════════════════════');
       addItem({
         productId,
         name,
@@ -109,12 +177,27 @@ export default function ProductCard({
         image: imageUrl,
       });
       toast.success(`${name} adicionado ao carrinho!`);
+
+    } catch (error) {
+      console.error('═══════════════════════════════════════');
+      console.error('❌ ERRO FATAL:', error);
+      console.error('═══════════════════════════════════════');
+      addItem({
+        productId,
+        name,
+        price: priceNumber,
+        quantity: 1,
+        image: imageUrl,
+      });
+      toast.error('Erro ao processar produto');
     } finally {
       setIsLoadingOptions(false);
     }
   };
 
   const handleAddWithOptions = (withOptions: boolean) => {
+    console.log('[ProductCard] 🛒 handleAddWithOptions chamado, withOptions:', withOptions);
+
     let finalPrice = priceNumber;
     let selectedOptions: any[] = [];
 
@@ -122,7 +205,7 @@ export default function ProductCard({
       const option = productOptions[0];
       const totalOptionPrice = option.isPaid ? option.basePrice + (option.choices[0]?.price || 0) : 0;
       finalPrice += totalOptionPrice;
-      
+
       selectedOptions = [{
         optionId: option.id,
         optionName: option.name,
@@ -132,6 +215,10 @@ export default function ProductCard({
           price: totalOptionPrice,
         }],
       }];
+
+      console.log('[ProductCard] ✅ Com opção:', option.name, `(+€${totalOptionPrice.toFixed(2)})`);
+    } else {
+      console.log('[ProductCard] ⚪ Sem opção');
     }
 
     addItem({
@@ -142,6 +229,9 @@ export default function ProductCard({
       image: imageUrl,
       selectedOptions: withOptions ? selectedOptions : undefined,
     });
+
+    toast.success(`${name} adicionado ao carrinho!`);
+    console.log('[ProductCard] ✅ Item adicionado ao carrinho com sucesso');
   };
 
   const isAvailable = !outOfStock;

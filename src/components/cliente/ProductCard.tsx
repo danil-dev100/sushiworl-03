@@ -42,8 +42,12 @@ export default function ProductCard({
   const priceNumber = parseFloat(price.replace('€', '').replace(',', '.'));
 
   const handleAddToCart = async () => {
+    console.log('[ProductCard] 🛒 Botão "Adicionar" clicado');
+    console.log('[ProductCard] Produto:', { id: productId, name, price: priceNumber });
+
     // Verificar se a loja está aberta
     if (storeStatus && !storeStatus.isOpen) {
+      console.log('[ProductCard] ❌ Loja fechada');
       toast.error(storeStatus.message || 'Lamentamos mas não estamos abertos agora.', {
         duration: 5000,
         icon: <Clock className="h-5 w-5" />,
@@ -52,19 +56,29 @@ export default function ProductCard({
     }
 
     setIsLoadingOptions(true);
+    console.log('[ProductCard] 🔍 Buscando opções do produto...');
+
     try {
       const response = await fetch(`/api/products/${productId}/options`);
+      console.log('[ProductCard] Response status:', response.status);
 
       if (response.ok) {
         const data = await response.json();
-        const activeOptions = data.options.filter((opt: any) =>
+        console.log('[ProductCard] 📦 Dados recebidos:', data);
+
+        const activeOptions = data.options?.filter((opt: any) =>
           opt.isActive && opt.displayAt === 'SITE'
         );
 
-        if (activeOptions.length > 0) {
+        console.log(`[ProductCard] 🎯 Opções SITE ativas: ${activeOptions?.length || 0}`);
+
+        if (activeOptions && activeOptions.length > 0) {
+          console.log('[ProductCard] ✅ Abrindo popup de opções...');
+          console.log('[ProductCard] Opções:', activeOptions.map((o: any) => ({ name: o.name, choices: o.choices.length })));
           setProductOptions(activeOptions);
           setIsDialogOpen(true);
         } else {
+          console.log('[ProductCard] ➕ Sem opções SITE, adicionando direto ao carrinho');
           addItem({
             productId,
             name,
@@ -72,8 +86,10 @@ export default function ProductCard({
             quantity: 1,
             image: imageUrl,
           });
+          toast.success(`${name} adicionado ao carrinho!`);
         }
       } else {
+        console.log('[ProductCard] ⚠️ Erro na resposta, adicionando sem opções');
         addItem({
           productId,
           name,
@@ -81,9 +97,10 @@ export default function ProductCard({
           quantity: 1,
           image: imageUrl,
         });
+        toast.success(`${name} adicionado ao carrinho!`);
       }
     } catch (error) {
-      console.error('Erro ao buscar opções:', error);
+      console.error('[ProductCard] ❌ Erro ao buscar opções:', error);
       addItem({
         productId,
         name,
@@ -91,6 +108,7 @@ export default function ProductCard({
         quantity: 1,
         image: imageUrl,
       });
+      toast.success(`${name} adicionado ao carrinho!`);
     } finally {
       setIsLoadingOptions(false);
     }

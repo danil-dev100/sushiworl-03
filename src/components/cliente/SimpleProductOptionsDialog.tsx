@@ -35,17 +35,30 @@ export function SimpleProductOptionsDialog({
   options,
   onAddToCart,
 }: SimpleProductOptionsDialogProps) {
-  if (!open || options.length === 0) return null;
+  if (!open || options.length === 0) {
+    if (open && options.length === 0) {
+      console.log('[SimpleDialog] ⚠️ Dialog aberto mas sem opções!');
+    }
+    return null;
+  }
+
+  console.log('[SimpleDialog] 🎨 Dialog renderizado');
+  console.log('[SimpleDialog] Produto:', product.name);
+  console.log('[SimpleDialog] Opções disponíveis:', options.length);
+  console.log('[SimpleDialog] Primeira opção:', options[0].name, `(€${options[0].basePrice})`);
 
   const option = options[0];
   const totalPrice = option.isPaid ? option.basePrice + (option.choices[0]?.price || 0) : 0;
 
   const handleAccept = () => {
+    console.log('[SimpleDialog] ✅ Cliente aceitou opcional');
+    console.log('[SimpleDialog] Valor adicional: €' + totalPrice.toFixed(2));
     onAddToCart(true);
     onOpenChange(false);
   };
 
   const handleReject = () => {
+    console.log('[SimpleDialog] ❌ Cliente recusou opcional');
     onAddToCart(false);
     onOpenChange(false);
   };

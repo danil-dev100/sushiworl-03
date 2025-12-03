@@ -6,10 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, Link as LinkIcon, Settings } from 'lucide-react';
 import { toast } from 'sonner';
+import { GlobalOptionDialog } from '@/components/admin/GlobalOptionDialog';
+import { AssignmentsDialog } from '@/components/admin/AssignmentsDialog';
 
 export default function GlobalOptionsPage() {
   const [options, setOptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [assignmentsOpen, setAssignmentsOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<any>(null);
 
   useEffect(() => {
     fetchOptions();
@@ -68,7 +73,7 @@ export default function GlobalOptionsPage() {
             Crie opções reutilizáveis e aplique em produtos, categorias ou em todo o site
           </p>
         </div>
-        <Button onClick={() => toast.info('Funcionalidade de criação em breve')} size="lg">
+        <Button onClick={() => { setSelectedOption(null); setDialogOpen(true); }} size="lg">
           <Plus className="w-4 h-4 mr-2" />
           Nova Opção
         </Button>
@@ -118,7 +123,7 @@ export default function GlobalOptionsPage() {
             <p className="text-muted-foreground mb-6">
               Comece criando sua primeira opção global para usar em seus produtos
             </p>
-            <Button onClick={() => toast.info('Funcionalidade de criação em breve')}>
+            <Button onClick={() => { setSelectedOption(null); setDialogOpen(true); }}>
               <Plus className="w-4 h-4 mr-2" />
               Criar Primeira Opção
             </Button>
@@ -201,7 +206,7 @@ export default function GlobalOptionsPage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => toast.info('Funcionalidade de atribuições em breve')}
+                      onClick={() => { setSelectedOption(option); setAssignmentsOpen(true); }}
                       title="Gerenciar atribuições"
                     >
                       <LinkIcon className="w-4 h-4" />
@@ -209,7 +214,7 @@ export default function GlobalOptionsPage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => toast.info('Funcionalidade de edição em breve')}
+                      onClick={() => { setSelectedOption(option); setDialogOpen(true); }}
                       title="Editar opção"
                     >
                       <Edit className="w-4 h-4" />
@@ -229,6 +234,21 @@ export default function GlobalOptionsPage() {
           ))}
         </div>
       )}
+
+      {/* Dialogs */}
+      <GlobalOptionDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        option={selectedOption}
+        onSuccess={fetchOptions}
+      />
+
+      <AssignmentsDialog
+        open={assignmentsOpen}
+        onOpenChange={setAssignmentsOpen}
+        option={selectedOption}
+        onSuccess={fetchOptions}
+      />
     </div>
   );
 }

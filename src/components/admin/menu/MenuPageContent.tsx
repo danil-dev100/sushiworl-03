@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, ListChecks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MenuSidebar } from './MenuSidebar';
 import { ProductGrid } from './ProductGrid';
 import { ProductDialog } from './ProductDialog';
 import { TooltipHelper } from '@/components/shared/TooltipHelper';
+import Link from 'next/link';
 
 type Product = {
   id: string;
@@ -119,14 +120,26 @@ export function MenuPageContent({ initialProducts, categories }: MenuPageContent
               <TooltipHelper text="Busque produtos rapidamente por nome ou código SKU" />
             </div>
           </div>
-          <Button
-            onClick={handleAddProduct}
-            className="bg-[#FF6B00] hover:bg-[#FF6B00]/90"
-            size="lg"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Adicionar Produto
-          </Button>
+          <div className="flex gap-3">
+            <Link href="/admin/cardapio/opcoes">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-[#FF6B00] text-[#FF6B00] hover:bg-[#FF6B00]/10"
+              >
+                <ListChecks className="mr-2 h-4 w-4" />
+                Opções Globais
+              </Button>
+            </Link>
+            <Button
+              onClick={handleAddProduct}
+              className="bg-[#FF6B00] hover:bg-[#FF6B00]/90"
+              size="lg"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Produto
+            </Button>
+          </div>
         </header>
 
         {/* Grid de produtos */}

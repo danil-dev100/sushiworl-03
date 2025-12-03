@@ -13,8 +13,7 @@ import {
   TrendingUp,
   Webhook,
   Printer,
-  Mail,
-  ListChecks
+  Mail
 } from 'lucide-react';
 
 const menuItems = [
@@ -32,11 +31,6 @@ const menuItems = [
     label: 'Cardápio',
     icon: UtensilsCrossed,
     href: '/admin/cardapio',
-  },
-  {
-    label: 'Opções',
-    icon: ListChecks,
-    href: '/admin/opcoes',
   },
   {
     label: 'Usuários',

@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Link as LinkIcon, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, Link as LinkIcon, Settings, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { GlobalOptionDialog } from '@/components/admin/GlobalOptionDialog';
-import { AssignmentsDialog } from '@/components/admin/AssignmentsDialog';
+import { GlobalOptionFormDialog } from '@/components/admin/global-options/GlobalOptionFormDialog';
+import { ManageAssignmentsDialog } from '@/components/admin/global-options/ManageAssignmentsDialog';
 
 export default function GlobalOptionsPage() {
+  const router = useRouter();
   const [options, setOptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -64,7 +66,13 @@ export default function GlobalOptionsPage() {
   };
 
   return (
-    <div className="container mx-auto space-y-6">
+    <div className="container mx-auto space-y-6 py-6">
+      {/* Botão Voltar */}
+      <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-4">
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Voltar
+      </Button>
+
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
@@ -236,14 +244,14 @@ export default function GlobalOptionsPage() {
       )}
 
       {/* Dialogs */}
-      <GlobalOptionDialog
+      <GlobalOptionFormDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         option={selectedOption}
         onSuccess={fetchOptions}
       />
 
-      <AssignmentsDialog
+      <ManageAssignmentsDialog
         open={assignmentsOpen}
         onOpenChange={setAssignmentsOpen}
         option={selectedOption}

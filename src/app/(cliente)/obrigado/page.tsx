@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, Clock, Package, Truck, XCircle } from 'lucide-react';
@@ -60,7 +60,7 @@ const statusConfig = {
   },
 };
 
-export default function ObrigadoPage() {
+function ObrigadoContent() {
   const searchParams = useSearchParams();
   const [orderData, setOrderData] = useState<OrderData | null>(null);
 
@@ -199,5 +199,20 @@ export default function ObrigadoPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function ObrigadoPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    }>
+      <ObrigadoContent />
+    </Suspense>
   );
 }

@@ -42,7 +42,8 @@ export async function POST(
       where: { id: orderId },
       data: {
         status: 'CANCELLED',
-        notes: reason ? `Cancelado: ${reason}` : 'Cancelado pelo restaurante'
+        cancelledAt: new Date(),
+        observations: reason ? `Cancelado: ${reason}` : 'Cancelado pelo restaurante'
       }
     });
 

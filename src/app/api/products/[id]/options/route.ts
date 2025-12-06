@@ -56,10 +56,8 @@ export async function GET(
       },
       include: {
         globalOption: {
-          where: { isActive: true },
           include: {
             choices: {
-              where: { isActive: true },
               orderBy: { sortOrder: 'asc' }
             }
           }
@@ -68,9 +66,9 @@ export async function GET(
       orderBy: { sortOrder: 'asc' }
     });
 
-    // 4. Converter opções globais para formato compatível
+    // 4. Converter opções globais para formato compatível (filtrar ativos em memória)
     const globalOptions = globalAssignments
-      .filter(a => a.globalOption !== null)
+      .filter(a => a.globalOption !== null && a.globalOption.isActive)
       .filter(a => !displayAt || a.globalOption.displayAt === displayAt)
       .map(a => ({
         id: `global_${a.globalOption.id}`,
@@ -88,9 +86,10 @@ export async function GET(
         sortOrder: a.sortOrder,
         createdAt: a.globalOption.createdAt,
         updatedAt: a.globalOption.updatedAt,
-        choices: a.globalOption.choices,
+        choices: a.globalOption.choices.filter(c => c.isActive),
         isGlobal: true // Flag para identificar que é global
-      }));
+      }))
+      .filter(opt => opt.choices.length > 0); // Só retornar opções com choices válidas
 
     console.log(`[Public Options API] 🌍 Opções globais: ${globalOptions.length}`);
 

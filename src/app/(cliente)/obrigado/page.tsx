@@ -1,26 +1,99 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Clock, Package, Truck, XCircle } from 'lucide-react';
+
+type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'DELIVERING' | 'DELIVERED' | 'CANCELLED';
 
 interface OrderData {
   id: string;
   total: number;
   items: string;
   emailSent: boolean;
+  status?: OrderStatus;
 }
 
+const statusConfig = {
+  PENDING: {
+    icon: Clock,
+    label: 'Aguardando Confirmação',
+    description: 'Seu pedido foi recebido e está aguardando confirmação do restaurante.',
+    color: 'text-yellow-600',
+    bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
+  },
+  CONFIRMED: {
+    icon: CheckCircle,
+    label: 'Pedido Confirmado',
+    description: 'Seu pedido foi aceito e em breve iniciará a preparação!',
+    color: 'text-green-600',
+    bgColor: 'bg-green-50 dark:bg-green-900/20',
+  },
+  PREPARING: {
+    icon: Package,
+    label: 'Em Preparação',
+    description: 'Estamos preparando seu pedido com muito carinho.',
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+  },
+  DELIVERING: {
+    icon: Truck,
+    label: 'Em Entrega',
+    description: 'Seu pedido está a caminho!',
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+  },
+  DELIVERED: {
+    icon: CheckCircle,
+    label: 'Entregue',
+    description: 'Seu pedido foi entregue. Bom apetite!',
+    color: 'text-green-600',
+    bgColor: 'bg-green-50 dark:bg-green-900/20',
+  },
+  CANCELLED: {
+    icon: XCircle,
+    label: 'Cancelado',
+    description: 'Infelizmente seu pedido foi cancelado. Entre em contato conosco para mais informações.',
+    color: 'text-red-600',
+    bgColor: 'bg-red-50 dark:bg-red-900/20',
+  },
+};
+
 export default function ObrigadoPage() {
+  const searchParams = useSearchParams();
   const [orderData, setOrderData] = useState<OrderData | null>(null);
 
   useEffect(() => {
     // Buscar dados do pedido do sessionStorage
     const storedOrder = sessionStorage.getItem('lastOrder');
     if (storedOrder) {
-      setOrderData(JSON.parse(storedOrder));
-      // Limpar após leitura
-      sessionStorage.removeItem('lastOrder');
+      const parsed = JSON.parse(storedOrder);
+      setOrderData(parsed);
+
+      // Se temos ID do pedido, iniciar polling de status
+      if (parsed.id) {
+        const fetchStatus = async () => {
+          try {
+            const response = await fetch(`/api/orders/${parsed.id}/status`);
+            const data = await response.json();
+
+            if (data.success && data.order) {
+              setOrderData(prev => prev ? { ...prev, status: data.order.status } : null);
+            }
+          } catch (error) {
+            console.error('Erro ao buscar status:', error);
+          }
+        };
+
+        // Buscar imediatamente
+        fetchStatus();
+
+        // Polling a cada 5 segundos
+        const interval = setInterval(fetchStatus, 5000);
+
+        return () => clearInterval(interval);
+      }
     }
   }, []);
 
@@ -74,6 +147,29 @@ export default function ObrigadoPage() {
                 </div>
               </div>
             </div>
+
+            {/* Status do Pedido em Tempo Real */}
+            {orderData?.status && statusConfig[orderData.status] && (
+              <div className={`${statusConfig[orderData.status].bgColor} border border-gray-200 dark:border-gray-700 rounded-lg p-5`}>
+                <div className="flex items-center gap-3 mb-2">
+                  {(() => {
+                    const Icon = statusConfig[orderData.status].icon;
+                    return <Icon className={`w-6 h-6 ${statusConfig[orderData.status].color}`} />;
+                  })()}
+                  <h3 className={`font-bold text-base ${statusConfig[orderData.status].color}`}>
+                    {statusConfig[orderData.status].label}
+                  </h3>
+                </div>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  {statusConfig[orderData.status].description}
+                </p>
+                {orderData.status !== 'DELIVERED' && orderData.status !== 'CANCELLED' && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    ⚡ Atualização automática a cada 5 segundos
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Informação sobre Email */}
             {orderData?.emailSent && (

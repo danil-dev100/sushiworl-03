@@ -15,6 +15,7 @@ import {
   Printer,
   Mail
 } from 'lucide-react';
+import { useOrderPolling } from '@/hooks/useOrderPolling';
 
 const menuItems = [
   {
@@ -72,6 +73,9 @@ const menuItems = [
 export function AdminSidebar() {
   const pathname = usePathname();
 
+  // Hook de polling para mostrar badge de pedidos pendentes
+  const { newOrdersCount } = useOrderPolling(true);
+
   const isActive = (href: string) => {
     if (href === '/admin/dashboard') {
       return pathname === href;
@@ -93,12 +97,14 @@ export function AdminSidebar() {
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
+          const isPedidos = item.href === '/admin/pedidos';
+          const showBadge = isPedidos && newOrdersCount > 0;
 
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1.5 transition-colors ${
+              className={`relative flex flex-col items-center gap-1.5 transition-colors ${
                 active
                   ? 'text-[#FF6B00]'
                   : 'text-[#a16b45] hover:text-[#FF6B00] dark:text-[#a16b45]'
@@ -109,6 +115,11 @@ export function AdminSidebar() {
               <p className={`text-xs leading-normal ${active ? 'font-bold' : 'font-medium'}`}>
                 {item.label}
               </p>
+              {showBadge && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white animate-pulse">
+                  {newOrdersCount > 9 ? '9+' : newOrdersCount}
+                </span>
+              )}
             </Link>
           );
         })}

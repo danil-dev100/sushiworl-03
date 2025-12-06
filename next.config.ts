@@ -36,18 +36,6 @@ const nextConfig: NextConfig = {
   },
   // Externalizar jsdom e DOMPurify para evitar erros de file system no build
   serverExternalPackages: ['jsdom', 'isomorphic-dompurify'],
-  // Configurações adicionais do esbuild para desenvolvimento
-  webpack: (config, { dev, isServer }) => {
-    if (dev && !isServer) {
-      // Configurações específicas do esbuild para desenvolvimento
-      config.optimization = {
-        ...config.optimization,
-        minimize: false, // Desabilitar minificação em dev para melhor debugging
-      };
-    }
-
-    return config;
-  },
 };
 
 export default nextConfig;

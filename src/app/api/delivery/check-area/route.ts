@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Check Area API] Validando endereço: "${address}"`);
 
-    // Buscar áreas de entrega ativas com seus contextos de busca
+    // Buscar áreas de entrega ativas
     const deliveryAreas = await prisma.deliveryArea.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: 'asc' },
@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
         id: true,
         name: true,
         polygon: true,
-        searchContexts: true,
         deliveryType: true,
         deliveryFee: true,
         minOrderValue: true,
@@ -47,7 +46,7 @@ export async function POST(request: NextRequest) {
     const areasData: DeliveryAreaData[] = deliveryAreas.map(area => ({
       name: area.name,
       polygon: area.polygon as number[][],
-      searchContexts: area.searchContexts || [],
+      searchContexts: [],
     }));
 
     // Usar geocodificação inteligente com contexto

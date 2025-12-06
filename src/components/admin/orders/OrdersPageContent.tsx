@@ -126,40 +126,6 @@ export function OrdersPageContent({ initialData, products }: OrdersPageContentPr
     }
   };
 
-  // Aceitar pedido e parar som
-  const handleAcceptOrderClick = async (orderId: string) => {
-    try {
-      const response = await fetch(`/api/admin/orders/${orderId}/accept`, {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        handleOrderAccepted(orderId);
-        await refreshOrders();
-      }
-    } catch (error) {
-      console.error('Erro ao aceitar pedido:', error);
-    }
-  };
-
-  // Rejeitar pedido
-  const handleRejectOrderClick = async (orderId: string, reason?: string) => {
-    try {
-      const response = await fetch(`/api/admin/orders/${orderId}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason }),
-      });
-
-      if (response.ok) {
-        handleOrderAccepted(orderId); // Também para o som
-        await refreshOrders();
-      }
-    } catch (error) {
-      console.error('Erro ao rejeitar pedido:', error);
-    }
-  };
-
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -216,11 +182,7 @@ export function OrdersPageContent({ initialData, products }: OrdersPageContentPr
         </span>
         <TooltipHelper text="Pedidos pendentes aparecem automaticamente com som contínuo. Atualização em tempo real a cada 3 segundos" />
       </div>
-      <OrdersTable
-        orders={orders}
-        onAcceptOrder={handleAcceptOrderClick}
-        onRejectOrder={handleRejectOrderClick}
-      />
+      <OrdersTable orders={orders} />
     </div>
   );
 }

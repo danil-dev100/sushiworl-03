@@ -4,14 +4,38 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { getNotificationSound } from '@/lib/notification-sound';
 
+interface OrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+  priceAtTime: number;
+  product?: {
+    name: string | null;
+    imageUrl: string | null;
+  } | null;
+  selectedOptions?: Record<string, unknown> | null;
+}
+
 interface Order {
   id: string;
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'PREPARING' | 'READY' | 'DELIVERING' | 'DELIVERED';
-  createdAt: string | Date;
-  customerName?: string;
-  deliveryAddress?: any;
+  orderNumber: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  customerNif?: string | null;
+  status: string;
   total: number;
-  orderNumber?: number;
+  subtotal: number;
+  discount: number;
+  deliveryFee: number;
+  paymentMethod: string;
+  createdAt: string | Date;
+  observations?: string | null;
+  deliveryAddress?: Record<string, unknown> | null;
+  deliveryArea?: {
+    name: string | null;
+  } | null;
+  orderItems: OrderItem[];
 }
 
 export function useOrderPolling(enabled: boolean = true) {

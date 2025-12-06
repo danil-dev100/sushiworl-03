@@ -324,7 +324,8 @@ model DeliveryArea {
   minOrderValue   Float?   // Valor mínimo para frete grátis
 
   // Contextos de busca para geocodificação (cidades/concelhos)
-  searchContexts  String[] @default([]) // Melhora precisão da busca de endereços
+  // TEMPORARIAMENTE DESABILITADO - Execute o script SQL em scripts/add-search-contexts-column.sql
+  // searchContexts  String[] @default([]) // Melhora precisão da busca de endereços
 
   isActive        Boolean  @default(true)
   sortOrder       Int      @default(0)

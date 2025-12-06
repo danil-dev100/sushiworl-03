@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
-// GET - Buscar opções globais aplicáveis
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const categoryId = searchParams.get('categoryId');
     const productId = searchParams.get('productId');
 
-    console.log('[Applicable Options] Parâmetros:', { categoryId, productId });
+    console.log('[Get Applicable Options]', { categoryId, productId });
 
-    // Construir condições WHERE
+    // Buscar atribuições aplicáveis
     const whereConditions: any[] = [
       { assignmentType: 'SITE_WIDE' }
     ];
@@ -35,36 +34,35 @@ export async function GET(req: NextRequest) {
       },
       include: {
         globalOption: {
-          where: { isActive: true },
           include: {
             choices: {
-              where: { isActive: true },
               orderBy: { sortOrder: 'asc' }
             }
           }
         }
-      },
-      orderBy: { sortOrder: 'asc' }
+      }
     });
 
+    // Filtrar opções e choices ativos DEPOIS de buscar
     const options = assignments
-      .filter(a => a.globalOption)
+      .filter(a => a.globalOption && a.globalOption.isActive)
       .map(a => ({
         ...a.globalOption,
+        choices: a.globalOption.choices.filter(c => c.isActive),
         isGlobal: true,
         assignmentType: a.assignmentType,
-        assignmentTargetId: a.targetId,
         minSelection: a.minSelection,
         maxSelection: a.maxSelection
-      }));
+      }))
+      .filter(opt => opt.choices.length > 0); // Só retornar opções com choices válidas
 
-    console.log('[Applicable Options] Encontradas:', options.length);
+    console.log('[Get Applicable Options] Found:', options.length);
 
     return NextResponse.json({ success: true, options });
   } catch (error) {
-    console.error('[Applicable Options] Erro:', error);
+    console.error('[Get Applicable Options Error]', error);
     return NextResponse.json(
-      { success: false, error: 'Erro ao buscar opções aplicáveis' },
+      { success: false, error: 'Erro ao buscar opções' },
       { status: 500 }
     );
   }

@@ -140,6 +140,18 @@ export function useOrderPolling(enabled: boolean = true) {
     };
   }, [enabled, fetchOrders]);
 
+  // Sincronizar estado isPlaying com o soundRef
+  useEffect(() => {
+    const checkInterval = setInterval(() => {
+      const actualIsPlaying = soundRef.current.getIsPlaying();
+      if (actualIsPlaying !== isPlaying) {
+        setIsPlaying(actualIsPlaying);
+      }
+    }, 100);
+
+    return () => clearInterval(checkInterval);
+  }, [isPlaying]);
+
   useEffect(() => {
     return () => soundRef.current.cleanup();
   }, []);

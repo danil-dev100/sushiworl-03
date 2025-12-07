@@ -1,167 +1,86 @@
 /**
- * Gerador de sons de notificação usando Web Audio API
- * Não requer arquivos de áudio externos
+ * Sistema de notificação sonora usando arquivos MP3
  */
 
 export class NotificationSound {
-  private audioContext: AudioContext | null = null;
-  private oscillator: OscillatorNode | null = null;
-  private gainNode: GainNode | null = null;
+  private urgentAudio: HTMLAudioElement | null = null;
   private isPlaying = false;
 
   constructor() {
     if (typeof window !== 'undefined') {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // Pré-carregar o áudio de alerta urgente
+      this.urgentAudio = new Audio('/sounds/order-new.mp3');
+      this.urgentAudio.loop = true;
+      this.urgentAudio.volume = 0.7;
+      this.urgentAudio.preload = 'auto';
     }
   }
 
   /**
-   * Toca um som de alerta urgente (bip contínuo)
+   * Toca o som de alerta urgente (loop contínuo)
    */
   playUrgentAlert() {
-    if (!this.audioContext || this.isPlaying) return;
+    if (!this.urgentAudio || this.isPlaying) return;
 
     try {
-      this.oscillator = this.audioContext.createOscillator();
-      this.gainNode = this.audioContext.createGain();
-
-      // Configurar oscilador (tom de alerta)
-      this.oscillator.type = 'sine';
-      this.oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime); // 800 Hz
-
-      // Configurar volume
-      this.gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
-
-      // Conectar nodes
-      this.oscillator.connect(this.gainNode);
-      this.gainNode.connect(this.audioContext.destination);
-
-      // Iniciar oscilador
-      this.oscillator.start();
-
-      // Criar efeito pulsante (bip-bip)
-      this.createPulseEffect();
-
-      this.isPlaying = true;
-      console.log('🔊 Som de alerta iniciado');
+      this.urgentAudio.currentTime = 0;
+      this.urgentAudio.play().then(() => {
+        this.isPlaying = true;
+        console.log('🔊 Som de alerta iniciado');
+      }).catch((error) => {
+        console.error('Erro ao tocar som:', error);
+      });
     } catch (error) {
       console.error('Erro ao tocar som:', error);
     }
   }
 
   /**
-   * Cria efeito pulsante (bip-bip-bip)
-   */
-  private createPulseEffect() {
-    if (!this.gainNode || !this.audioContext) return;
-
-    const now = this.audioContext.currentTime;
-    const pulseDuration = 0.2; // 200ms por pulso
-    const pauseDuration = 0.3; // 300ms de pausa
-
-    // Loop de pulsos
-    const createPulse = (startTime: number) => {
-      if (!this.gainNode || !this.isPlaying) return;
-
-      // Fade in
-      this.gainNode.gain.setValueAtTime(0, startTime);
-      this.gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.05);
-
-      // Sustain
-      this.gainNode.gain.setValueAtTime(0.3, startTime + pulseDuration - 0.05);
-
-      // Fade out
-      this.gainNode.gain.linearRampToValueAtTime(0, startTime + pulseDuration);
-
-      // Próximo pulso
-      setTimeout(() => {
-        if (this.isPlaying) {
-          createPulse(this.audioContext!.currentTime);
-        }
-      }, (pulseDuration + pauseDuration) * 1000);
-    };
-
-    createPulse(now);
-  }
-
-  /**
    * Para o som de alerta
    */
   stopAlert() {
+    if (!this.urgentAudio) return;
+
     try {
-      if (this.oscillator) {
-        try {
-          this.oscillator.stop();
-        } catch (e) {
-          // Oscillator já foi parado
-        }
-        this.oscillator.disconnect();
-        this.oscillator = null;
-      }
-
-      if (this.gainNode) {
-        this.gainNode.disconnect();
-        this.gainNode = null;
-      }
-
+      this.urgentAudio.pause();
+      this.urgentAudio.currentTime = 0;
       this.isPlaying = false;
       console.log('🔇 Som de alerta parado');
     } catch (error) {
       console.error('Erro ao parar som:', error);
-      // Forçar reset mesmo com erro
       this.isPlaying = false;
-      this.oscillator = null;
-      this.gainNode = null;
     }
   }
 
   /**
-   * Toca um bip simples (sucesso/notificação)
+   * Toca um bip simples (sucesso/confirmação)
    */
   playSuccessBeep() {
-    if (!this.audioContext) return;
+    if (typeof window === 'undefined') return;
 
     try {
-      const oscillator = this.audioContext.createOscillator();
-      const gainNode = this.audioContext.createGain();
-
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(600, this.audioContext.currentTime);
-
-      gainNode.gain.setValueAtTime(0.2, this.audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(this.audioContext.destination);
-
-      oscillator.start();
-      oscillator.stop(this.audioContext.currentTime + 0.3);
+      const audio = new Audio('/sounds/order-new.mp3');
+      audio.volume = 0.3;
+      audio.play().catch((error) => {
+        console.error('Erro ao tocar beep:', error);
+      });
     } catch (error) {
       console.error('Erro ao tocar beep:', error);
     }
   }
 
   /**
-   * Toca som de erro (tom grave)
+   * Toca som de erro/cancelamento (som único)
    */
   playErrorSound() {
-    if (!this.audioContext) return;
+    if (typeof window === 'undefined') return;
 
     try {
-      const oscillator = this.audioContext.createOscillator();
-      const gainNode = this.audioContext.createGain();
-
-      oscillator.type = 'square';
-      oscillator.frequency.setValueAtTime(200, this.audioContext.currentTime);
-
-      gainNode.gain.setValueAtTime(0.15, this.audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.5);
-
-      oscillator.connect(gainNode);
-      gainNode.connect(this.audioContext.destination);
-
-      oscillator.start();
-      oscillator.stop(this.audioContext.currentTime + 0.5);
+      const audio = new Audio('/sounds/order-cancelled.mp3');
+      audio.volume = 0.5;
+      audio.play().catch((error) => {
+        console.error('Erro ao tocar som de erro:', error);
+      });
     } catch (error) {
       console.error('Erro ao tocar som de erro:', error);
     }
@@ -179,9 +98,8 @@ export class NotificationSound {
    */
   cleanup() {
     this.stopAlert();
-    if (this.audioContext) {
-      this.audioContext.close();
-      this.audioContext = null;
+    if (this.urgentAudio) {
+      this.urgentAudio = null;
     }
   }
 }

@@ -147,14 +147,19 @@ export function OrdersPageContent({ initialData, products }: OrdersPageContentPr
           {/* Controle de som */}
           <button
             onClick={stopNotification}
+            disabled={!isPlaying}
             className={`p-2 rounded-lg transition-colors ${
               isPlaying
-                ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 animate-pulse'
-                : 'bg-gray-100 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400'
+                ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 animate-pulse cursor-pointer hover:bg-orange-200'
+                : 'bg-gray-100 text-gray-400 dark:bg-gray-900/20 dark:text-gray-600 cursor-not-allowed'
             }`}
-            title={isPlaying ? 'Parar som (há pedidos pendentes)' : 'Som desativado'}
+            title={isPlaying ? 'Clique para parar o som' : 'Som desativado (sem pedidos pendentes)'}
           >
-            {isPlaying ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            {isPlaying ? (
+              <Volume2 className="h-4 w-4" />
+            ) : (
+              <VolumeX className="h-4 w-4" />
+            )}
           </button>
 
           {/* Indicador de novos pedidos */}

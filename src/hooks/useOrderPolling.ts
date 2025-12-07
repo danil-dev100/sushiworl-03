@@ -140,7 +140,9 @@ export function useOrderPolling(enabled: boolean = true) {
       const hasPending = currentOrders.some((o: Order) => o.status === 'PENDING');
       console.log('🔔 [Status] Tem pedidos pendentes?', hasPending);
 
-      if (!hasPending && isPlaying) {
+      // Usar soundRef.current.getIsPlaying() ao invés do state para evitar re-render
+      const currentlyPlaying = soundRef.current.getIsPlaying();
+      if (!hasPending && currentlyPlaying) {
         console.log('🔇 [Sound] Parando som (sem pendentes)');
         soundRef.current.stopAlert();
         setIsPlaying(false);
@@ -148,7 +150,7 @@ export function useOrderPolling(enabled: boolean = true) {
     } catch (error) {
       console.error('❌❌❌ [Polling] ERRO FATAL:', error);
     }
-  }, [isPlaying]);
+  }, []); // REMOVIDO isPlaying das dependências!
 
   const handleOrderAccepted = useCallback((orderId: string) => {
     notifiedOrdersRef.current.delete(orderId);
@@ -158,11 +160,13 @@ export function useOrderPolling(enabled: boolean = true) {
   }, [fetchOrders]);
 
   const stopNotification = useCallback(() => {
-    if (isPlaying) {
+    // Usar soundRef diretamente ao invés do state para evitar dependência
+    const currentlyPlaying = soundRef.current.getIsPlaying();
+    if (currentlyPlaying) {
       soundRef.current.stopAlert();
       setIsPlaying(false);
     }
-  }, [isPlaying]);
+  }, []); // REMOVIDO isPlaying das dependências!
 
   // Proteção contra montagem dupla
   useEffect(() => {
@@ -222,7 +226,7 @@ export function useOrderPolling(enabled: boolean = true) {
       }
       soundRef.current.stopAlert();
     };
-  }, [enabled, fetchOrders]);
+  }, [enabled, fetchOrders]); // fetchOrders agora é estável (deps vazias)
 
   // Sincronizar estado isPlaying com o soundRef
   useEffect(() => {

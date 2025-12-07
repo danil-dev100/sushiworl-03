@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { OrdersTable } from '@/components/admin/orders/OrdersTable';
 import { OrdersFilters } from '@/components/admin/orders/OrdersFilters';
 import { TestOrderDialog } from '@/components/admin/orders/TestOrderDialog';
@@ -85,13 +85,10 @@ export function OrdersPageContent({ initialData, products }: OrdersPageContentPr
 
   // Se estiver na aba "Pendentes", mostrar os pedidos do polling
   // Caso contrário, mostrar os pedidos do initialData
-  // Usar useMemo para evitar recalcular desnecessariamente
-  const ordersToDisplay = useMemo(() => {
-    return currentStatus === 'pending' ? pendingOrders : initialData.orders;
-  }, [currentStatus, pendingOrders, initialData.orders]);
+  const ordersToDisplay = currentStatus === 'pending' ? pendingOrders : initialData.orders;
 
   // Função para obter o nome do filtro atual
-  const getCurrentFilterName = () => {
+  const getCurrentFilterName = useCallback(() => {
     const status = searchParams.get('status');
     switch (status) {
       case 'pending':
@@ -113,7 +110,7 @@ export function OrdersPageContent({ initialData, products }: OrdersPageContentPr
       default:
         return 'Hoje'; // Default
     }
-  };
+  }, [searchParams]);
 
   const handleOrderCreated = useCallback(async () => {
     // Atualizar imediatamente após criar pedido

@@ -50,30 +50,64 @@ export function useOrderPolling(enabled: boolean = true) {
 
   const fetchOrders = useCallback(async () => {
     try {
-      console.log('[Polling] Verificando novos pedidos...');
+      console.log('🔄 [Polling] Verificando novos pedidos...', new Date().toISOString());
 
-      const res = await fetch('/api/admin/orders/pending');
-      if (!res.ok) return;
+      const res = await fetch('/api/admin/orders/pending', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
+
+      console.log('📡 [Polling] Response status:', res.status);
+
+      if (!res.ok) {
+        console.error('❌ [Polling] Response não OK:', res.status);
+        return;
+      }
 
       const data = await res.json();
-      if (!data.success) return;
+      console.log('📦 [Polling] Data recebido:', {
+        success: data.success,
+        ordersCount: data.orders?.length || 0
+      });
+
+      if (!data.success) {
+        console.error('❌ [Polling] API retornou erro');
+        return;
+      }
 
       const currentOrders: Order[] = data.orders || [];
+      console.log('📊 [Polling] Total de pedidos:', currentOrders.length);
 
       const newOrders = currentOrders.filter((order: Order) => {
         const orderDate = new Date(order.createdAt);
         const isNew = orderDate > lastCheckRef.current;
         const notNotified = !notifiedOrdersRef.current.has(order.id);
-        return isNew && notNotified && order.status === 'PENDING';
+        const isPending = order.status === 'PENDING';
+
+        console.log(`🔍 [Check] Pedido ${order.id.slice(-6)}:`, {
+          orderDate: orderDate.toISOString(),
+          lastCheck: lastCheckRef.current.toISOString(),
+          isNew,
+          notNotified,
+          isPending,
+          willNotify: isNew && notNotified && isPending
+        });
+
+        return isNew && notNotified && isPending;
       });
 
       if (newOrders.length > 0) {
-        console.log('NOVOS PEDIDOS:', newOrders.length);
+        console.log('🆕🆕🆕 NOVOS PEDIDOS DETECTADOS:', newOrders.length);
+        console.log('🆕 IDs:', newOrders.map(o => o.id.slice(-6)));
 
         newOrders.forEach((order: Order) => {
           notifiedOrdersRef.current.add(order.id);
+          console.log('✅ Pedido marcado como notificado:', order.id.slice(-6));
         });
 
+        console.log('🔊 Tentando tocar som...');
         soundRef.current.playUrgentAlert();
         setIsPlaying(true);
 
@@ -97,16 +131,21 @@ export function useOrderPolling(enabled: boolean = true) {
         setNewOrdersCount(prev => prev + newOrders.length);
       }
 
+      console.log('📝 [Update] Atualizando state com', currentOrders.length, 'pedidos');
       setOrders(currentOrders);
       lastCheckRef.current = new Date();
+      console.log('⏰ [Update] lastCheck atualizado para:', lastCheckRef.current.toISOString());
 
       const hasPending = currentOrders.some((o: Order) => o.status === 'PENDING');
+      console.log('🔔 [Status] Tem pedidos pendentes?', hasPending);
+
       if (!hasPending && isPlaying) {
+        console.log('🔇 [Sound] Parando som (sem pendentes)');
         soundRef.current.stopAlert();
         setIsPlaying(false);
       }
     } catch (error) {
-      console.error('Polling error:', error);
+      console.error('❌❌❌ [Polling] ERRO FATAL:', error);
     }
   }, [isPlaying]);
 
@@ -125,16 +164,29 @@ export function useOrderPolling(enabled: boolean = true) {
   }, [isPlaying]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      console.log('⏸️ [Polling] Hook DESABILITADO');
+      return;
+    }
+
+    console.log('▶️▶️▶️ [Polling] Hook INICIADO - enabled:', enabled);
 
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      console.log('🔔 [Permissions] Pedindo permissão para notificações...');
       Notification.requestPermission();
     }
 
+    console.log('🚀 [Polling] Primeira busca imediata...');
     fetchOrders();
-    intervalRef.current = setInterval(fetchOrders, 3000);
+
+    console.log('⏰ [Polling] Configurando intervalo de 3s...');
+    intervalRef.current = setInterval(() => {
+      console.log('⏰ TICK - Executando fetch agendado');
+      fetchOrders();
+    }, 3000);
 
     return () => {
+      console.log('🛑 [Polling] Cleanup - parando intervalo');
       if (intervalRef.current) clearInterval(intervalRef.current);
       soundRef.current.stopAlert();
     };

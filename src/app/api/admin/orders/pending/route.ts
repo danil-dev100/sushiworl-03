@@ -3,15 +3,28 @@ import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
+  console.log('═══════════════════════════════════════');
+  console.log('🔵 [API Pending] Request recebido');
+  console.log('🕐 Timestamp:', new Date().toISOString());
+
   try {
     const session = await getServerSession(authOptions);
+
     if (!session || !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+      console.log('❌ [API Pending] Não autorizado');
+      console.log('═══════════════════════════════════════\n');
       return NextResponse.json(
         { success: false, error: 'Não autorizado' },
         { status: 401 }
       );
     }
+
+    console.log('✅ [API Pending] Autorizado - User:', session.user.email);
+    console.log('📊 [API Pending] Buscando pedidos PENDING...');
 
     const orders = await prisma.order.findMany({
       where: {
@@ -30,12 +43,35 @@ export async function GET() {
       }
     });
 
-    return NextResponse.json({
-      success: true,
-      orders
+    console.log(`✅ [API Pending] Encontrados: ${orders.length} pedidos`);
+    orders.forEach(order => {
+      console.log(`   📦 #${order.id.slice(-6)}:`, {
+        status: order.status,
+        created: order.createdAt.toISOString(),
+        customer: order.customerName
+      });
     });
+
+    console.log('📤 [API Pending] Enviando resposta...');
+    console.log('═══════════════════════════════════════\n');
+
+    return NextResponse.json(
+      {
+        success: true,
+        orders,
+        timestamp: new Date().toISOString()
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      }
+    );
   } catch (error) {
-    console.error('[Orders Pending API Error]', error);
+    console.error('❌❌❌ [API Pending] ERRO FATAL:', error);
+    console.log('═══════════════════════════════════════\n');
     return NextResponse.json(
       { success: false, error: 'Erro ao buscar pedidos' },
       { status: 500 }

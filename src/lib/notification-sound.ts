@@ -19,19 +19,25 @@ export class NotificationSound {
   /**
    * Toca o som de alerta urgente (loop contínuo)
    */
-  playUrgentAlert() {
+  async playUrgentAlert() {
     if (!this.urgentAudio || this.isPlaying) return;
 
     try {
+      // Parar qualquer reprodução anterior antes de começar nova
+      this.urgentAudio.pause();
       this.urgentAudio.currentTime = 0;
-      this.urgentAudio.play().then(() => {
-        this.isPlaying = true;
-        console.log('🔊 Som de alerta iniciado');
-      }).catch((error) => {
-        console.error('Erro ao tocar som:', error);
-      });
+
+      // Aguardar um tick para garantir que pause() completou
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      await this.urgentAudio.play();
+      this.isPlaying = true;
+      console.log('🔊 Som de alerta iniciado');
     } catch (error) {
-      console.error('Erro ao tocar som:', error);
+      // Silenciar erro se for AbortError (chamada dupla)
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Erro ao tocar som:', error);
+      }
     }
   }
 

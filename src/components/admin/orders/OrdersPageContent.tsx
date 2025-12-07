@@ -70,16 +70,24 @@ interface OrdersPageContentProps {
 export function OrdersPageContent({ initialData, products }: OrdersPageContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [displayOrders, setDisplayOrders] = useState<Order[]>(initialData.orders);
 
   // Usar o novo hook de polling com Web Audio API
   const {
-    orders,
+    orders: pendingOrders,
     newOrdersCount,
     isPlaying,
     stopNotification,
     handleOrderAccepted,
     refreshOrders
   } = useOrderPolling(true);
+
+  // Atualizar displayOrders quando o status mudar ou quando recebermos novos dados
+  const currentStatus = searchParams.get('status');
+
+  // Se estiver na aba "Pendentes", mostrar os pedidos do polling
+  // Caso contrário, mostrar os pedidos do initialData
+  const ordersToDisplay = currentStatus === 'pending' ? pendingOrders : displayOrders;
 
   // Função para obter o nome do filtro atual
   const getCurrentFilterName = () => {
@@ -106,25 +114,21 @@ export function OrdersPageContent({ initialData, products }: OrdersPageContentPr
     }
   };
 
-  const handleOrderCreated = async () => {
+  const handleOrderCreated = useCallback(async () => {
     // Atualizar imediatamente após criar pedido
     await refreshOrders();
+
+    // Recarregar a página completa para pegar os novos dados
+    router.refresh();
 
     // Se não estiver na aba "Pendentes", redirecionar para lá para ver o novo pedido
     const currentStatus = searchParams.get('status');
     if (currentStatus !== 'pending') {
-      setTimeout(async () => {
-        router.push('/admin/pedidos?status=pending');
-        setTimeout(() => {
-          refreshOrders();
-        }, 300);
-      }, 500);
-    } else {
       setTimeout(() => {
-        refreshOrders();
+        router.push('/admin/pedidos?status=pending');
       }, 500);
     }
-  };
+  }, [refreshOrders, router, searchParams]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -182,7 +186,7 @@ export function OrdersPageContent({ initialData, products }: OrdersPageContentPr
         </span>
         <TooltipHelper text="Pedidos pendentes aparecem automaticamente com som contínuo. Atualização em tempo real a cada 3 segundos" />
       </div>
-      <OrdersTable orders={orders} />
+      <OrdersTable orders={ordersToDisplay} />
     </div>
   );
 }

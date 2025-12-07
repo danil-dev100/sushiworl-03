@@ -88,11 +88,13 @@ export class NotificationSound {
    * Para o som de alerta
    */
   stopAlert() {
-    if (!this.isPlaying) return;
-
     try {
       if (this.oscillator) {
-        this.oscillator.stop();
+        try {
+          this.oscillator.stop();
+        } catch (e) {
+          // Oscillator já foi parado
+        }
         this.oscillator.disconnect();
         this.oscillator = null;
       }
@@ -106,6 +108,10 @@ export class NotificationSound {
       console.log('🔇 Som de alerta parado');
     } catch (error) {
       console.error('Erro ao parar som:', error);
+      // Forçar reset mesmo com erro
+      this.isPlaying = false;
+      this.oscillator = null;
+      this.gainNode = null;
     }
   }
 

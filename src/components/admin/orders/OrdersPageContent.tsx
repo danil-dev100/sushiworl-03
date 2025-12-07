@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { OrdersTable } from '@/components/admin/orders/OrdersTable';
 import { OrdersFilters } from '@/components/admin/orders/OrdersFilters';
 import { TestOrderDialog } from '@/components/admin/orders/TestOrderDialog';
@@ -70,7 +70,6 @@ interface OrdersPageContentProps {
 export function OrdersPageContent({ initialData, products }: OrdersPageContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [displayOrders, setDisplayOrders] = useState<Order[]>(initialData.orders);
 
   // Usar o novo hook de polling com Web Audio API
   const {
@@ -78,7 +77,6 @@ export function OrdersPageContent({ initialData, products }: OrdersPageContentPr
     newOrdersCount,
     isPlaying,
     stopNotification,
-    handleOrderAccepted,
     refreshOrders
   } = useOrderPolling(true);
 
@@ -87,7 +85,10 @@ export function OrdersPageContent({ initialData, products }: OrdersPageContentPr
 
   // Se estiver na aba "Pendentes", mostrar os pedidos do polling
   // Caso contrário, mostrar os pedidos do initialData
-  const ordersToDisplay = currentStatus === 'pending' ? pendingOrders : displayOrders;
+  // Usar useMemo para evitar recalcular desnecessariamente
+  const ordersToDisplay = useMemo(() => {
+    return currentStatus === 'pending' ? pendingOrders : initialData.orders;
+  }, [currentStatus, pendingOrders, initialData.orders]);
 
   // Função para obter o nome do filtro atual
   const getCurrentFilterName = () => {

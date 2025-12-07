@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import { prisma } from '@/lib/db';
 import { OrdersPageContent } from '@/components/admin/orders/OrdersPageContent';
 
@@ -206,9 +207,11 @@ export default async function PedidosPage({ searchParams }: PageProps) {
   ]);
 
   return (
-    <OrdersPageContent
-      initialData={{ orders, counts }}
-      products={products}
-    />
+    <Suspense fallback={<div className="p-8">Carregando pedidos...</div>}>
+      <OrdersPageContent
+        initialData={{ orders, counts }}
+        products={products}
+      />
+    </Suspense>
   );
 }

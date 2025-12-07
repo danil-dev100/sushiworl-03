@@ -47,6 +47,7 @@ export function useOrderPolling(enabled: boolean = true) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const notifiedOrdersRef = useRef<Set<string>>(new Set());
   const lastCheckRef = useRef<Date>(new Date());
+  const isMountedRef = useRef(false);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -163,13 +164,41 @@ export function useOrderPolling(enabled: boolean = true) {
     }
   }, [isPlaying]);
 
+  // Proteção contra montagem dupla
+  useEffect(() => {
+    if (isMountedRef.current) {
+      console.warn('⚠️ [Polling] Hook já foi montado, ignorando segunda montagem');
+      return;
+    }
+    isMountedRef.current = true;
+    console.log('✅ [Polling] Hook montado pela primeira vez');
+
+    return () => {
+      console.log('🧹 [Polling] Desmontando hook');
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Efeito de polling principal
   useEffect(() => {
     if (!enabled) {
       console.log('⏸️ [Polling] Hook DESABILITADO');
       return;
     }
 
+    if (!isMountedRef.current) {
+      console.log('⏸️ [Polling] Hook não montado ainda, aguardando...');
+      return;
+    }
+
     console.log('▶️▶️▶️ [Polling] Hook INICIADO - enabled:', enabled);
+
+    // Limpar intervalo anterior se existir
+    if (intervalRef.current) {
+      console.log('🧹 [Polling] Limpando intervalo anterior');
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
 
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
       console.log('🔔 [Permissions] Pedindo permissão para notificações...');
@@ -187,7 +216,10 @@ export function useOrderPolling(enabled: boolean = true) {
 
     return () => {
       console.log('🛑 [Polling] Cleanup - parando intervalo');
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       soundRef.current.stopAlert();
     };
   }, [enabled, fetchOrders]);

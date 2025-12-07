@@ -83,32 +83,35 @@ export function OrdersPageContent({ initialData, products }: OrdersPageContentPr
   // Atualizar displayOrders quando o status mudar ou quando recebermos novos dados
   const currentStatus = searchParams.get('status');
 
-  // Memoizar lista filtrada de pendentes do initialData para evitar recalcular a cada render
-  const initialPendingOrders = useMemo(() => {
-    return initialData.orders.filter(o => o.status === 'PENDING');
-  }, [initialData.orders]);
-
-  // Se estiver na aba "Pendentes", usar pendingOrders do polling
-  // Se pendingOrders estiver vazio (primeira renderização), usar initialData filtrado por PENDING como fallback
-  // Caso contrário, mostrar os pedidos do initialData
+  // SEMPRE usar pendingOrders do polling quando estiver na aba "Pendentes"
+  // O polling retorna TODOS os pedidos PENDING (sem filtro de data)
+  // Para outras abas, usar initialData.orders que vem do servidor com filtros aplicados
   const ordersToDisplay = useMemo(() => {
     if (currentStatus === 'pending') {
-      const display = pendingOrders.length > 0 ? pendingOrders : initialPendingOrders;
-      console.log('🖥️ [Component] Modo PENDENTES:', {
+      // ⚠️ CRÍTICO: Sempre usar pendingOrders do polling para aba "Pendentes"
+      // Isso garante que TODOS os pedidos PENDING aparecem, não apenas os de hoje
+      const display = pendingOrders;
+
+      console.log('🖥️ [Component] Modo PENDENTES (Polling):', {
         pendingOrdersCount: pendingOrders.length,
-        initialPendingCount: initialPendingOrders.length,
-        using: pendingOrders.length > 0 ? 'pendingOrders (polling)' : 'initialPendingOrders (fallback)',
-        displayCount: display.length
+        initialDataCount: initialData.orders.length,
+        displayCount: display.length,
+        source: 'pendingOrders (polling)',
+        ids: display.map(o => o.id.slice(-6))
       });
+
       return display;
     } else {
-      console.log('🖥️ [Component] Modo OUTROS:', {
-        currentStatus,
-        initialDataCount: initialData.orders.length
+      // Para outras abas (Hoje, Todos, etc), usar dados do servidor
+      console.log('🖥️ [Component] Modo OUTROS (Server):', {
+        currentStatus: currentStatus || 'default (hoje)',
+        initialDataCount: initialData.orders.length,
+        displayCount: initialData.orders.length
       });
+
       return initialData.orders;
     }
-  }, [currentStatus, pendingOrders, initialPendingOrders, initialData.orders]);
+  }, [currentStatus, pendingOrders, initialData.orders]);
 
   // Função para obter o nome do filtro atual
   const getCurrentFilterName = useCallback(() => {

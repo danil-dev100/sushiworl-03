@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { OrdersTable } from '@/components/admin/orders/OrdersTable';
 import { OrdersFilters } from '@/components/admin/orders/OrdersFilters';
 import { TestOrderDialog } from '@/components/admin/orders/TestOrderDialog';
@@ -83,9 +83,32 @@ export function OrdersPageContent({ initialData, products }: OrdersPageContentPr
   // Atualizar displayOrders quando o status mudar ou quando recebermos novos dados
   const currentStatus = searchParams.get('status');
 
-  // Se estiver na aba "Pendentes", mostrar os pedidos do polling
+  // Memoizar lista filtrada de pendentes do initialData para evitar recalcular a cada render
+  const initialPendingOrders = useMemo(() => {
+    return initialData.orders.filter(o => o.status === 'PENDING');
+  }, [initialData.orders]);
+
+  // Se estiver na aba "Pendentes", usar pendingOrders do polling
+  // Se pendingOrders estiver vazio (primeira renderização), usar initialData filtrado por PENDING como fallback
   // Caso contrário, mostrar os pedidos do initialData
-  const ordersToDisplay = currentStatus === 'pending' ? pendingOrders : initialData.orders;
+  const ordersToDisplay = useMemo(() => {
+    if (currentStatus === 'pending') {
+      const display = pendingOrders.length > 0 ? pendingOrders : initialPendingOrders;
+      console.log('🖥️ [Component] Modo PENDENTES:', {
+        pendingOrdersCount: pendingOrders.length,
+        initialPendingCount: initialPendingOrders.length,
+        using: pendingOrders.length > 0 ? 'pendingOrders (polling)' : 'initialPendingOrders (fallback)',
+        displayCount: display.length
+      });
+      return display;
+    } else {
+      console.log('🖥️ [Component] Modo OUTROS:', {
+        currentStatus,
+        initialDataCount: initialData.orders.length
+      });
+      return initialData.orders;
+    }
+  }, [currentStatus, pendingOrders, initialPendingOrders, initialData.orders]);
 
   // Função para obter o nome do filtro atual
   const getCurrentFilterName = useCallback(() => {

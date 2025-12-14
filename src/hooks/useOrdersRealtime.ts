@@ -172,6 +172,12 @@ export function useOrdersRealtime(
   // ============================================
 
   useEffect(() => {
+    console.log('[REALTIME] 🔧 Hook useOrdersRealtime executado', {
+      enabled,
+      isMounted: isMountedRef.current,
+      initialOrdersCount: initialOrders.length
+    });
+
     // Proteção contra double mounting (React Strict Mode)
     if (isMountedRef.current) {
       console.warn('[REALTIME] ⚠️ Hook já montado, ignorando');

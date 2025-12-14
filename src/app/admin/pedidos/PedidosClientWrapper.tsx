@@ -86,7 +86,6 @@ export function PedidosClientWrapper({
   // POLLING (Fallback Silencioso - apenas sincroniza)
   // ============================================
   const {
-    orders: pollingOrders,
     newOrdersCount,
     refreshOrders
   } = useOrderPolling(true);
@@ -99,35 +98,51 @@ export function PedidosClientWrapper({
   // MERGE DE DADOS (CRÍTICO!)
   // ============================================
   const mergedData = useMemo(() => {
+    // ✅ SEMPRE usar REALTIME, filtrando por status
+    let filteredOrders = realtimeOrders;
+
     if (currentStatus === 'pending') {
-      // ✅ ABA PENDENTES: Usar REALTIME (atualização instantânea)
-      return {
-        ...initialData,
-        orders: realtimeOrders.filter(o => o.status === 'PENDING')
-      };
+      filteredOrders = realtimeOrders.filter(o => o.status === 'PENDING');
+    } else if (currentStatus === 'confirmed') {
+      filteredOrders = realtimeOrders.filter(o => o.status === 'CONFIRMED');
+    } else if (currentStatus === 'all') {
+      filteredOrders = realtimeOrders; // Todos
     } else {
-      // ✅ OUTRAS ABAS: Usar dados do servidor
-      return initialData;
+      // Default (Hoje) - mostrar pedidos de hoje
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      filteredOrders = realtimeOrders.filter(o => {
+        const orderDate = new Date(o.createdAt);
+        orderDate.setHours(0, 0, 0, 0);
+        return orderDate.getTime() === today.getTime();
+      });
     }
+
+    return {
+      ...initialData,
+      orders: filteredOrders
+    };
   }, [currentStatus, realtimeOrders, initialData]);
 
   console.log('🎨 [ClientWrapper] Renderizando:', {
     currentStatus: currentStatus || 'default (hoje)',
     displayCount: mergedData.orders.length,
-    source: currentStatus === 'pending' ? 'REALTIME' : 'SERVER',
+    source: 'REALTIME',
     realtimeConnected: isConnected,
-    realtimeOrdersCount: realtimeOrders.length
+    realtimeOrdersTotal: realtimeOrders.length,
+    realtimeOrdersFiltered: mergedData.orders.length
   });
 
   return (
     <>
       {/* DEBUG - Remover depois de funcionar */}
       <div className="mx-6 mt-6 mb-4 p-4 bg-green-500 text-white rounded-lg">
-        <p className="font-bold text-lg">✅ REALTIME ATIVO</p>
+        <p className="font-bold text-lg">✅ REALTIME ATIVO (TODAS AS ABAS)</p>
         <p className="mt-1">Status atual: <strong>{currentStatus || 'default (hoje)'}</strong></p>
-        <p>Fonte de dados: <strong>{currentStatus === 'pending' ? 'REALTIME' : 'SERVER'}</strong></p>
+        <p>Fonte de dados: <strong>REALTIME</strong></p>
         <p>Conexão Realtime: <strong>{isConnected ? '🟢 CONECTADO' : '🔴 DESCONECTADO'}</strong></p>
-        <p>Total de pedidos: <strong>{mergedData.orders.length}</strong></p>
+        <p>Total no Realtime: <strong>{realtimeOrders.length}</strong></p>
+        <p>Total filtrado: <strong>{mergedData.orders.length}</strong></p>
         {mergedData.orders.length > 0 && (
           <p className="text-sm mt-1">
             IDs: {mergedData.orders.map(o => o.id.slice(-6)).join(', ')}

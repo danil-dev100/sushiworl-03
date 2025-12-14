@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import { prisma } from '@/lib/db';
-import { OrdersPageContent } from '@/components/admin/orders/OrdersPageContent';
+import { PedidosClientWrapper } from './PedidosClientWrapper';
 
 export const metadata: Metadata = {
   title: 'Gestão de Pedidos | Admin - SushiWorld',
@@ -206,11 +206,15 @@ export default async function PedidosPage({ searchParams }: PageProps) {
     }),
   ]);
 
+  // Pegar o status atual para passar ao wrapper
+  const currentStatus = resolvedSearchParams.status || null;
+
   return (
     <Suspense fallback={<div className="p-8">Carregando pedidos...</div>}>
-      <OrdersPageContent
+      <PedidosClientWrapper
         initialData={{ orders, counts }}
         products={products}
+        currentStatus={currentStatus}
       />
     </Suspense>
   );

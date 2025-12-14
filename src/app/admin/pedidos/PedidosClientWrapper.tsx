@@ -120,7 +120,7 @@ export function PedidosClientWrapper({
   });
 
   // Função vazia para compatibilidade (não usamos mais)
-  const refreshOrders = () => {
+  const refreshOrders = async () => {
     console.log('[ClientWrapper] refreshOrders chamado (noop - Realtime gerencia automaticamente)');
   };
 

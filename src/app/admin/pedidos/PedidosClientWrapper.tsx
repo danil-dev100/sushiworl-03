@@ -2,6 +2,8 @@
 
 import { OrdersPageContent } from '@/components/admin/orders/OrdersPageContent';
 import { useOrderPolling } from '@/hooks/useOrderPolling';
+import { useOrdersRealtime } from '@/hooks/useOrdersRealtime';
+import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 
 type OrderItem = {
@@ -60,51 +62,71 @@ type ProductOption = {
 interface PedidosClientWrapperProps {
   initialData: OrdersData;
   products: ProductOption[];
-  currentStatus: string | null;
 }
 
 export function PedidosClientWrapper({
   initialData,
-  products,
-  currentStatus
+  products
 }: PedidosClientWrapperProps) {
-  // ✅ Hook de polling funciona aqui porque é CLIENT COMPONENT
-  // Retorna TODOS os dados do hook (orders, som, notificações, etc)
+  // ✅ Ler currentStatus DIRETO da URL ao invés de prop do servidor
+  const searchParams = useSearchParams();
+  const currentStatus = searchParams.get('status');
+
+  // ============================================
+  // REALTIME (Fonte Principal)
+  // ============================================
+  const {
+    orders: realtimeOrders,
+    isPlaying: realtimeIsPlaying,
+    stopNotification: realtimeStopNotification,
+    isConnected
+  } = useOrdersRealtime(true, initialData.orders);
+
+  // ============================================
+  // POLLING (Fallback Silencioso - apenas sincroniza)
+  // ============================================
   const {
     orders: pollingOrders,
     newOrdersCount,
-    isPlaying,
-    stopNotification,
     refreshOrders
   } = useOrderPolling(true);
 
-  // Mesclar dados: Se estiver em "Pendentes", usar polling, senão usar server
+  // Usar dados do REALTIME como fonte principal
+  const isPlaying = realtimeIsPlaying;
+  const stopNotification = realtimeStopNotification;
+
+  // ============================================
+  // MERGE DE DADOS (CRÍTICO!)
+  // ============================================
   const mergedData = useMemo(() => {
     if (currentStatus === 'pending') {
-      // Usar pedidos do polling na aba Pendentes
+      // ✅ ABA PENDENTES: Usar REALTIME (atualização instantânea)
       return {
         ...initialData,
-        orders: pollingOrders
+        orders: realtimeOrders.filter(o => o.status === 'PENDING')
       };
     } else {
-      // Usar dados do servidor para outras abas
+      // ✅ OUTRAS ABAS: Usar dados do servidor
       return initialData;
     }
-  }, [currentStatus, pollingOrders, initialData]);
+  }, [currentStatus, realtimeOrders, initialData]);
 
   console.log('🎨 [ClientWrapper] Renderizando:', {
     currentStatus: currentStatus || 'default (hoje)',
     displayCount: mergedData.orders.length,
-    source: currentStatus === 'pending' ? 'POLLING' : 'SERVER'
+    source: currentStatus === 'pending' ? 'REALTIME' : 'SERVER',
+    realtimeConnected: isConnected,
+    realtimeOrdersCount: realtimeOrders.length
   });
 
   return (
     <>
       {/* DEBUG - Remover depois de funcionar */}
       <div className="mx-6 mt-6 mb-4 p-4 bg-green-500 text-white rounded-lg">
-        <p className="font-bold text-lg">✅ CLIENT COMPONENT ATIVO</p>
+        <p className="font-bold text-lg">✅ REALTIME ATIVO</p>
         <p className="mt-1">Status atual: <strong>{currentStatus || 'default (hoje)'}</strong></p>
-        <p>Fonte de dados: <strong>{currentStatus === 'pending' ? 'POLLING' : 'SERVER'}</strong></p>
+        <p>Fonte de dados: <strong>{currentStatus === 'pending' ? 'REALTIME' : 'SERVER'}</strong></p>
+        <p>Conexão Realtime: <strong>{isConnected ? '🟢 CONECTADO' : '🔴 DESCONECTADO'}</strong></p>
         <p>Total de pedidos: <strong>{mergedData.orders.length}</strong></p>
         {mergedData.orders.length > 0 && (
           <p className="text-sm mt-1">

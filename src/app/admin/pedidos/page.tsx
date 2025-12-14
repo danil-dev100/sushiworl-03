@@ -206,15 +206,11 @@ export default async function PedidosPage({ searchParams }: PageProps) {
     }),
   ]);
 
-  // Pegar o status atual para passar ao wrapper
-  const currentStatus = resolvedSearchParams.status || null;
-
   return (
     <Suspense fallback={<div className="p-8">Carregando pedidos...</div>}>
       <PedidosClientWrapper
         initialData={{ orders, counts }}
         products={products}
-        currentStatus={currentStatus}
       />
     </Suspense>
   );

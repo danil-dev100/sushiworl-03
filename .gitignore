@@ -22,6 +22,9 @@
 .DS_Store
 *.pem
 
+# SQL scripts sensíveis
+supabase-realtime-setup.sql
+
 # debug logs
 *.log
 npm-debug.log*

@@ -83,7 +83,6 @@ export function useOrdersRealtime(
   const soundRef = useRef(getNotificationSound());
   const channelRef = useRef<RealtimeChannel | null>(null);
   const notifiedOrdersRef = useRef<Set<string>>(new Set());
-  const isMountedRef = useRef(false);
 
   // ============================================
   // FUNÇÃO: PARAR NOTIFICAÇÃO
@@ -138,6 +137,41 @@ export function useOrdersRealtime(
   }, []);
 
   // ============================================
+  // FUNÇÃO: BUSCAR PEDIDO COMPLETO (com relações)
+  // ============================================
+
+  /**
+   * Busca pedido completo do banco com todas as relações
+   * O Realtime retorna apenas dados da tabela, sem joins
+   */
+  const fetchCompleteOrder = useCallback(async (orderId: string): Promise<Order | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('Order')
+        .select(`
+          *,
+          orderItems:OrderItem(
+            *,
+            product:Product(name, imageUrl)
+          ),
+          deliveryArea:DeliveryArea(name)
+        `)
+        .eq('id', orderId)
+        .single();
+
+      if (error) {
+        console.error('[REALTIME] Erro ao buscar pedido completo:', error);
+        return null;
+      }
+
+      return data as Order;
+    } catch (error) {
+      console.error('[REALTIME] Erro ao buscar pedido:', error);
+      return null;
+    }
+  }, []);
+
+  // ============================================
   // FUNÇÃO: MERGE DE DADOS (CRÍTICO!)
   // ============================================
 
@@ -150,6 +184,8 @@ export function useOrdersRealtime(
    * - Manter ordem por data de criação (mais recente primeiro)
    */
   const mergeOrder = useCallback((newOrder: Order, eventType: 'INSERT' | 'UPDATE') => {
+    console.log(`[REALTIME] 🔄 Merge ${eventType}:`, newOrder.id.slice(-6));
+
     setOrders(prev => {
       const existingIndex = prev.findIndex(o => o.id === newOrder.id);
 
@@ -161,7 +197,7 @@ export function useOrdersRealtime(
         return updated;
       } else {
         // ✅ INSERT: Adicionar no topo
-        console.log('[REALTIME] ➕ Adicionando pedido:', newOrder.id.slice(-6));
+        console.log('[REALTIME] ➕ Adicionando pedido ao topo:', newOrder.id.slice(-6));
         return [newOrder, ...prev];
       }
     });
@@ -174,19 +210,17 @@ export function useOrdersRealtime(
   useEffect(() => {
     console.log('[REALTIME] 🔧 Hook useOrdersRealtime executado', {
       enabled,
-      isMounted: isMountedRef.current,
-      initialOrdersCount: initialOrders.length
+      channelExists: channelRef.current !== null
     });
-
-    // Proteção contra double mounting (React Strict Mode)
-    if (isMountedRef.current) {
-      console.warn('[REALTIME] ⚠️ Hook já montado, ignorando');
-      return;
-    }
-    isMountedRef.current = true;
 
     if (!enabled) {
       console.log('[REALTIME] ⏸️ Realtime desabilitado');
+      return;
+    }
+
+    // Se já existe canal, não criar outro
+    if (channelRef.current) {
+      console.log('[REALTIME] ⚠️ Canal já existe, reutilizando');
       return;
     }
 
@@ -202,16 +236,25 @@ export function useOrdersRealtime(
           schema: 'public',
           table: 'Order'
         },
-        (payload) => {
+        async (payload) => {
           console.log('[REALTIME] 📨 Evento INSERT recebido');
-          console.log('[REALTIME] Payload:', payload.new);
+          console.log('[REALTIME] Payload ID:', (payload.new as any).id?.slice(-6));
 
-          const newOrder = payload.new as Order;
-          mergeOrder(newOrder, 'INSERT');
+          // Buscar pedido completo com relações
+          const orderId = (payload.new as any).id;
+          const completeOrder = await fetchCompleteOrder(orderId);
+
+          if (!completeOrder) {
+            console.error('[REALTIME] ❌ Não foi possível buscar pedido completo');
+            return;
+          }
+
+          console.log('[REALTIME] ✅ Pedido completo recebido:', completeOrder.id.slice(-6));
+          mergeOrder(completeOrder, 'INSERT');
 
           // Notificar apenas se for PENDING
-          if (newOrder.status === 'PENDING') {
-            notifyNewOrder(newOrder);
+          if (completeOrder.status === 'PENDING') {
+            notifyNewOrder(completeOrder);
           }
         }
       )
@@ -222,16 +265,25 @@ export function useOrdersRealtime(
           schema: 'public',
           table: 'Order'
         },
-        (payload) => {
+        async (payload) => {
           console.log('[REALTIME] 📨 Evento UPDATE recebido');
-          console.log('[REALTIME] Pedido:', payload.new.id?.toString().slice(-6));
+          console.log('[REALTIME] Pedido ID:', (payload.new as any).id?.slice(-6));
 
-          const updatedOrder = payload.new as Order;
-          mergeOrder(updatedOrder, 'UPDATE');
+          // Buscar pedido completo com relações
+          const orderId = (payload.new as any).id;
+          const completeOrder = await fetchCompleteOrder(orderId);
+
+          if (!completeOrder) {
+            console.error('[REALTIME] ❌ Não foi possível buscar pedido atualizado completo');
+            return;
+          }
+
+          console.log('[REALTIME] ✅ Pedido atualizado recebido:', completeOrder.id.slice(-6));
+          mergeOrder(completeOrder, 'UPDATE');
 
           // Parar som se pedido deixou de ser PENDING
-          const wasPending = (payload.old as Order)?.status === 'PENDING';
-          const isStillPending = updatedOrder.status === 'PENDING';
+          const wasPending = (payload.old as any)?.status === 'PENDING';
+          const isStillPending = completeOrder.status === 'PENDING';
 
           if (wasPending && !isStillPending) {
             console.log('[REALTIME] 🔇 Pedido aceito/rejeitado, verificando som...');
@@ -239,7 +291,7 @@ export function useOrdersRealtime(
             // Verificar se ainda há pedidos PENDING
             setOrders(currentOrders => {
               const hasPending = currentOrders.some(o =>
-                o.status === 'PENDING' && o.id !== updatedOrder.id
+                o.status === 'PENDING' && o.id !== completeOrder.id
               );
 
               if (!hasPending) {
@@ -286,7 +338,7 @@ export function useOrdersRealtime(
 
       setIsConnected(false);
     };
-  }, [enabled, mergeOrder, notifyNewOrder]);
+  }, [enabled, fetchCompleteOrder, mergeOrder, notifyNewOrder]);
 
   // ============================================
   // RETORNO

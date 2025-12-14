@@ -7,7 +7,7 @@ import { getNotificationSound } from '@/lib/notification-sound';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 // ============================================
-// TIPOS (reutilizando estrutura existente)
+// TIPOS
 // ============================================
 
 interface OrderItem {
@@ -45,31 +45,27 @@ interface Order {
 }
 
 // ============================================
-// HOOK PRINCIPAL
+// HOOK UNIFICADO - ÚNICA FONTE DE VERDADE
 // ============================================
 
 /**
- * Hook para escutar mudanças em tempo real na tabela 'orders'
+ * Hook unificado para gerenciar pedidos em tempo real
  *
- * Eventos suportados:
- * - INSERT: Novo pedido criado
- * - UPDATE: Status de pedido atualizado
+ * Estratégia:
+ * 1. Realtime é a fonte primária (WebSocket)
+ * 2. Polling é fallback silencioso (sincroniza a cada 10s)
+ * 3. Estado `orders` é a ÚNICA FONTE DE VERDADE
+ * 4. Merge inteligente evita duplicação
  *
- * Segurança:
- * - Usa anon key (público)
- * - RLS deve estar configurado no Supabase
- * - Apenas pedidos PENDING são monitorados para som/notificação
- *
- * @param enabled - Se true, conecta ao Realtime
+ * @param enabled - Se true, ativa Realtime + Polling
  * @param initialOrders - Pedidos iniciais do servidor (SSR)
- * @returns { orders, isPlaying, stopNotification, isConnected }
  */
 export function useOrdersRealtime(
   enabled: boolean = true,
   initialOrders: Order[] = []
 ) {
   // ============================================
-  // ESTADO
+  // ESTADO ÚNICO
   // ============================================
 
   const [orders, setOrders] = useState<Order[]>(initialOrders);
@@ -77,12 +73,14 @@ export function useOrdersRealtime(
   const [isConnected, setIsConnected] = useState(false);
 
   // ============================================
-  // REFS (não causam re-render)
+  // REFS
   // ============================================
 
   const soundRef = useRef(getNotificationSound());
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const notifiedOrdersRef = useRef<Set<string>>(new Set());
+  const lastPollingCheckRef = useRef<Date>(new Date());
 
   // ============================================
   // FUNÇÃO: PARAR NOTIFICAÇÃO
@@ -106,12 +104,12 @@ export function useOrdersRealtime(
       return;
     }
 
-    console.log('[REALTIME] 🆕 Novo pedido detectado:', order.id.slice(-6));
+    console.log('[UNIFIED] 🆕 Novo pedido detectado:', order.id.slice(-6));
     notifiedOrdersRef.current.add(order.id);
 
     // Som (apenas para PENDING)
     if (order.status === 'PENDING') {
-      console.log('[REALTIME] 🔊 Tocando som...');
+      console.log('[UNIFIED] 🔊 Tocando som...');
       soundRef.current.playUrgentAlert();
       setIsPlaying(true);
     }
@@ -137,13 +135,9 @@ export function useOrdersRealtime(
   }, []);
 
   // ============================================
-  // FUNÇÃO: BUSCAR PEDIDO COMPLETO (com relações)
+  // FUNÇÃO: BUSCAR PEDIDO COMPLETO
   // ============================================
 
-  /**
-   * Busca pedido completo do banco com todas as relações
-   * O Realtime retorna apenas dados da tabela, sem joins
-   */
   const fetchCompleteOrder = useCallback(async (orderId: string): Promise<Order | null> => {
     try {
       const { data, error } = await supabase
@@ -160,75 +154,124 @@ export function useOrdersRealtime(
         .single();
 
       if (error) {
-        console.error('[REALTIME] Erro ao buscar pedido completo:', error);
+        console.error('[UNIFIED] Erro ao buscar pedido completo:', error);
         return null;
       }
 
       return data as Order;
     } catch (error) {
-      console.error('[REALTIME] Erro ao buscar pedido:', error);
+      console.error('[UNIFIED] Erro ao buscar pedido:', error);
       return null;
     }
   }, []);
 
   // ============================================
-  // FUNÇÃO: MERGE DE DADOS (CRÍTICO!)
+  // FUNÇÃO: MERGE INTELIGENTE (CRÍTICO!)
   // ============================================
 
   /**
-   * Adiciona ou atualiza pedido no state
+   * Adiciona ou atualiza pedido no estado único
    *
    * Regras:
-   * - Se pedido já existe (mesmo ID): ATUALIZAR (não duplicar)
+   * - Se pedido existe (mesmo ID): ATUALIZAR
    * - Se pedido é novo: ADICIONAR no topo
-   * - Manter ordem por data de criação (mais recente primeiro)
+   * - Evita duplicação entre Realtime e Polling
    */
-  const mergeOrder = useCallback((newOrder: Order, eventType: 'INSERT' | 'UPDATE') => {
-    console.log(`[REALTIME] 🔄 Merge ${eventType}:`, newOrder.id.slice(-6));
+  const mergeOrder = useCallback((newOrder: Order, eventType: 'INSERT' | 'UPDATE' | 'POLLING') => {
+    console.log(`[UNIFIED] 🔄 Merge ${eventType}:`, newOrder.id.slice(-6));
 
     setOrders(prev => {
       const existingIndex = prev.findIndex(o => o.id === newOrder.id);
 
       if (existingIndex !== -1) {
-        // ✅ UPDATE: Substituir pedido existente
-        console.log('[REALTIME] 📝 Atualizando pedido:', newOrder.id.slice(-6));
+        // ✅ ATUALIZAR: Substituir pedido existente
+        console.log('[UNIFIED] 📝 Atualizando pedido:', newOrder.id.slice(-6));
         const updated = [...prev];
         updated[existingIndex] = newOrder;
         return updated;
       } else {
-        // ✅ INSERT: Adicionar no topo
-        console.log('[REALTIME] ➕ Adicionando pedido ao topo:', newOrder.id.slice(-6));
+        // ✅ INSERIR: Adicionar no topo
+        console.log('[UNIFIED] ➕ Adicionando pedido ao topo:', newOrder.id.slice(-6));
         return [newOrder, ...prev];
       }
     });
   }, []);
 
   // ============================================
+  // FUNÇÃO: SINCRONIZAR VIA POLLING (FALLBACK)
+  // ============================================
+
+  const syncViaPolling = useCallback(async () => {
+    try {
+      console.log('[POLLING] 🔄 Sincronizando pedidos...');
+
+      const res = await fetch('/api/admin/orders/pending', {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      if (!data.success) return;
+
+      const polledOrders: Order[] = data.orders || [];
+      console.log('[POLLING] 📦 Recebidos:', polledOrders.length, 'pedidos');
+
+      // Detectar novos pedidos via polling (fallback se Realtime falhar)
+      const newOrders = polledOrders.filter(order => {
+        const orderDate = new Date(order.createdAt);
+        const isNew = orderDate > lastPollingCheckRef.current;
+        const notNotified = !notifiedOrdersRef.current.has(order.id);
+        const isPending = order.status === 'PENDING';
+        return isNew && notNotified && isPending;
+      });
+
+      // Merge todos os pedidos do polling
+      polledOrders.forEach(order => {
+        mergeOrder(order, 'POLLING');
+      });
+
+      // Notificar novos (apenas se Realtime não notificou)
+      newOrders.forEach(order => {
+        if (!notifiedOrdersRef.current.has(order.id)) {
+          notifyNewOrder(order);
+        }
+      });
+
+      lastPollingCheckRef.current = new Date();
+
+      // Parar som se não há mais pendentes
+      const hasPending = polledOrders.some(o => o.status === 'PENDING');
+      if (!hasPending && soundRef.current.getIsPlaying()) {
+        soundRef.current.stopAlert();
+        setIsPlaying(false);
+      }
+    } catch (error) {
+      console.error('[POLLING] ❌ Erro:', error);
+    }
+  }, [mergeOrder, notifyNewOrder]);
+
+  // ============================================
   // EFEITO: CONECTAR REALTIME
   // ============================================
 
   useEffect(() => {
-    console.log('[REALTIME] 🔧 Hook useOrdersRealtime executado', {
-      enabled,
-      channelExists: channelRef.current !== null
-    });
-
     if (!enabled) {
-      console.log('[REALTIME] ⏸️ Realtime desabilitado');
+      console.log('[UNIFIED] ⏸️ Desabilitado');
       return;
     }
 
-    // Se já existe canal, não criar outro
+    // Prevenir múltiplas conexões
     if (channelRef.current) {
-      console.log('[REALTIME] ⚠️ Canal já existe, reutilizando');
+      console.log('[UNIFIED] ⚠️ Canal já existe');
       return;
     }
 
-    console.log('[REALTIME] 🚀 Conectando ao Supabase Realtime...');
+    console.log('[UNIFIED] 🚀 Conectando Realtime...');
 
-    // Criar canal
     const channel = supabase
-      .channel('orders-changes')
+      .channel('orders-unified')
       .on(
         'postgres_changes',
         {
@@ -237,22 +280,20 @@ export function useOrdersRealtime(
           table: 'Order'
         },
         async (payload) => {
-          console.log('[REALTIME] 📨 Evento INSERT recebido');
-          console.log('[REALTIME] Payload ID:', (payload.new as any).id?.slice(-6));
+          console.log('[REALTIME] 📨 INSERT recebido');
 
-          // Buscar pedido completo com relações
           const orderId = (payload.new as any).id;
           const completeOrder = await fetchCompleteOrder(orderId);
 
           if (!completeOrder) {
-            console.error('[REALTIME] ❌ Não foi possível buscar pedido completo');
+            console.error('[REALTIME] ❌ Falha ao buscar pedido completo');
             return;
           }
 
-          console.log('[REALTIME] ✅ Pedido completo recebido:', completeOrder.id.slice(-6));
+          console.log('[REALTIME] ✅ Pedido completo:', completeOrder.id.slice(-6));
           mergeOrder(completeOrder, 'INSERT');
 
-          // Notificar apenas se for PENDING
+          // Notificar apenas PENDING
           if (completeOrder.status === 'PENDING') {
             notifyNewOrder(completeOrder);
           }
@@ -266,27 +307,25 @@ export function useOrdersRealtime(
           table: 'Order'
         },
         async (payload) => {
-          console.log('[REALTIME] 📨 Evento UPDATE recebido');
-          console.log('[REALTIME] Pedido ID:', (payload.new as any).id?.slice(-6));
+          console.log('[REALTIME] 📨 UPDATE recebido');
 
-          // Buscar pedido completo com relações
           const orderId = (payload.new as any).id;
           const completeOrder = await fetchCompleteOrder(orderId);
 
           if (!completeOrder) {
-            console.error('[REALTIME] ❌ Não foi possível buscar pedido atualizado completo');
+            console.error('[REALTIME] ❌ Falha ao buscar pedido atualizado');
             return;
           }
 
-          console.log('[REALTIME] ✅ Pedido atualizado recebido:', completeOrder.id.slice(-6));
+          console.log('[REALTIME] ✅ Pedido atualizado:', completeOrder.id.slice(-6));
           mergeOrder(completeOrder, 'UPDATE');
 
-          // Parar som se pedido deixou de ser PENDING
+          // Parar som se status mudou de PENDING para outro
           const wasPending = (payload.old as any)?.status === 'PENDING';
           const isStillPending = completeOrder.status === 'PENDING';
 
           if (wasPending && !isStillPending) {
-            console.log('[REALTIME] 🔇 Pedido aceito/rejeitado, verificando som...');
+            console.log('[REALTIME] 🔇 Pedido não é mais PENDING');
 
             // Verificar se ainda há pedidos PENDING
             setOrders(currentOrders => {
@@ -294,12 +333,9 @@ export function useOrdersRealtime(
                 o.status === 'PENDING' && o.id !== completeOrder.id
               );
 
-              if (!hasPending) {
-                const currentlyPlaying = soundRef.current.getIsPlaying();
-                if (currentlyPlaying) {
-                  soundRef.current.stopAlert();
-                  setIsPlaying(false);
-                }
+              if (!hasPending && soundRef.current.getIsPlaying()) {
+                soundRef.current.stopAlert();
+                setIsPlaying(false);
               }
 
               return currentOrders;
@@ -308,37 +344,74 @@ export function useOrdersRealtime(
         }
       )
       .subscribe((status) => {
-        console.log('[REALTIME] Status da conexão:', status);
+        console.log('[REALTIME] Status:', status);
 
         if (status === 'SUBSCRIBED') {
-          console.log('[REALTIME] ✅ Conectado com sucesso!');
+          console.log('[REALTIME] ✅ Conectado!');
           setIsConnected(true);
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('[REALTIME] ❌ Erro na conexão');
-          setIsConnected(false);
-        } else if (status === 'TIMED_OUT') {
-          console.error('[REALTIME] ⏱️ Timeout na conexão');
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('[REALTIME] ❌ Erro de conexão');
           setIsConnected(false);
         }
       });
 
     channelRef.current = channel;
 
-    // ============================================
-    // CLEANUP
-    // ============================================
-
     return () => {
-      console.log('[REALTIME] 🛑 Desconectando...');
-
+      console.log('[UNIFIED] 🛑 Desconectando Realtime...');
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
-
       setIsConnected(false);
     };
   }, [enabled, fetchCompleteOrder, mergeOrder, notifyNewOrder]);
+
+  // ============================================
+  // EFEITO: POLLING FALLBACK
+  // ============================================
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    console.log('[POLLING] 🚀 Iniciando fallback (10s)...');
+
+    // Permissão para notificações
+    if (
+      typeof window !== 'undefined' &&
+      'Notification' in window &&
+      Notification.permission === 'default'
+    ) {
+      Notification.requestPermission();
+    }
+
+    // Primeira sincronização imediata
+    syncViaPolling();
+
+    // Polling a cada 10 segundos (fallback se Realtime falhar)
+    pollingIntervalRef.current = setInterval(() => {
+      console.log('[POLLING] ⏰ Tick...');
+      syncViaPolling();
+    }, 10000);
+
+    return () => {
+      console.log('[POLLING] 🛑 Parando fallback...');
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, [enabled, syncViaPolling]);
+
+  // ============================================
+  // CLEANUP FINAL
+  // ============================================
+
+  useEffect(() => {
+    return () => {
+      soundRef.current.cleanup();
+    };
+  }, []);
 
   // ============================================
   // RETORNO

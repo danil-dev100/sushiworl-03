@@ -1,7 +1,6 @@
 'use client';
 
 import { OrdersPageContent } from '@/components/admin/orders/OrdersPageContent';
-import { useOrderPolling } from '@/hooks/useOrderPolling';
 import { useOrdersRealtime } from '@/hooks/useOrdersRealtime';
 import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
@@ -73,45 +72,32 @@ export function PedidosClientWrapper({
   const currentStatus = searchParams.get('status');
 
   // ============================================
-  // REALTIME (Fonte Principal)
+  // HOOK UNIFICADO - ÚNICA FONTE DE VERDADE
   // ============================================
   const {
-    orders: realtimeOrders,
-    isPlaying: realtimeIsPlaying,
-    stopNotification: realtimeStopNotification,
+    orders: allOrders,
+    isPlaying,
+    stopNotification,
     isConnected
   } = useOrdersRealtime(true, initialData.orders);
 
   // ============================================
-  // POLLING (Fallback Silencioso - apenas sincroniza)
-  // ============================================
-  const {
-    newOrdersCount,
-    refreshOrders
-  } = useOrderPolling(true);
-
-  // Usar dados do REALTIME como fonte principal
-  const isPlaying = realtimeIsPlaying;
-  const stopNotification = realtimeStopNotification;
-
-  // ============================================
-  // MERGE DE DADOS (CRÍTICO!)
+  // FILTRO POR STATUS
   // ============================================
   const mergedData = useMemo(() => {
-    // ✅ SEMPRE usar REALTIME, filtrando por status
-    let filteredOrders = realtimeOrders;
+    let filteredOrders = allOrders;
 
     if (currentStatus === 'pending') {
-      filteredOrders = realtimeOrders.filter(o => o.status === 'PENDING');
+      filteredOrders = allOrders.filter(o => o.status === 'PENDING');
     } else if (currentStatus === 'confirmed') {
-      filteredOrders = realtimeOrders.filter(o => o.status === 'CONFIRMED');
+      filteredOrders = allOrders.filter(o => o.status === 'CONFIRMED');
     } else if (currentStatus === 'all') {
-      filteredOrders = realtimeOrders; // Todos
+      filteredOrders = allOrders; // Todos
     } else {
       // Default (Hoje) - mostrar pedidos de hoje
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      filteredOrders = realtimeOrders.filter(o => {
+      filteredOrders = allOrders.filter(o => {
         const orderDate = new Date(o.createdAt);
         orderDate.setHours(0, 0, 0, 0);
         return orderDate.getTime() === today.getTime();
@@ -122,26 +108,31 @@ export function PedidosClientWrapper({
       ...initialData,
       orders: filteredOrders
     };
-  }, [currentStatus, realtimeOrders, initialData]);
+  }, [currentStatus, allOrders, initialData]);
 
   console.log('🎨 [ClientWrapper] Renderizando:', {
     currentStatus: currentStatus || 'default (hoje)',
     displayCount: mergedData.orders.length,
-    source: 'REALTIME',
+    source: 'UNIFIED (Realtime + Polling)',
     realtimeConnected: isConnected,
-    realtimeOrdersTotal: realtimeOrders.length,
-    realtimeOrdersFiltered: mergedData.orders.length
+    totalOrders: allOrders.length,
+    filteredOrders: mergedData.orders.length
   });
+
+  // Função vazia para compatibilidade (não usamos mais)
+  const refreshOrders = () => {
+    console.log('[ClientWrapper] refreshOrders chamado (noop - Realtime gerencia automaticamente)');
+  };
 
   return (
     <>
       {/* DEBUG - Remover depois de funcionar */}
       <div className="mx-6 mt-6 mb-4 p-4 bg-green-500 text-white rounded-lg">
-        <p className="font-bold text-lg">✅ REALTIME ATIVO (TODAS AS ABAS)</p>
+        <p className="font-bold text-lg">✅ HOOK UNIFICADO ATIVO</p>
         <p className="mt-1">Status atual: <strong>{currentStatus || 'default (hoje)'}</strong></p>
-        <p>Fonte de dados: <strong>REALTIME</strong></p>
+        <p>Fonte de dados: <strong>UNIFIED (Realtime + Polling)</strong></p>
         <p>Conexão Realtime: <strong>{isConnected ? '🟢 CONECTADO' : '🔴 DESCONECTADO'}</strong></p>
-        <p>Total no Realtime: <strong>{realtimeOrders.length}</strong></p>
+        <p>Total de pedidos: <strong>{allOrders.length}</strong></p>
         <p>Total filtrado: <strong>{mergedData.orders.length}</strong></p>
         {mergedData.orders.length > 0 && (
           <p className="text-sm mt-1">
@@ -153,7 +144,7 @@ export function PedidosClientWrapper({
       <OrdersPageContent
         initialData={mergedData}
         products={products}
-        newOrdersCount={newOrdersCount}
+        newOrdersCount={0}
         isPlaying={isPlaying}
         stopNotification={stopNotification}
         refreshOrders={refreshOrders}

@@ -200,7 +200,7 @@ export function useOrdersRealtime(
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'orders'
+          table: 'Order'
         },
         (payload) => {
           console.log('[REALTIME] 📨 Evento INSERT recebido');
@@ -220,7 +220,7 @@ export function useOrdersRealtime(
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'orders'
+          table: 'Order'
         },
         (payload) => {
           console.log('[REALTIME] 📨 Evento UPDATE recebido');

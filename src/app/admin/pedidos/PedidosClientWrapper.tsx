@@ -69,7 +69,14 @@ export function PedidosClientWrapper({
   currentStatus
 }: PedidosClientWrapperProps) {
   // ✅ Hook de polling funciona aqui porque é CLIENT COMPONENT
-  const { orders: pollingOrders } = useOrderPolling(true);
+  // Retorna TODOS os dados do hook (orders, som, notificações, etc)
+  const {
+    orders: pollingOrders,
+    newOrdersCount,
+    isPlaying,
+    stopNotification,
+    refreshOrders
+  } = useOrderPolling(true);
 
   // Mesclar dados: Se estiver em "Pendentes", usar polling, senão usar server
   const mergedData = useMemo(() => {
@@ -118,6 +125,10 @@ export function PedidosClientWrapper({
       <OrdersPageContent
         initialData={mergedData}
         products={products}
+        newOrdersCount={newOrdersCount}
+        isPlaying={isPlaying}
+        stopNotification={stopNotification}
+        refreshOrders={refreshOrders}
       />
     </>
   );

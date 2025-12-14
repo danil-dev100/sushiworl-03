@@ -1,10 +1,9 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { OrdersTable } from '@/components/admin/orders/OrdersTable';
 import { OrdersFilters } from '@/components/admin/orders/OrdersFilters';
 import { TestOrderDialog } from '@/components/admin/orders/TestOrderDialog';
-import { useOrderPolling } from '@/hooks/useOrderPolling';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { TooltipHelper } from '@/components/shared/TooltipHelper';
 import { Volume2, VolumeX } from 'lucide-react';
@@ -65,53 +64,36 @@ type OrdersData = {
 interface OrdersPageContentProps {
   initialData: OrdersData;
   products: ProductOption[];
+  newOrdersCount?: number;
+  isPlaying?: boolean;
+  stopNotification?: () => void;
+  refreshOrders?: () => Promise<void>;
 }
 
-export function OrdersPageContent({ initialData, products }: OrdersPageContentProps) {
+export function OrdersPageContent({
+  initialData,
+  products,
+  newOrdersCount = 0,
+  isPlaying = false,
+  stopNotification = () => {},
+  refreshOrders = async () => {}
+}: OrdersPageContentProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Usar o novo hook de polling com Web Audio API
-  const {
-    orders: pendingOrders,
-    newOrdersCount,
+  // ⚠️ NÃO usar hook aqui! O PedidosClientWrapper já usa useOrderPolling
+  // e passa os dados via initialData.orders
+
+  // Simplesmente usar os dados que vêm de initialData
+  // O PedidosClientWrapper já faz a lógica de polling vs server
+  const ordersToDisplay = initialData.orders;
+
+  console.log('🖥️ [OrdersPageContent] Renderizando:', {
+    ordersCount: ordersToDisplay.length,
+    ids: ordersToDisplay.map(o => o.id.slice(-6)),
     isPlaying,
-    stopNotification,
-    refreshOrders
-  } = useOrderPolling(true);
-
-  // Atualizar displayOrders quando o status mudar ou quando recebermos novos dados
-  const currentStatus = searchParams.get('status');
-
-  // SEMPRE usar pendingOrders do polling quando estiver na aba "Pendentes"
-  // O polling retorna TODOS os pedidos PENDING (sem filtro de data)
-  // Para outras abas, usar initialData.orders que vem do servidor com filtros aplicados
-  const ordersToDisplay = useMemo(() => {
-    if (currentStatus === 'pending') {
-      // ⚠️ CRÍTICO: Sempre usar pendingOrders do polling para aba "Pendentes"
-      // Isso garante que TODOS os pedidos PENDING aparecem, não apenas os de hoje
-      const display = pendingOrders;
-
-      console.log('🖥️ [Component] Modo PENDENTES (Polling):', {
-        pendingOrdersCount: pendingOrders.length,
-        initialDataCount: initialData.orders.length,
-        displayCount: display.length,
-        source: 'pendingOrders (polling)',
-        ids: display.map(o => o.id.slice(-6))
-      });
-
-      return display;
-    } else {
-      // Para outras abas (Hoje, Todos, etc), usar dados do servidor
-      console.log('🖥️ [Component] Modo OUTROS (Server):', {
-        currentStatus: currentStatus || 'default (hoje)',
-        initialDataCount: initialData.orders.length,
-        displayCount: initialData.orders.length
-      });
-
-      return initialData.orders;
-    }
-  }, [currentStatus, pendingOrders, initialData.orders]);
+    newOrdersCount
+  });
 
   // Função para obter o nome do filtro atual
   const getCurrentFilterName = useCallback(() => {

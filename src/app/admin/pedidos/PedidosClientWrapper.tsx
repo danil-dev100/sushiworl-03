@@ -68,6 +68,14 @@ export function PedidosClientWrapper({
   products,
   currentStatus
 }: PedidosClientWrapperProps) {
+  console.log('🔄 [ClientWrapper] PROPS RECEBIDAS:', {
+    currentStatus,
+    currentStatusType: typeof currentStatus,
+    currentStatusIsNull: currentStatus === null,
+    currentStatusIsPending: currentStatus === 'pending',
+    initialDataCount: initialData.orders.length
+  });
+
   // ✅ Hook de polling funciona aqui porque é CLIENT COMPONENT
   // Retorna TODOS os dados do hook (orders, som, notificações, etc)
   const {
@@ -78,11 +86,23 @@ export function PedidosClientWrapper({
     refreshOrders
   } = useOrderPolling(true);
 
+  console.log('📊 [ClientWrapper] DADOS DO HOOK:', {
+    pollingOrdersCount: pollingOrders.length,
+    pollingIds: pollingOrders.map(o => o.id.slice(-6))
+  });
+
   // Mesclar dados: Se estiver em "Pendentes", usar polling, senão usar server
   const mergedData = useMemo(() => {
+    console.log('🔀 [ClientWrapper] MESCLANDO DADOS:', {
+      currentStatus,
+      isPending: currentStatus === 'pending',
+      pollingCount: pollingOrders.length,
+      serverCount: initialData.orders.length
+    });
+
     if (currentStatus === 'pending') {
       // Usar pedidos do polling na aba Pendentes
-      console.log('🟢 [ClientWrapper] Usando POLLING para Pendentes:', {
+      console.log('🟢 [ClientWrapper] ✅ USANDO POLLING para Pendentes:', {
         pollingCount: pollingOrders.length,
         pollingIds: pollingOrders.map(o => o.id.slice(-6))
       });
@@ -93,8 +113,9 @@ export function PedidosClientWrapper({
       };
     } else {
       // Usar dados do servidor para outras abas
-      console.log('🔵 [ClientWrapper] Usando SERVER para', currentStatus || 'default:', {
-        serverCount: initialData.orders.length
+      console.log('🔵 [ClientWrapper] ℹ️ USANDO SERVER para', currentStatus || 'default (hoje):', {
+        serverCount: initialData.orders.length,
+        serverIds: initialData.orders.map(o => o.id.slice(-6))
       });
 
       return initialData;

@@ -241,12 +241,26 @@ export function useOrdersRealtime(
 
       lastPollingCheckRef.current = new Date();
 
-      // Parar som se não há mais pendentes
-      const hasPending = polledOrders.some(o => o.status === 'PENDING');
-      if (!hasPending && soundRef.current.getIsPlaying()) {
-        soundRef.current.stopAlert();
-        setIsPlaying(false);
-      }
+      // Verificar se deve parar o som após sincronização
+      setTimeout(() => {
+        setOrders(currentOrders => {
+          const hasPending = currentOrders.some(o => o.status === 'PENDING');
+
+          console.log('[POLLING] Verificando som:', {
+            hasPending,
+            isPlaying: soundRef.current.getIsPlaying(),
+            pendingCount: currentOrders.filter(o => o.status === 'PENDING').length
+          });
+
+          if (!hasPending && soundRef.current.getIsPlaying()) {
+            console.log('[POLLING] 🔕 Parando som - não há pedidos PENDING');
+            soundRef.current.stopAlert();
+            setIsPlaying(false);
+          }
+
+          return currentOrders;
+        });
+      }, 100);
     } catch (error) {
       console.error('[POLLING] ❌ Erro:', error);
     }
@@ -318,28 +332,40 @@ export function useOrdersRealtime(
           }
 
           console.log('[REALTIME] ✅ Pedido atualizado:', completeOrder.id.slice(-6));
-          mergeOrder(completeOrder, 'UPDATE');
 
-          // Parar som se status mudou de PENDING para outro
+          // Verificar se status mudou de PENDING para outro ANTES de atualizar
           const wasPending = (payload.old as any)?.status === 'PENDING';
           const isStillPending = completeOrder.status === 'PENDING';
+          const statusChanged = wasPending && !isStillPending;
 
-          if (wasPending && !isStillPending) {
-            console.log('[REALTIME] 🔇 Pedido não é mais PENDING');
+          // Atualizar o pedido
+          mergeOrder(completeOrder, 'UPDATE');
 
-            // Verificar se ainda há pedidos PENDING
-            setOrders(currentOrders => {
-              const hasPending = currentOrders.some(o =>
-                o.status === 'PENDING' && o.id !== completeOrder.id
-              );
+          // Parar som se o pedido não é mais PENDING
+          if (statusChanged) {
+            console.log('[REALTIME] 🔇 Status mudou de PENDING para', completeOrder.status);
 
-              if (!hasPending && soundRef.current.getIsPlaying()) {
-                soundRef.current.stopAlert();
-                setIsPlaying(false);
-              }
+            // Usar setTimeout para garantir que o estado foi atualizado
+            setTimeout(() => {
+              setOrders(currentOrders => {
+                // Verificar se ainda há ALGUM pedido PENDING
+                const hasPending = currentOrders.some(o => o.status === 'PENDING');
 
-              return currentOrders;
-            });
+                console.log('[REALTIME] Verificando pedidos PENDING:', {
+                  hasPending,
+                  totalOrders: currentOrders.length,
+                  pendingIds: currentOrders.filter(o => o.status === 'PENDING').map(o => o.id.slice(-6))
+                });
+
+                if (!hasPending && soundRef.current.getIsPlaying()) {
+                  console.log('[REALTIME] 🔕 Parando som - não há mais pedidos PENDING');
+                  soundRef.current.stopAlert();
+                  setIsPlaying(false);
+                }
+
+                return currentOrders;
+              });
+            }, 100);
           }
         }
       )

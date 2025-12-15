@@ -89,6 +89,7 @@ export async function POST(request: NextRequest) {
           deliveryFee,
           observations: 'Pedido automático para testes.',
           status: 'PENDING',
+          isTest: true, // Marcar como pedido de teste
           orderItems: {
             create: [
               {
@@ -202,6 +203,7 @@ export async function POST(request: NextRequest) {
         deliveryFee,
         observations: notes,
         status: 'PENDING',
+        isTest: true, // Marcar como pedido de teste
         orderItems: {
           create: preparedItems,
         },

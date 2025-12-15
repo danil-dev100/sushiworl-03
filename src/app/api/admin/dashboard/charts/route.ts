@@ -11,24 +11,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Buscar dados de vendas dos últimos 7 dias
+    // Buscar dados de vendas dos últimos 7 dias (excluir pedidos de teste)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const salesData = await prisma.$queryRaw`
       SELECT
-        DATE(createdAt) as date,
+        DATE("createdAt") as date,
         SUM(total) as sales,
         COUNT(*) as orders
-      FROM orders
-      WHERE createdAt >= ${sevenDaysAgo}
+      FROM "Order"
+      WHERE "createdAt" >= ${sevenDaysAgo}
         AND status != 'CANCELLED'
-      GROUP BY DATE(createdAt)
-      ORDER BY DATE(createdAt) DESC
+        AND "isTest" = false
+      GROUP BY DATE("createdAt")
+      ORDER BY DATE("createdAt") DESC
       LIMIT 7
     `;
 
-    // Buscar dados de status dos pedidos
+    // Buscar dados de status dos pedidos (excluir pedidos de teste)
     const orderStatusData = await prisma.order.groupBy({
       by: ['status'],
       _count: {
@@ -38,6 +39,7 @@ export async function GET(request: NextRequest) {
         createdAt: {
           gte: sevenDaysAgo,
         },
+        isTest: false,
       },
     });
 

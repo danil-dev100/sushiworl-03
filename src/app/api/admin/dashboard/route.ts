@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
 
-    // Buscar pedidos confirmados no período
+    // Buscar pedidos confirmados no período (excluir pedidos de teste)
     const orders = await prisma.order.findMany({
       where: {
         createdAt: {
@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
         status: {
           notIn: ['CANCELLED'],
         },
+        isTest: false, // Excluir pedidos de teste
       },
       include: {
         orderItems: {
@@ -56,6 +57,7 @@ export async function GET(request: NextRequest) {
         status: {
           notIn: ['CANCELLED'],
         },
+        isTest: false,
       },
     });
 
@@ -83,6 +85,7 @@ export async function GET(request: NextRequest) {
         status: {
           notIn: ['CANCELLED'],
         },
+        isTest: false,
       },
       select: {
         total: true,
@@ -111,6 +114,7 @@ export async function GET(request: NextRequest) {
         status: {
           notIn: ['CANCELLED'],
         },
+        isTest: false,
       },
       select: {
         total: true,
@@ -148,8 +152,11 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.orderCount - a.orderCount)
       .slice(0, 5);
 
-    // Pedidos recentes
+    // Pedidos recentes (excluir pedidos de teste)
     const recentOrders = await prisma.order.findMany({
+      where: {
+        isTest: false,
+      },
       take: 10,
       orderBy: {
         createdAt: 'desc',

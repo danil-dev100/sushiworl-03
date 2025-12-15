@@ -248,12 +248,15 @@ model Order {
   
   // Observações
   observations    String?  @db.Text
-  
+
   // Tracking
   gclid           String?
   fbclid          String?
   utmSource       String?
-  
+
+  // Pedidos de teste (criados no painel admin para demonstração)
+  isTest          Boolean  @default(false)
+
   // Controle
   acceptedAt      DateTime?
   cancelledAt     DateTime?

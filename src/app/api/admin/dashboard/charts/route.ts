@@ -66,11 +66,18 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('[Dashboard Charts API] Erro:', error);
+    console.error('[Dashboard Charts API] Stack trace:', error instanceof Error ? error.stack : 'N/A');
+    console.error('[Dashboard Charts API] Error message:', error instanceof Error ? error.message : String(error));
+
     // Retornar dados vazios em caso de erro - o frontend usará dados mockados
-    return NextResponse.json({
-      salesData: [],
-      orderStatusData: [],
-      error: 'Dados não disponíveis',
-    });
+    return NextResponse.json(
+      {
+        salesData: [],
+        orderStatusData: [],
+        error: 'Dados não disponíveis',
+        details: error instanceof Error ? error.message : String(error)
+      },
+      { status: 500 }
+    );
   }
 }

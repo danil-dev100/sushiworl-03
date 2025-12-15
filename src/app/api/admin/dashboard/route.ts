@@ -202,6 +202,15 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('[Dashboard API] Erro:', error);
-    return NextResponse.json({ error: 'Erro ao buscar dados do dashboard' }, { status: 500 });
+    console.error('[Dashboard API] Stack trace:', error instanceof Error ? error.stack : 'N/A');
+    console.error('[Dashboard API] Error message:', error instanceof Error ? error.message : String(error));
+
+    return NextResponse.json(
+      {
+        error: 'Erro ao buscar dados do dashboard',
+        details: error instanceof Error ? error.message : String(error)
+      },
+      { status: 500 }
+    );
   }
 }

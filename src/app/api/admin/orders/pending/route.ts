@@ -26,6 +26,7 @@ export async function GET() {
     console.log('✅ [API Pending] Autorizado - User:', session.user.email);
     console.log('📊 [API Pending] Buscando pedidos PENDING...');
 
+    // Buscar pedidos PENDING com relações opcionais
     const orders = await prisma.order.findMany({
       where: {
         status: 'PENDING'
@@ -33,10 +34,22 @@ export async function GET() {
       include: {
         orderItems: {
           include: {
-            product: true
+            product: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                imageUrl: true
+              }
+            }
           }
         },
-        deliveryArea: true
+        deliveryArea: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc'
@@ -71,9 +84,16 @@ export async function GET() {
     );
   } catch (error) {
     console.error('❌❌❌ [API Pending] ERRO FATAL:', error);
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'N/A');
+    console.error('Error message:', error instanceof Error ? error.message : String(error));
     console.log('═══════════════════════════════════════\n');
+
     return NextResponse.json(
-      { success: false, error: 'Erro ao buscar pedidos' },
+      {
+        success: false,
+        error: 'Erro ao buscar pedidos',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     );
   }

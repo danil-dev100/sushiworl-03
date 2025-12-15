@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import {
   ShoppingBag,
   Euro,
-  Clock,
   TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
@@ -37,7 +36,6 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const [showCustomMetrics, setShowCustomMetrics] = useState(false);
-  const [customMetrics, setCustomMetrics] = useState<any[]>([]);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'today' | '7days' | '30days' | 'all'>('30days');
@@ -48,13 +46,23 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
+      setLoading(true);
       const response = await fetch(`/api/admin/dashboard?period=${period}`);
-      if (response.ok) {
-        const dashboardData = await response.json();
-        setData(dashboardData);
+
+      if (!response.ok) {
+        console.error('Erro na resposta da API:', response.status, response.statusText);
+        const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+        console.error('Detalhes do erro:', errorData);
+        setData(null);
+        return;
       }
+
+      const dashboardData = await response.json();
+      console.log('Dados recebidos do dashboard:', dashboardData);
+      setData(dashboardData);
     } catch (error) {
       console.error('Erro ao buscar dados do dashboard:', error);
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -82,7 +90,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div className="flex flex-col gap-8">
         {/* Header */}
@@ -102,6 +110,39 @@ export default function DashboardPage() {
 
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B00]"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-col gap-8">
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <h1 className="text-4xl font-black leading-tight tracking-tight text-[#FF6B00]">
+              Dashboard
+            </h1>
+            <TooltipHelper text="Painel principal com métricas gerais do negócio, gráficos de vendas e informações sobre pedidos" />
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center h-64 gap-4">
+          <div className="text-center">
+            <p className="text-xl font-semibold text-[#333333] dark:text-[#f5f1e9]">
+              Erro ao carregar dados do dashboard
+            </p>
+            <p className="text-sm text-[#a16b45] mt-2">
+              Verifique o console do navegador para mais detalhes
+            </p>
+            <button
+              onClick={() => fetchDashboardData()}
+              className="mt-4 px-4 py-2 bg-[#FF6B00] text-white rounded-lg hover:bg-[#e55f00] transition-colors"
+            >
+              Tentar Novamente
+            </button>
+          </div>
         </div>
       </div>
     );

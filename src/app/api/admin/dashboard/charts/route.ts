@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+    // Nota: Remover filtro isTest temporariamente até executar ADD-ISTEST-COLUMN.sql no Supabase
     const salesData = await prisma.$queryRaw`
       SELECT
         DATE("createdAt") as date,
@@ -23,7 +24,6 @@ export async function GET(request: NextRequest) {
       FROM "Order"
       WHERE "createdAt" >= ${sevenDaysAgo}
         AND status != 'CANCELLED'
-        AND "isTest" = false
       GROUP BY DATE("createdAt")
       ORDER BY DATE("createdAt") DESC
       LIMIT 7
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         createdAt: {
           gte: sevenDaysAgo,
         },
-        isTest: false,
+        // isTest: false,
       },
     });
 

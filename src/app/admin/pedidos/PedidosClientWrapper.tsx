@@ -2,6 +2,7 @@
 
 import { OrdersPageContent } from '@/components/admin/orders/OrdersPageContent';
 import { useOrdersRealtime } from '@/hooks/useOrdersRealtime';
+import { RestaurantStatusToggle } from '@/components/admin/RestaurantStatusToggle';
 import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 
@@ -126,8 +127,13 @@ export function PedidosClientWrapper({
 
   return (
     <>
+      {/* Toggle de Status do Restaurante */}
+      <div className="mx-6 mt-6 mb-4 flex justify-end">
+        <RestaurantStatusToggle />
+      </div>
+
       {/* DEBUG - Remover depois de funcionar */}
-      <div className="mx-6 mt-6 mb-4 p-4 bg-green-500 text-white rounded-lg">
+      <div className="mx-6 mb-4 p-4 bg-green-500 text-white rounded-lg">
         <p className="font-bold text-lg">✅ HOOK UNIFICADO ATIVO</p>
         <p className="mt-1">Status atual: <strong>{currentStatus || 'default (hoje)'}</strong></p>
         <p>Fonte de dados: <strong>UNIFIED (Realtime + Polling)</strong></p>

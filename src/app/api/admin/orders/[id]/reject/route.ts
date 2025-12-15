@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { isRestaurantOpen } from '@/lib/restaurant-status';
 
 export async function POST(
   req: NextRequest,
@@ -18,7 +19,7 @@ export async function POST(
 
     const { id: orderId } = await params;
     const body = await req.json();
-    const { reason } = body;
+    const { reason: customReason } = body;
 
     const order = await prisma.order.findUnique({
       where: { id: orderId }
@@ -38,18 +39,42 @@ export async function POST(
       );
     }
 
+    // Verificar status do restaurante para determinar mensagem contextual
+    const { isOpen, reason: statusReason } = await isRestaurantOpen();
+
+    let rejectionReason = customReason;
+    let redirectReason = 'high-demand'; // Default
+
+    if (!isOpen) {
+      if (statusReason === 'closed') {
+        rejectionReason = 'Restaurante fechado no momento';
+        redirectReason = 'closed';
+      } else if (statusReason === 'offline') {
+        rejectionReason = 'Restaurante offline - não aceitando pedidos';
+        redirectReason = 'offline';
+      }
+    } else if (!customReason) {
+      rejectionReason = 'Alta demanda - não aceitando novos pedidos no momento';
+      redirectReason = 'high-demand';
+    }
+
+    // Atualizar pedido
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
       data: {
         status: 'CANCELLED',
         cancelledAt: new Date(),
-        observations: reason ? `Cancelado: ${reason}` : 'Cancelado pelo restaurante'
+        observations: rejectionReason
       }
     });
 
+    console.log(`[Reject Order] Pedido ${orderId} recusado. Motivo: ${rejectionReason}`);
+
     return NextResponse.json({
       success: true,
-      order: updatedOrder
+      order: updatedOrder,
+      redirectUrl: `/pedido-recusado?reason=${redirectReason}`,
+      message: rejectionReason
     });
   } catch (error) {
     console.error('[Reject Order API Error]', error);

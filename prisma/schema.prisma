@@ -832,7 +832,7 @@ model SmartPromotion {
 
 model Settings {
   id            String   @id @default(cuid())
-  
+
   // Empresa
   companyName   String
   billingName   String?
@@ -840,27 +840,30 @@ model Settings {
   address       String?
   phone         String?
   email         String?
-  
+
   // Horários de atendimento
   openingHours  Json?   // {monday: {open: "11:00", close: "23:00", closed: false}, ...}
-  
+
+  // Status do restaurante
+  isOnline      Boolean  @default(true) // Restaurante online/offline (aceita pedidos)
+
   // IVA
   vatRate       Float    @default(13)
   vatType       VatType  @default(INCLUSIVE)
-  
+
   // Impressora
   printerType   String?  // USB, BLUETOOTH
   printerName   String?
   paperSize     String?  // 58mm, 80mm
-  
+
   // Banners do site
   banners       Json?    // Array de URLs
   bannerMode    BannerMode @default(STATIC)
-  
+
   // Popup promocional
   popupEnabled  Boolean  @default(false)
   popupConfig   Json?    // {type, imageUrl, text, buttonText, buttonColor, link}
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

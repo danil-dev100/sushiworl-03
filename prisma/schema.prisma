@@ -254,8 +254,9 @@ model Order {
   fbclid          String?
   utmSource       String?
 
+  // TEMPORÁRIO: Campo isTest comentado até executar ADD-ISTEST-COLUMN.sql no Supabase
   // Pedidos de teste (criados no painel admin para demonstração)
-  isTest          Boolean  @default(false)
+  // isTest          Boolean  @default(false)
 
   // Controle
   acceptedAt      DateTime?
@@ -847,8 +848,9 @@ model Settings {
   // Horários de atendimento
   openingHours  Json?   // {monday: {open: "11:00", close: "23:00", closed: false}, ...}
 
+  // TEMPORÁRIO: Campo isOnline comentado até executar ADD-ISONLINE-COLUMN.sql no Supabase
   // Status do restaurante
-  isOnline      Boolean  @default(true) // Restaurante online/offline (aceita pedidos)
+  // isOnline      Boolean  @default(true) // Restaurante online/offline (aceita pedidos)
 
   // IVA
   vatRate       Float    @default(13)

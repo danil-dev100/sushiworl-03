@@ -1,11 +1,17 @@
 # 🔴 IMPORTANTE - Configuração do Banco de Dados
 
-## Problema Atual
+## ✅ Problema Resolvido Temporariamente
 
-Os endpoints `/api/admin/orders/pending` e `/api/admin/dashboard` podem estar retornando erro **500 (Internal Server Error)** porque os seguintes campos ainda não existem fisicamente no banco de dados Supabase:
+Os endpoints `/api/admin/orders/pending` e `/api/admin/dashboard` agora **funcionam corretamente**.
 
-1. **`isTest`** na tabela `Order`
-2. **`isOnline`** na tabela `Settings`
+**Solução aplicada:** Os campos `isTest` e `isOnline` foram temporariamente comentados no schema do Prisma para que o sistema funcione mesmo sem esses campos no banco de dados.
+
+## ⚠️ Funcionalidade Limitada
+
+Sem os campos no banco, as seguintes funcionalidades **não estão disponíveis**:
+
+1. **`isTest`** na tabela `Order` - Pedidos de teste não são filtrados do dashboard (todos aparecem nas métricas)
+2. **`isOnline`** na tabela `Settings` - Toggle online/offline do restaurante não funciona
 
 ## ✅ Solução
 
@@ -53,28 +59,41 @@ WHERE table_name = 'Settings' AND column_name = 'isOnline';
 
 Depois de executar os SQLs no Supabase, você precisa:
 
-1. **Descomentar os filtros `isTest`** nos seguintes arquivos:
+1. **Descomentar os campos no schema** em `prisma/schema.prisma`:
+   - Linha 259: `isTest          Boolean  @default(false)` (remover o `//`)
+   - Linha 853: `isOnline      Boolean  @default(true)` (remover o `//`)
+
+2. **Regenerar o Prisma Client**:
+
+   ```bash
+   npx prisma generate
+   ```
+
+3. **Descomentar os filtros `isTest`** nos seguintes arquivos:
    - `src/app/api/admin/dashboard/route.ts` (linhas comentadas com `// isTest: false`)
    - `src/app/api/admin/dashboard/charts/route.ts` (linhas comentadas com `// isTest: false`)
 
-2. **Reiniciar o servidor de desenvolvimento**:
+4. **Reiniciar o servidor de desenvolvimento**:
+
    ```bash
    npm run dev
    ```
 
-## ⚠️ Sintomas de que o SQL ainda não foi executado
+## ⚠️ Sintomas Antes da Correção
 
-- Dashboard fica em carregamento infinito
-- Erro 500 ao acessar `/api/admin/dashboard`
-- Erro 500 ao acessar `/api/admin/orders/pending`
-- Console mostra erro: "column 'isTest' does not exist"
+~~- Dashboard fica em carregamento infinito~~
+~~- Erro 500 ao acessar `/api/admin/dashboard`~~
+~~- Erro 500 ao acessar `/api/admin/orders/pending`~~
+~~- Console mostra erro: "column 'isTest' does not exist"~~
 
-## ✅ Confirmação de que funcionou
+## ✅ Status Atual (Após Correção Temporária)
 
-- Dashboard carrega dados reais
-- Pedidos aparecem no painel admin
-- Gráficos exibem informações do banco
-- Não há erros 500 no console
+- ✅ Dashboard carrega dados reais
+- ✅ Pedidos aparecem no painel admin
+- ✅ Gráficos exibem informações do banco
+- ✅ Não há erros 500 nos endpoints
+- ⚠️ Pedidos de teste NÃO são filtrados (aparecem nas métricas)
+- ⚠️ Toggle online/offline do restaurante NÃO funciona
 
 ---
 

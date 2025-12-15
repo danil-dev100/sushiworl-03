@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { OrdersTable } from '@/components/admin/orders/OrdersTable';
 import { OrdersFilters } from '@/components/admin/orders/OrdersFilters';
 import { TestOrderDialog } from '@/components/admin/orders/TestOrderDialog';
@@ -70,6 +70,14 @@ interface OrdersPageContentProps {
   refreshOrders?: () => Promise<void>;
 }
 
+/**
+ * Componente TOTALMENTE CONTROLADO pelo ClientWrapper
+ *
+ * - Recebe orders via initialData.orders
+ * - Re-renderiza automaticamente quando initialData.orders muda
+ * - NÃO mantém estado local de pedidos
+ * - Renderiza diretamente a partir das props
+ */
 export function OrdersPageContent({
   initialData,
   products,
@@ -81,18 +89,27 @@ export function OrdersPageContent({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // ⚠️ NÃO usar hook aqui! O PedidosClientWrapper já usa useOrderPolling
-  // e passa os dados via initialData.orders
+  // ============================================
+  // ESTADO LOCAL APENAS PARA DEBUG
+  // ============================================
+  const [renderCount, setRenderCount] = useState(0);
 
-  // Simplesmente usar os dados que vêm de initialData
-  // O PedidosClientWrapper já faz a lógica de polling vs server
+  useEffect(() => {
+    setRenderCount(prev => prev + 1);
+  }, [initialData.orders]);
+
+  // ============================================
+  // USAR DIRETAMENTE AS PROPS (SEM ESTADO LOCAL)
+  // ============================================
   const ordersToDisplay = initialData.orders;
 
   console.log('🖥️ [OrdersPageContent] Renderizando:', {
+    renderNumber: renderCount,
     ordersCount: ordersToDisplay.length,
-    ids: ordersToDisplay.map(o => o.id.slice(-6)),
+    orderIds: ordersToDisplay.map(o => `${o.orderNumber}-${o.id.slice(-6)}`),
     isPlaying,
-    newOrdersCount
+    newOrdersCount,
+    timestamp: new Date().toISOString()
   });
 
   // Função para obter o nome do filtro atual
@@ -144,10 +161,10 @@ export function OrdersPageContent({
           <div>
             <h1 className="text-4xl font-black text-[#FF6B00]">Pedidos</h1>
             <p className="mt-1 text-sm text-[#a16b45]">
-              Gerencie os pedidos do restaurante - Atualização em tempo real (3s)
+              Gerencie os pedidos do restaurante - Atualização em tempo real
             </p>
           </div>
-          <TooltipHelper text="Sistema completo de gestão de pedidos com notificação sonora e atualização automática a cada 3 segundos" />
+          <TooltipHelper text="Sistema completo de gestão de pedidos com notificação sonora e atualização automática via Realtime + Polling" />
         </div>
         <div className="flex items-center gap-3">
           {/* Controle de som */}
@@ -195,10 +212,14 @@ export function OrdersPageContent({
         <span className="text-lg font-semibold text-[#333333] dark:text-[#f5f1e9]">
           Lista de Pedidos - {getCurrentFilterName()}
         </span>
-        <TooltipHelper text="Pedidos pendentes aparecem automaticamente com som contínuo. Atualização em tempo real a cada 3 segundos" />
+        <TooltipHelper text="Pedidos pendentes aparecem automaticamente com som contínuo. Atualização em tempo real via Realtime + Polling fallback" />
       </div>
-      <OrdersTable orders={ordersToDisplay} />
+
+      {/* Renderizar tabela com key única para forçar re-render quando orders mudar */}
+      <OrdersTable
+        key={`orders-${ordersToDisplay.length}-${ordersToDisplay[0]?.id || 'empty'}`}
+        orders={ordersToDisplay}
+      />
     </div>
   );
 }
-

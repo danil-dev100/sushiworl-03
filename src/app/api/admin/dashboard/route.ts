@@ -40,8 +40,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar pedidos confirmados no período (excluir pedidos de teste)
-    // Nota: se o campo isTest não existir no banco, a query irá falhar
-    // Execute o SQL em ADD-ISTEST-COLUMN.sql no Supabase
     const orders = await prisma.order.findMany({
       where: {
         createdAt: {
@@ -50,8 +48,7 @@ export async function GET(request: NextRequest) {
         status: {
           notIn: ['CANCELLED'],
         },
-        // Remover temporariamente o filtro isTest se causar erro
-        // isTest: false,
+        isTest: false,
       },
       include: {
         orderItems: {
@@ -72,7 +69,7 @@ export async function GET(request: NextRequest) {
         status: {
           notIn: ['CANCELLED'],
         },
-        // isTest: false,
+        isTest: false,
       },
     });
 
@@ -100,7 +97,7 @@ export async function GET(request: NextRequest) {
         status: {
           notIn: ['CANCELLED'],
         },
-        // isTest: false,
+        isTest: false,
       },
       select: {
         total: true,
@@ -129,7 +126,7 @@ export async function GET(request: NextRequest) {
         status: {
           notIn: ['CANCELLED'],
         },
-        // isTest: false,
+        isTest: false,
       },
       select: {
         total: true,
@@ -170,7 +167,7 @@ export async function GET(request: NextRequest) {
     // Pedidos recentes (excluir pedidos de teste)
     const recentOrders = await prisma.order.findMany({
       where: {
-        // isTest: false,
+        isTest: false,
       },
       take: 10,
       orderBy: {

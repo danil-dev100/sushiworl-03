@@ -21,6 +21,8 @@ export async function POST(request: NextRequest) {
       subtotal,
       deliveryFee,
       additionalItems,
+      couponCode,
+      promotionId,
     } = body;
 
     // Validação básica
@@ -92,7 +94,103 @@ export async function POST(request: NextRequest) {
     const additionalTotal = additionalItems?.reduce((acc: number, item: { price: number }) => acc + item.price, 0) || 0;
     const itemsSubtotal = subtotal || items.reduce((acc: number, item: { price: number; quantity: number }) => acc + (item.price * item.quantity), 0);
     const vatAmount = Number((itemsSubtotal * (vatRate / 100)).toFixed(2));
-    const total = Number((itemsSubtotal + actualDeliveryFee + additionalTotal).toFixed(2));
+
+    // Validar e aplicar cupom se fornecido
+    let discountAmount = 0;
+    let validPromotionId: string | null = null;
+
+    if (couponCode && promotionId) {
+      // Revalidar cupom no backend para segurança
+      const promotion = await prisma.promotion.findUnique({
+        where: { id: promotionId },
+        include: {
+          promotionItems: {
+            include: {
+              product: {
+                select: { sku: true },
+              },
+            },
+          },
+        },
+      });
+
+      if (promotion && promotion.code?.toUpperCase() === couponCode.toUpperCase()) {
+        const now = new Date();
+
+        // Verificar se está ativo
+        if (!promotion.isActive) {
+          return NextResponse.json(
+            { error: 'Este cupom não está mais ativo' },
+            { status: 400 }
+          );
+        }
+
+        // Verificar data de validade
+        if (promotion.validFrom && now < new Date(promotion.validFrom)) {
+          return NextResponse.json(
+            { error: 'Este cupom ainda não está válido' },
+            { status: 400 }
+          );
+        }
+
+        if (promotion.validUntil && now > new Date(promotion.validUntil)) {
+          return NextResponse.json(
+            { error: 'Este cupom expirou' },
+            { status: 400 }
+          );
+        }
+
+        // Verificar limite de uso
+        if (promotion.usageLimit && promotion.usageCount >= promotion.usageLimit) {
+          return NextResponse.json(
+            { error: 'Limite de uso deste cupom foi atingido' },
+            { status: 400 }
+          );
+        }
+
+        // Verificar valor mínimo
+        if (promotion.minOrderValue && itemsSubtotal < promotion.minOrderValue) {
+          return NextResponse.json(
+            {
+              error: `Valor mínimo de €${promotion.minOrderValue.toFixed(2)} não atingido para usar este cupom`,
+            },
+            { status: 400 }
+          );
+        }
+
+        // Verificar primeira compra se necessário
+        if (promotion.isFirstPurchaseOnly) {
+          const previousOrders = await prisma.order.count({
+            where: { customerEmail },
+          });
+
+          if (previousOrders > 0) {
+            return NextResponse.json(
+              { error: 'Este cupom é válido apenas para primeira compra' },
+              { status: 400 }
+            );
+          }
+        }
+
+        // Calcular desconto
+        if (promotion.discountType === 'PERCENTAGE') {
+          discountAmount = Number(((itemsSubtotal * promotion.discountValue) / 100).toFixed(2));
+        } else {
+          discountAmount = promotion.discountValue;
+        }
+
+        // Garantir que desconto não excede o subtotal
+        discountAmount = Math.min(discountAmount, itemsSubtotal);
+        validPromotionId = promotion.id;
+      } else {
+        return NextResponse.json(
+          { error: 'Cupom inválido' },
+          { status: 400 }
+        );
+      }
+    }
+
+    const total = Number((itemsSubtotal + actualDeliveryFee + additionalTotal - discountAmount).toFixed(2));
 
     // Criar pedido
     const order = await prisma.order.create({
@@ -105,7 +203,7 @@ export async function POST(request: NextRequest) {
           nif: nif || null,
         },
         subtotal: itemsSubtotal,
-        discount: 0,
+        discount: discountAmount,
         vatAmount,
         total,
         deliveryFee: actualDeliveryFee,
@@ -113,6 +211,7 @@ export async function POST(request: NextRequest) {
         observations: observations || null,
         paymentMethod: paymentMethod || 'CASH',
         status: 'PENDING',
+        promotionId: validPromotionId,
         orderItems: {
           create: items.map((item: { productId: string; name: string; quantity: number; price: number; options?: any }) => ({
             productId: item.productId,
@@ -127,6 +226,18 @@ export async function POST(request: NextRequest) {
         orderItems: true,
       },
     });
+
+    // Incrementar usageCount da promoção se foi usada
+    if (validPromotionId) {
+      await prisma.promotion.update({
+        where: { id: validPromotionId },
+        data: {
+          usageCount: {
+            increment: 1,
+          },
+        },
+      });
+    }
 
     // Buscar pixels ativos para disparar eventos
     const integrations = await prisma.integration.findMany({

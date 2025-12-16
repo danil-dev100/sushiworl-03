@@ -38,16 +38,26 @@ export default function DashboardPage() {
   const [showCustomMetrics, setShowCustomMetrics] = useState(false);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<'today' | '7days' | '30days' | 'all'>('30days');
+  const [period, setPeriod] = useState<'today' | '7days' | '30days' | 'all' | 'custom'>('30days');
+  const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
-    fetchDashboardData();
+    if (period !== 'custom') {
+      fetchDashboardData();
+    }
   }, [period]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (customStart?: string, customEnd?: string) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/dashboard?period=${period}`);
+
+      let url = `/api/admin/dashboard?period=${period}`;
+      if (period === 'custom' && customStart && customEnd) {
+        url = `/api/admin/dashboard?period=custom&startDate=${customStart}&endDate=${customEnd}`;
+      }
+
+      const response = await fetch(url);
 
       if (!response.ok) {
         console.error('Erro na resposta da API:', response.status, response.statusText);
@@ -65,6 +75,13 @@ export default function DashboardPage() {
       setData(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCustomDateApply = () => {
+    if (customDateRange.start && customDateRange.end) {
+      fetchDashboardData(customDateRange.start, customDateRange.end);
+      setShowDatePicker(false);
     }
   };
 
@@ -244,7 +261,58 @@ export default function DashboardPage() {
             >
               Tudo
             </button>
+            <button
+              onClick={() => {
+                setPeriod('custom');
+                setShowDatePicker(true);
+              }}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                period === 'custom'
+                  ? 'bg-[#FF6B00] text-white'
+                  : 'text-[#a16b45] hover:bg-[#FF6B00]/10'
+              }`}
+            >
+              Personalizado
+            </button>
           </div>
+
+          {/* Date Range Picker */}
+          {showDatePicker && period === 'custom' && (
+            <div className="flex items-center gap-2 rounded-lg border border-[#ead9cd] dark:border-[#4a3c30] bg-white dark:bg-[#2a1e14] p-2">
+              <span className="text-sm text-[#a16b45]">De:</span>
+              <input
+                type="date"
+                value={customDateRange.start}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, start: e.target.value })}
+                className="px-2 py-1 text-sm border border-[#ead9cd] rounded-md bg-white dark:bg-[#2a1e14] text-[#333333] dark:text-[#f5f1e9]"
+              />
+              <span className="text-sm text-[#a16b45]">Até:</span>
+              <input
+                type="date"
+                value={customDateRange.end}
+                onChange={(e) => setCustomDateRange({ ...customDateRange, end: e.target.value })}
+                className="px-2 py-1 text-sm border border-[#ead9cd] rounded-md bg-white dark:bg-[#2a1e14] text-[#333333] dark:text-[#f5f1e9]"
+              />
+              <Button
+                onClick={handleCustomDateApply}
+                size="sm"
+                className="bg-[#FF6B00] hover:bg-[#e55f00] text-white"
+                disabled={!customDateRange.start || !customDateRange.end}
+              >
+                Aplicar
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowDatePicker(false);
+                  setPeriod('30days');
+                }}
+                variant="outline"
+                size="sm"
+              >
+                Cancelar
+              </Button>
+            </div>
+          )}
 
           <Button
             onClick={handleExportCSV}

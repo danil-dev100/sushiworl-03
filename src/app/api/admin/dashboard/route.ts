@@ -17,34 +17,46 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || '30days';
+    const customStartDate = searchParams.get('startDate');
+    const customEndDate = searchParams.get('endDate');
 
     // Calcular data de início baseado no período
     const now = new Date();
     let startDate: Date;
+    let endDate: Date = now;
 
-    switch (period) {
-      case 'today':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        break;
-      case '7days':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case '30days':
-        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        break;
-      case 'all':
-        startDate = new Date(0); // Desde o início
-        break;
-      default:
-        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    if (period === 'custom' && customStartDate && customEndDate) {
+      // Período personalizado
+      startDate = new Date(customStartDate);
+      endDate = new Date(customEndDate);
+      // Ajustar endDate para incluir o dia completo
+      endDate.setHours(23, 59, 59, 999);
+    } else {
+      // Períodos predefinidos
+      switch (period) {
+        case 'today':
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case '7days':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30days':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case 'all':
+          startDate = new Date(0); // Desde o início
+          break;
+        default:
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
     }
 
     // Buscar pedidos confirmados no período (excluir pedidos de teste)
     const orders = await prisma.order.findMany({
       where: {
-        createdAt: {
-          gte: startDate,
-        },
+        createdAt: period === 'custom'
+          ? { gte: startDate, lte: endDate }
+          : { gte: startDate },
         status: {
           notIn: ['CANCELLED'],
         },

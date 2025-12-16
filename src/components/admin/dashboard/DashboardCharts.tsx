@@ -177,10 +177,10 @@ const COMPARISON_METRICS: Record<string, ComparisonMetric[]> = {
 };
 
 export function DashboardCharts() {
-  const [salesData, setSalesData] = useState<SalesData[]>(generateSalesData());
-  const [orderStatusData, setOrderStatusData] = useState<OrderStatusData[]>(generateOrderStatusData());
+  const [salesData, setSalesData] = useState<SalesData[]>([]);
+  const [orderStatusData, setOrderStatusData] = useState<OrderStatusData[]>([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<TimeRange>('7days');
   const [chartType, setChartType] = useState<ChartType>('area');
   const [comparisonType, setComparisonType] = useState<ComparisonType>('sales-orders');
@@ -261,15 +261,6 @@ export function DashboardCharts() {
 
     return () => clearInterval(interval);
   }, [timeRange]); // Re-executar quando o período mudar
-
-  // Atualizar dados quando o período muda
-  useEffect(() => {
-    const selectedOption = TIME_RANGE_OPTIONS.find(opt => opt.value === timeRange);
-    if (selectedOption && selectedOption.days > 0) {
-      const newData = generateSalesData(selectedOption.days);
-      setSalesData(newData);
-    }
-  }, [timeRange]);
 
   const totalSales = salesData.reduce((sum, item) => sum + item.sales, 0);
   const totalOrders = salesData.reduce((sum, item) => sum + item.orders, 0);
@@ -498,12 +489,8 @@ export function DashboardCharts() {
 
   // Função para atualizar dados baseado no período selecionado
   const updateDataForTimeRange = (range: TimeRange) => {
-    const selectedOption = TIME_RANGE_OPTIONS.find(opt => opt.value === range);
-    if (selectedOption) {
-      const newData = generateSalesData(selectedOption.days);
-      setSalesData(newData);
-      setTimeRange(range);
-    }
+    setTimeRange(range);
+    // A busca de dados reais será feita automaticamente pelo useEffect ao mudar timeRange
   };
 
   return (
@@ -594,11 +581,8 @@ export function DashboardCharts() {
                     size="sm"
                     onClick={() => {
                       if (customDateRange.start && customDateRange.end) {
-                        const startDate = new Date(customDateRange.start);
-                        const endDate = new Date(customDateRange.end);
-                        const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-                        const newData = generateSalesData(Math.min(daysDiff, 90)); // Máximo 90 dias
-                        setSalesData(newData);
+                        // Buscar dados reais da API com o período personalizado
+                        fetchRealData();
                       }
                     }}
                     className="bg-[#FF6B00] hover:bg-[#FF6B00]/90 text-white"

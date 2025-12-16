@@ -3,20 +3,20 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
-// GET - Listar todas as métricas customizadas
+// GET - Listar todas as metricas customizadas
 export async function GET(request: NextRequest) {
   try {
-    // Verificar autenticação
+    // Verificar autenticacao
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user || session.user.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Não autorizado' },
+        { error: 'Nao autorizado' },
         { status: 401 }
       );
     }
 
-    // Buscar todas as métricas customizadas
+    // Buscar todas as metricas customizadas
     const metrics = await prisma.customMetric.findMany({
       orderBy: {
         createdAt: 'desc',
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: 'Erro ao buscar métricas customizadas',
+        error: 'Erro ao buscar metricas customizadas',
         details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
@@ -40,15 +40,15 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Criar nova métrica customizada
+// POST - Criar nova metrica customizada
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autenticação
+    // Verificar autenticacao
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user || session.user.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Não autorizado' },
+        { error: 'Nao autorizado' },
         { status: 401 }
       );
     }
@@ -56,10 +56,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, description, formula, type, unit } = body;
 
-    // Validar campos obrigatórios
+    // Validar campos obrigatorios
     if (!name || !formula) {
       return NextResponse.json(
-        { error: 'Nome e fórmula são obrigatórios' },
+        { error: 'Nome e formula sao obrigatorios' },
         { status: 400 }
       );
     }
@@ -74,21 +74,21 @@ export async function POST(request: NextRequest) {
 
     const prismaType = metricTypeMap[type] || 'FINANCIAL';
 
-    // Criar métrica no banco de dados
+    // Criar metrica no banco de dados
     const metric = await prisma.customMetric.create({
       data: {
         name,
         description: description || '',
         formula,
         type: prismaType,
-        unit: unit || '¬',
+        unit: unit || 'EUR',
         isActive: true,
       },
     });
 
     return NextResponse.json(
       {
-        message: 'Métrica customizada criada com sucesso',
+        message: 'Metrica customizada criada com sucesso',
         metric,
       },
       { status: 201 }
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: 'Erro ao criar métrica customizada',
+        error: 'Erro ao criar metrica customizada',
         details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }

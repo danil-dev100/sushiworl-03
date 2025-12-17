@@ -38,6 +38,11 @@ interface SMTPSettings {
   emailRetentionDays: string;
 }
 
+interface RetentionSettings {
+  value: string;
+  unit: 'days' | 'months' | 'years';
+}
+
 export default function EmailMarketingSettingsPage() {
   const [settings, setSettings] = useState<SMTPSettings>({
     smtpServer: 'smtp.gmail.com',
@@ -60,6 +65,11 @@ export default function EmailMarketingSettingsPage() {
     success: boolean;
     message: string;
   } | null>(null);
+  const [retention, setRetention] = useState<RetentionSettings>({
+    value: '30',
+    unit: 'days'
+  });
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -142,6 +152,60 @@ export default function EmailMarketingSettingsPage() {
       toast.error('Erro ao salvar configurações');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Converter dias para a unidade selecionada ao carregar
+  const convertDaysToUnit = (days: string, unit: 'days' | 'months' | 'years'): string => {
+    const numDays = parseInt(days);
+    switch (unit) {
+      case 'months':
+        return String(Math.round(numDays / 30));
+      case 'years':
+        return String(Math.round(numDays / 365));
+      default:
+        return days;
+    }
+  };
+
+  // Converter a unidade selecionada para dias
+  const convertUnitToDays = (value: string, unit: 'days' | 'months' | 'years'): string => {
+    const numValue = parseInt(value);
+    switch (unit) {
+      case 'months':
+        return String(numValue * 30);
+      case 'years':
+        return String(numValue * 365);
+      default:
+        return value;
+    }
+  };
+
+  // Função para baixar lista de contatos
+  const handleDownloadContacts = async () => {
+    try {
+      setDownloading(true);
+      const response = await fetch('/api/email-marketing/export-contacts');
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `contatos-sushiworld-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success('Lista de contatos baixada com sucesso!');
+      } else {
+        toast.error('Erro ao baixar lista de contatos');
+      }
+    } catch (error) {
+      console.error('Erro ao baixar:', error);
+      toast.error('Erro ao baixar lista de contatos');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -584,18 +648,46 @@ export default function EmailMarketingSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="retention">Dias de Retenção</Label>
-                <Input
-                  id="retention"
-                  type="number"
-                  value={settings.emailRetentionDays}
-                  onChange={(e) => setSettings({ ...settings, emailRetentionDays: e.target.value })}
-                  min="1"
-                  max="365"
-                />
+              <div className="space-y-4">
+                <Label htmlFor="retention">Período de Retenção</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    id="retention"
+                    type="number"
+                    value={retention.value}
+                    onChange={(e) => {
+                      const newRetention = { ...retention, value: e.target.value };
+                      setRetention(newRetention);
+                      setSettings({
+                        ...settings,
+                        emailRetentionDays: convertUnitToDays(e.target.value, retention.unit)
+                      });
+                    }}
+                    min="1"
+                    max={retention.unit === 'years' ? '10' : retention.unit === 'months' ? '120' : '3650'}
+                  />
+                  <Select
+                    value={retention.unit}
+                    onValueChange={(value: 'days' | 'months' | 'years') => {
+                      const newRetention = {
+                        value: convertDaysToUnit(settings.emailRetentionDays, value),
+                        unit: value
+                      };
+                      setRetention(newRetention);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="days">Dias</SelectItem>
+                      <SelectItem value="months">Meses</SelectItem>
+                      <SelectItem value="years">Anos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <p className="text-xs text-gray-500">
-                  Emails serão automaticamente deletados após este período
+                  Emails serão automaticamente deletados após este período ({settings.emailRetentionDays} dias)
                 </p>
               </div>
 
@@ -629,6 +721,70 @@ export default function EmailMarketingSettingsPage() {
                   <li>• Relatórios de campanhas</li>
                   <li>• Configurações de fluxos (não os emails em si)</li>
                 </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Exportar Contatos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-5 w-5" />
+                Exportar Base de Contatos
+              </CardTitle>
+              <CardDescription>
+                Baixe a lista completa de emails, nomes e telefones dos seus clientes
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-900 mb-2">📊 O que será exportado:</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Nome completo do cliente</li>
+                  <li>• Email</li>
+                  <li>• Telefone</li>
+                  <li>• Data do primeiro pedido</li>
+                  <li>• Total de pedidos realizados</li>
+                  <li>• Valor total gasto</li>
+                </ul>
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <h4 className="font-medium">Formato do arquivo</h4>
+                  <p className="text-sm text-gray-600">
+                    CSV compatível com Excel, Google Sheets e ferramentas de email marketing
+                  </p>
+                </div>
+                <Badge variant="outline" className="text-green-600 border-green-600">
+                  CSV/Excel
+                </Badge>
+              </div>
+
+              <Button
+                onClick={handleDownloadContacts}
+                disabled={downloading}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                {downloading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Gerando arquivo...
+                  </>
+                ) : (
+                  <>
+                    <Database className="h-4 w-4 mr-2" />
+                    Baixar Lista de Contatos
+                  </>
+                )}
+              </Button>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h4 className="font-medium text-yellow-900 mb-2">⚠️ LGPD - Uso Responsável:</h4>
+                <p className="text-sm text-yellow-800">
+                  Os dados dos clientes são confidenciais. Use apenas para fins legítimos de marketing,
+                  como campanhas de email, SMS ou análise de dados. Nunca compartilhe ou venda esta lista.
+                </p>
               </div>
             </CardContent>
           </Card>

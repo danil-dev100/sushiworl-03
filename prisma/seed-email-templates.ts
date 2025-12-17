@@ -662,12 +662,25 @@ async function main() {
   console.log('🌱 Iniciando seed de templates de email...');
 
   for (const template of emailTemplates) {
-    const created = await prisma.emailTemplate.upsert({
-      where: { name: template.name },
-      update: template,
-      create: template,
+    // Verificar se já existe
+    const existing = await prisma.emailTemplate.findFirst({
+      where: { name: template.name }
     });
-    console.log(`✅ Template criado/atualizado: ${created.name}`);
+
+    if (existing) {
+      // Atualizar
+      const updated = await prisma.emailTemplate.update({
+        where: { id: existing.id },
+        data: template
+      });
+      console.log(`✅ Template atualizado: ${updated.name}`);
+    } else {
+      // Criar
+      const created = await prisma.emailTemplate.create({
+        data: template
+      });
+      console.log(`✅ Template criado: ${created.name}`);
+    }
   }
 
   console.log('\n🎉 Seed de templates concluído com sucesso!');

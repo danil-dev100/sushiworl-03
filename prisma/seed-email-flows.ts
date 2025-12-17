@@ -443,20 +443,33 @@ async function main() {
   }
 
   for (const flowData of emailFlows) {
-    const created = await prisma.emailAutomation.upsert({
-      where: { name: flowData.name },
-      update: {
-        description: flowData.description,
-        flow: flowData.flow,
-        isActive: flowData.isActive,
-        isDraft: flowData.isDraft
-      },
-      create: {
-        ...flowData,
-        createdBy: admin?.id || undefined
-      },
+    // Verificar se já existe
+    const existing = await prisma.emailAutomation.findFirst({
+      where: { name: flowData.name }
     });
-    console.log(`✅ Fluxo criado/atualizado: ${created.name}`);
+
+    if (existing) {
+      // Atualizar
+      const updated = await prisma.emailAutomation.update({
+        where: { id: existing.id },
+        data: {
+          description: flowData.description,
+          flow: flowData.flow,
+          isActive: flowData.isActive,
+          isDraft: flowData.isDraft
+        }
+      });
+      console.log(`✅ Fluxo atualizado: ${updated.name}`);
+    } else {
+      // Criar
+      const created = await prisma.emailAutomation.create({
+        data: {
+          ...flowData,
+          createdBy: admin?.id || undefined
+        }
+      });
+      console.log(`✅ Fluxo criado: ${created.name}`);
+    }
   }
 
   console.log('\n🎉 Seed de fluxos concluído com sucesso!');

@@ -14,7 +14,10 @@ export async function GET(request: NextRequest) {
 
     const flows = await prisma.emailAutomation.findMany({
       where: {
-        createdBy: session.user.id
+        OR: [
+          { createdBy: session.user.id }, // Fluxos próprios (incluindo drafts)
+          { isDraft: false } // Templates públicos de outros usuários
+        ]
       },
       include: {
         logs: {

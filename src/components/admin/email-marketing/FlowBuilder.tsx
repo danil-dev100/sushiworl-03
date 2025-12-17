@@ -277,6 +277,36 @@ function FlowBuilderInner({
     [setNodes]
   );
 
+  // Carregar template de fluxo completo
+  const handleLoadFlowTemplate = useCallback(
+    (flowTemplate: any) => {
+      if (!flowTemplate.flow || !flowTemplate.flow.nodes) {
+        toast.error('Template inválido');
+        return;
+      }
+
+      // Confirmar se usuário quer substituir o fluxo atual
+      if (nodes.length > 0 || edges.length > 0) {
+        const confirmed = window.confirm(
+          'Isso irá substituir o fluxo atual. Deseja continuar?'
+        );
+        if (!confirmed) return;
+      }
+
+      // Carregar nós e edges do template
+      setNodes(flowTemplate.flow.nodes || []);
+      setEdges(flowTemplate.flow.edges || []);
+      setFlowName(flowTemplate.name);
+      setFlowDescription(flowTemplate.description || '');
+
+      // Ajustar visualização para mostrar todos os nós
+      setTimeout(() => {
+        reactFlowInstance.fitView({ padding: 0.2 });
+      }, 100);
+    },
+    [nodes.length, edges.length, setNodes, setEdges, reactFlowInstance]
+  );
+
   // Deletar nós selecionados
   const handleDeleteSelected = useCallback(() => {
     if (selectedNodes.length === 0) {
@@ -373,7 +403,7 @@ function FlowBuilderInner({
 
       {/* Editor */}
       <div className="flex-1 flex overflow-hidden">
-        <NodePalette onAddNode={handleAddNode} />
+        <NodePalette onAddNode={handleAddNode} onLoadFlowTemplate={handleLoadFlowTemplate} />
         <div ref={reactFlowWrapper} className="flex-1 relative">
           <ReactFlow
             nodes={nodes}

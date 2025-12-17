@@ -32,7 +32,11 @@ export async function GET(
     }
 
     // Verificar se o usuário tem permissão para ver este fluxo
-    if (flow.createdBy !== session.user.id) {
+    // Permite ver fluxos próprios OU fluxos públicos (não drafts) como templates
+    const isOwner = flow.createdBy === session.user.id;
+    const isPublicTemplate = !flow.isDraft;
+
+    if (!isOwner && !isPublicTemplate) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
     }
 

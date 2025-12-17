@@ -80,9 +80,16 @@ export default function EmailMarketingSettingsPage() {
       const response = await fetch('/api/email-marketing/settings');
       if (response.ok) {
         const data = await response.json();
-        setSettings({
+        const loadedSettings = {
           ...settings,
           ...data.settings,
+        };
+        setSettings(loadedSettings);
+
+        // Inicializar retention com os dados carregados
+        setRetention({
+          value: loadedSettings.emailRetentionDays,
+          unit: 'days'
         });
       } else {
         console.error('Erro ao carregar configurações');

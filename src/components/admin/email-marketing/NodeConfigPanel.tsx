@@ -91,57 +91,68 @@ export default function NodeConfigPanel({
     </div>
   );
 
-  const renderEmailConfig = () => (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="templateId">Template de Email</Label>
-        <Select
-          value={config.templateId || ''}
-          onValueChange={(value) => {
-            const template = templates.find(t => t.id === value);
-            setConfig({
-              ...config,
-              templateId: value,
-              templateName: template?.name,
-              subject: template?.subject
-            });
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione um template" />
-          </SelectTrigger>
-          <SelectContent>
-            {templates.map((template) => (
-              <SelectItem key={template.id} value={template.id}>
-                {template.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+  const renderEmailConfig = () => {
+    console.log('Rendering email config. Templates available:', templates.length);
+    console.log('Templates:', templates);
 
-      <div>
-        <Label htmlFor="subject">Assunto do Email</Label>
-        <Input
-          id="subject"
-          value={config.subject || ''}
-          onChange={(e) => setConfig({ ...config, subject: e.target.value })}
-          placeholder="Assunto personalizado (opcional)"
-        />
-      </div>
+    return (
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="templateId">Template de Email</Label>
+          <Select
+            value={config.templateId || ''}
+            onValueChange={(value) => {
+              const template = templates.find(t => t.id === value);
+              setConfig({
+                ...config,
+                templateId: value,
+                templateName: template?.name,
+                subject: template?.subject
+              });
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione um template" />
+            </SelectTrigger>
+            <SelectContent>
+              {templates.length === 0 ? (
+                <SelectItem value="no-templates" disabled>
+                  Nenhum template disponível
+                </SelectItem>
+              ) : (
+                templates.map((template) => (
+                  <SelectItem key={template.id} value={template.id}>
+                    {template.name}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div>
-        <Label htmlFor="customContent">Conteúdo Personalizado</Label>
-        <Textarea
-          id="customContent"
-          value={config.customContent || ''}
-          onChange={(e) => setConfig({ ...config, customContent: e.target.value })}
-          placeholder="Conteúdo adicional (opcional)"
-          rows={4}
-        />
+        <div>
+          <Label htmlFor="subject">Assunto do Email</Label>
+          <Input
+            id="subject"
+            value={config.subject || ''}
+            onChange={(e) => setConfig({ ...config, subject: e.target.value })}
+            placeholder="Assunto personalizado (opcional)"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="customContent">Conteúdo Personalizado</Label>
+          <Textarea
+            id="customContent"
+            value={config.customContent || ''}
+            onChange={(e) => setConfig({ ...config, customContent: e.target.value })}
+            placeholder="Conteúdo adicional (opcional)"
+            rows={4}
+          />
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderDelayConfig = () => (
     <div className="space-y-4">

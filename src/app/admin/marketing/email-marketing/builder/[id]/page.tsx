@@ -35,9 +35,16 @@ export default function FlowBuilderPage() {
 
       // Carregar templates
       const templatesResponse = await fetch('/api/email-marketing/templates');
+      console.log('Templates response status:', templatesResponse.status);
       if (templatesResponse.ok) {
         const templatesData = await templatesResponse.json();
+        console.log('Templates data:', templatesData);
+        console.log('Templates count:', templatesData.templates?.length || 0);
         setTemplates(templatesData.templates || []);
+      } else {
+        console.error('Erro ao carregar templates:', templatesResponse.status);
+        const errorData = await templatesResponse.text();
+        console.error('Error details:', errorData);
       }
 
     } catch (error) {

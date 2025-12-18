@@ -1,5 +1,6 @@
 'use client';
 
+// Página de configurações de email marketing - v2.0
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

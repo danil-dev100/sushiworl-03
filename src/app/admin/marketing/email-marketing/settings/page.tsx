@@ -196,21 +196,38 @@ export default function EmailMarketingSettingsPage() {
 
       if (response.ok) {
         const blob = await response.blob();
+
+        // Verificar se o blob tem conteúdo
+        if (blob.size === 0) {
+          toast.error('Nenhum contato encontrado para exportar');
+          return;
+        }
+
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `contatos-sushiworld-${new Date().toISOString().split('T')[0]}.csv`;
+        a.style.display = 'none';
         document.body.appendChild(a);
+
+        // Forçar o clique e aguardar um pouco antes de limpar
         a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+
+        // Aguardar 100ms antes de revogar o URL e remover o elemento
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        }, 100);
+
         toast.success('Lista de contatos baixada com sucesso!');
       } else {
-        toast.error('Erro ao baixar lista de contatos');
+        const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+        console.error('Erro na resposta:', errorData);
+        toast.error(errorData.error || 'Erro ao baixar lista de contatos');
       }
     } catch (error) {
       console.error('Erro ao baixar:', error);
-      toast.error('Erro ao baixar lista de contatos');
+      toast.error('Erro ao baixar lista de contatos. Verifique o console para detalhes.');
     } finally {
       setDownloading(false);
     }

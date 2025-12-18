@@ -192,44 +192,58 @@ export default function EmailMarketingSettingsPage() {
   const handleDownloadContacts = async () => {
     try {
       setDownloading(true);
+      console.log('[DOWNLOAD] Iniciando download de contatos...');
+
       const response = await fetch('/api/email-marketing/export-contacts');
+      console.log('[DOWNLOAD] Resposta recebida:', response.status, response.statusText);
 
       if (response.ok) {
         const blob = await response.blob();
+        console.log('[DOWNLOAD] Blob criado:', blob.size, 'bytes', blob.type);
 
         // Verificar se o blob tem conteúdo
         if (blob.size === 0) {
+          console.warn('[DOWNLOAD] Blob vazio - nenhum contato encontrado');
           toast.error('Nenhum contato encontrado para exportar');
           return;
         }
 
         const url = window.URL.createObjectURL(blob);
+        console.log('[DOWNLOAD] URL do blob criada:', url);
+
+        const fileName = `contatos-sushiworld-${new Date().toISOString().split('T')[0]}.csv`;
         const a = document.createElement('a');
         a.href = url;
-        a.download = `contatos-sushiworld-${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = fileName;
         a.style.display = 'none';
         document.body.appendChild(a);
 
+        console.log('[DOWNLOAD] Elemento <a> criado e anexado, iniciando download:', fileName);
+
         // Forçar o clique e aguardar um pouco antes de limpar
         a.click();
+
+        console.log('[DOWNLOAD] Click executado, aguardando limpeza...');
 
         // Aguardar 100ms antes de revogar o URL e remover o elemento
         setTimeout(() => {
           window.URL.revokeObjectURL(url);
           document.body.removeChild(a);
+          console.log('[DOWNLOAD] Limpeza concluída');
         }, 100);
 
         toast.success('Lista de contatos baixada com sucesso!');
       } else {
         const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-        console.error('Erro na resposta:', errorData);
+        console.error('[DOWNLOAD] Erro na resposta:', response.status, errorData);
         toast.error(errorData.error || 'Erro ao baixar lista de contatos');
       }
     } catch (error) {
-      console.error('Erro ao baixar:', error);
+      console.error('[DOWNLOAD] Exceção capturada:', error);
       toast.error('Erro ao baixar lista de contatos. Verifique o console para detalhes.');
     } finally {
       setDownloading(false);
+      console.log('[DOWNLOAD] Download finalizado');
     }
   };
 

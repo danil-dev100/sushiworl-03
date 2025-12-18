@@ -657,45 +657,50 @@ export default function EmailMarketingSettingsPage() {
             <CardContent className="space-y-6">
               {/* Configuração de período de retenção com múltiplas unidades */}
               <div className="space-y-4">
-                <Label htmlFor="retention">Período de Retenção</Label>
+                <Label htmlFor="retention-value">Período de Retenção</Label>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    id="retention"
-                    type="number"
-                    value={retention.value}
-                    onChange={(e) => {
-                      const newRetention = { ...retention, value: e.target.value };
-                      setRetention(newRetention);
-                      setSettings({
-                        ...settings,
-                        emailRetentionDays: convertUnitToDays(e.target.value, retention.unit)
-                      });
-                    }}
-                    min="1"
-                    max={retention.unit === 'years' ? '10' : retention.unit === 'months' ? '120' : '3650'}
-                  />
-                  <Select
-                    value={retention.unit}
-                    onValueChange={(value: 'days' | 'months' | 'years') => {
-                      const newRetention = {
-                        value: convertDaysToUnit(settings.emailRetentionDays, value),
-                        unit: value
-                      };
-                      setRetention(newRetention);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="days">Dias</SelectItem>
-                      <SelectItem value="months">Meses</SelectItem>
-                      <SelectItem value="years">Anos</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="space-y-2">
+                    <Input
+                      id="retention-value"
+                      type="number"
+                      value={retention.value}
+                      onChange={(e) => {
+                        const newRetention = { ...retention, value: e.target.value };
+                        setRetention(newRetention);
+                        setSettings({
+                          ...settings,
+                          emailRetentionDays: convertUnitToDays(e.target.value, retention.unit)
+                        });
+                      }}
+                      min="1"
+                      max={retention.unit === 'years' ? '10' : retention.unit === 'months' ? '120' : '3650'}
+                      placeholder="Digite o valor"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Select
+                      value={retention.unit}
+                      onValueChange={(value: 'days' | 'months' | 'years') => {
+                        const newRetention = {
+                          value: convertDaysToUnit(settings.emailRetentionDays, value),
+                          unit: value
+                        };
+                        setRetention(newRetention);
+                      }}
+                    >
+                      <SelectTrigger id="retention-unit">
+                        <SelectValue placeholder="Selecione a unidade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="days">Dias</SelectItem>
+                        <SelectItem value="months">Meses</SelectItem>
+                        <SelectItem value="years">Anos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500">
-                  Emails serão automaticamente deletados após este período ({settings.emailRetentionDays} dias)
+                  Emails serão automaticamente deletados após este período ({settings.emailRetentionDays} dias no total)
                 </p>
               </div>
 

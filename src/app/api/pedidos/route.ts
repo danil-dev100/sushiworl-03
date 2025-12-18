@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { sendOrderConfirmationEmail, Order } from "@/lib/email";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { triggerWebhooks, formatOrderPayload } from "@/lib/webhooks";
 
 const orderSchema = z.object({
   customerName: z.string().min(1, "Nome é obrigatório"),
@@ -102,6 +103,14 @@ export async function POST(request: Request) {
 
     if (!emailSent) {
       console.warn("Pedido criado, mas falha no envio do e-mail");
+    }
+
+    // Disparar webhooks para o evento order.created
+    try {
+      await triggerWebhooks('order.created', formatOrderPayload(order));
+    } catch (webhookError) {
+      console.error("Erro ao disparar webhooks:", webhookError);
+      // Não falhar a requisição se os webhooks falharem
     }
 
     return NextResponse.json({

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { EmailService } from '@/lib/email-service';
+import { triggerWebhooks, formatOrderPayload } from '@/lib/webhooks';
 
 export async function POST(
   req: NextRequest,
@@ -65,6 +66,11 @@ export async function POST(
     // Enviar e-mail de confirmação (não-bloqueante)
     sendConfirmationEmail(order).catch(error => {
       console.error('[Accept Order] Erro ao enviar e-mail:', error);
+    });
+
+    // Disparar webhooks para o evento order.confirmed
+    triggerWebhooks('order.confirmed', formatOrderPayload(updatedOrder)).catch(error => {
+      console.error('[Accept Order] Erro ao disparar webhooks:', error);
     });
 
     return NextResponse.json({

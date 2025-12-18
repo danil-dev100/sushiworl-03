@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { isRestaurantOpen } from '@/lib/restaurant-status';
+import { triggerWebhooks, formatOrderPayload } from '@/lib/webhooks';
 
 export async function POST(
   req: NextRequest,
@@ -69,6 +70,11 @@ export async function POST(
     });
 
     console.log(`[Reject Order] Pedido ${orderId} recusado. Motivo: ${rejectionReason}`);
+
+    // Disparar webhooks para o evento order.cancelled
+    triggerWebhooks('order.cancelled', formatOrderPayload(updatedOrder)).catch(error => {
+      console.error('[Reject Order] Erro ao disparar webhooks:', error);
+    });
 
     return NextResponse.json({
       success: true,

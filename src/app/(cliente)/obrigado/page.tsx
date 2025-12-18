@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, Clock, Package, Truck, XCircle } from 'lucide-react';
+import { trackEvent } from '@/lib/trackEvent';
 
 type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'DELIVERING' | 'DELIVERED' | 'CANCELLED';
 
@@ -63,6 +64,7 @@ const statusConfig = {
 function ObrigadoContent() {
   const searchParams = useSearchParams();
   const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [purchaseTracked, setPurchaseTracked] = useState(false);
 
   useEffect(() => {
     // Buscar dados do pedido do sessionStorage
@@ -70,6 +72,43 @@ function ObrigadoContent() {
     if (storedOrder) {
       const parsed = JSON.parse(storedOrder);
       setOrderData(parsed);
+
+      // DISPARAR EVENTO DE PURCHASE (apenas uma vez)
+      const purchaseKey = `purchase_tracked_${parsed.id}`;
+      const alreadyTracked = sessionStorage.getItem(purchaseKey);
+
+      if (parsed.id && !alreadyTracked && !purchaseTracked) {
+        console.log('[Obrigado] Disparando evento purchase:', parsed.id);
+
+        // Parsear itens se for string JSON
+        let items = [];
+        try {
+          if (typeof parsed.items === 'string') {
+            // Tentar extrair informações básicas da string
+            items = [{ name: parsed.items, quantity: 1, price: parsed.total }];
+          } else if (Array.isArray(parsed.items)) {
+            items = parsed.items;
+          }
+        } catch (error) {
+          console.error('[Obrigado] Erro ao parsear itens:', error);
+        }
+
+        // Disparar evento de purchase
+        trackEvent('purchase', {
+          orderId: parsed.id,
+          value: parsed.total,
+          currency: 'EUR',
+          items: items,
+        }).catch(error => {
+          console.error('[Obrigado] Erro ao disparar evento:', error);
+        });
+
+        // Marcar como rastreado
+        sessionStorage.setItem(purchaseKey, 'true');
+        setPurchaseTracked(true);
+
+        console.log('[Obrigado] Evento purchase disparado com sucesso');
+      }
 
       // Se temos ID do pedido, iniciar polling de status
       if (parsed.id) {
@@ -95,7 +134,7 @@ function ObrigadoContent() {
         return () => clearInterval(interval);
       }
     }
-  }, []);
+  }, [purchaseTracked]);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">

@@ -655,6 +655,7 @@ export default function EmailMarketingSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Configuração de período de retenção com múltiplas unidades */}
               <div className="space-y-4">
                 <Label htmlFor="retention">Período de Retenção</Label>
                 <div className="grid grid-cols-2 gap-4">

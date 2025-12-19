@@ -30,7 +30,9 @@ vercel --prod
 
 1. Acesse o painel do seu banco de dados (Vercel Postgres/Supabase/etc)
 
-2. Execute o SQL em [`migrations/add_priority_and_decision_log.sql`](migrations/add_priority_and_decision_log.sql):
+2. Execute o SQL em [`scripts/add_priority_and_decision_log.sql`](scripts/add_priority_and_decision_log.sql)
+
+3. Cole o seguinte SQL:
 
 ```sql
 -- Adicionar campo priority
@@ -46,7 +48,7 @@ CREATE INDEX IF NOT EXISTS "DeliveryArea_priority_idx"
 ON "DeliveryArea"("priority" DESC);
 ```
 
-3. Após executar o SQL, faça redeploy no Vercel:
+4. Após executar o SQL, faça redeploy no Vercel:
 
 ```bash
 git commit --allow-empty -m "chore: trigger redeploy após migration"

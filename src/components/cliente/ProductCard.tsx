@@ -7,6 +7,7 @@ import { sanitizeHtml } from '@/lib/security';
 import { useCart } from '@/contexts/CartContext';
 import { SimpleProductOptionsDialog } from './SimpleProductOptionsDialog';
 import { toast } from 'sonner';
+import { trackEvent } from '@/lib/trackEvent';
 
 interface ProductCardProps {
   productId: string;
@@ -89,6 +90,19 @@ export default function ProductCard({
           quantity: 1,
           image: imageUrl,
         });
+
+        // Track add_to_cart event
+        trackEvent('add_to_cart', {
+          value: priceNumber,
+          currency: 'EUR',
+          items: [{
+            id: productId,
+            name: name,
+            price: priceNumber,
+            quantity: 1,
+          }],
+        }).catch(err => console.error('[ProductCard] Erro ao disparar tracking:', err));
+
         toast.success(`${name} adicionado ao carrinho!`);
         return;
       }
@@ -106,6 +120,19 @@ export default function ProductCard({
           quantity: 1,
           image: imageUrl,
         });
+
+        // Track add_to_cart event
+        trackEvent('add_to_cart', {
+          value: priceNumber,
+          currency: 'EUR',
+          items: [{
+            id: productId,
+            name: name,
+            price: priceNumber,
+            quantity: 1,
+          }],
+        }).catch(err => console.error('[ProductCard] Erro ao disparar tracking:', err));
+
         toast.success(`${name} adicionado ao carrinho!`);
         return;
       }
@@ -176,6 +203,19 @@ export default function ProductCard({
         quantity: 1,
         image: imageUrl,
       });
+
+      // Track add_to_cart event
+      trackEvent('add_to_cart', {
+        value: priceNumber,
+        currency: 'EUR',
+        items: [{
+          id: productId,
+          name: name,
+          price: priceNumber,
+          quantity: 1,
+        }],
+      }).catch(err => console.error('[ProductCard] Erro ao disparar tracking:', err));
+
       toast.success(`${name} adicionado ao carrinho!`);
 
     } catch (error) {
@@ -189,6 +229,19 @@ export default function ProductCard({
         quantity: 1,
         image: imageUrl,
       });
+
+      // Track add_to_cart event even on error
+      trackEvent('add_to_cart', {
+        value: priceNumber,
+        currency: 'EUR',
+        items: [{
+          id: productId,
+          name: name,
+          price: priceNumber,
+          quantity: 1,
+        }],
+      }).catch(err => console.error('[ProductCard] Erro ao disparar tracking:', err));
+
       toast.error('Erro ao processar produto');
     } finally {
       setIsLoadingOptions(false);
@@ -229,6 +282,18 @@ export default function ProductCard({
       image: imageUrl,
       selectedOptions: withOptions ? selectedOptions : undefined,
     });
+
+    // Track add_to_cart event
+    trackEvent('add_to_cart', {
+      value: finalPrice,
+      currency: 'EUR',
+      items: [{
+        id: productId,
+        name: withOptions ? `${name} (${productOptions[0]?.name})` : name,
+        price: finalPrice,
+        quantity: 1,
+      }],
+    }).catch(err => console.error('[ProductCard] Erro ao disparar tracking:', err));
 
     toast.success(`${name} adicionado ao carrinho!`);
     console.log('[ProductCard] ✅ Item adicionado ao carrinho com sucesso');

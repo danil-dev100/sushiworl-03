@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
+import { trackEvent } from '@/lib/trackEvent';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -241,6 +242,25 @@ export default function CheckoutPage() {
   // Carregar localização do usuário ao montar o componente
   useEffect(() => {
     getUserLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Track begin_checkout event when page loads
+  useEffect(() => {
+    if (items.length > 0) {
+      console.log('[Checkout] Disparando evento begin_checkout');
+
+      trackEvent('begin_checkout', {
+        value: total,
+        currency: 'EUR',
+        items: items.map(item => ({
+          id: item.productId,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+      }).catch(err => console.error('[Checkout] Erro ao disparar tracking:', err));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

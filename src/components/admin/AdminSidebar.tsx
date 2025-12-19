@@ -13,7 +13,8 @@ import {
   TrendingUp,
   Webhook,
   Printer,
-  Mail
+  Mail,
+  Link2
 } from 'lucide-react';
 import { useOrderPolling } from '@/hooks/useOrderPolling';
 
@@ -57,6 +58,11 @@ const menuItems = [
     label: 'Pixels',
     icon: TrendingUp,
     href: '/admin/marketing/pixels',
+  },
+  {
+    label: 'UTM',
+    icon: Link2,
+    href: '/admin/marketing/utm',
   },
   {
     label: 'Entrega',

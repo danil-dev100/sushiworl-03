@@ -135,9 +135,14 @@ const geocodeCache = new Map<string, { result: GeocodeResult | null; timestamp: 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
 export type DeliveryAreaData = {
+  id?: string;
   name: string;
   polygon: number[][];
   searchContexts?: string[];
+  priority?: number; // Para resolver áreas sobrepostas
+  deliveryType?: 'FREE' | 'PAID';
+  deliveryFee?: number;
+  minOrderValue?: number | null;
 };
 
 export type GeocodeResult = {
@@ -145,6 +150,13 @@ export type GeocodeResult = {
   confidence: number; // 0 a 1
   displayName?: string;
   areaName?: string;
+  areaId?: string;
+  priority?: number;
+};
+
+export type MultipleGeocodeResults = {
+  results: GeocodeResult[];
+  needsUserConfirmation: boolean;
 };
 
 type NominatimResult = {
@@ -281,12 +293,15 @@ async function geocodeAddressGeneric(address: string): Promise<NominatimResult[]
 }
 
 /**
- * Encontra a melhor correspondência entre resultados e áreas ativas
+ * Encontra TODAS as correspondências entre resultados e áreas ativas
+ * Retorna múltiplos matches se endereço for ambíguo
  */
-function findBestMatch(
+function findAllMatches(
   results: NominatimResult[],
   areas: DeliveryAreaData[]
-): GeocodeResult | null {
+): GeocodeResult[] {
+  const matches: GeocodeResult[] = [];
+
   for (const result of results) {
     const coordinates: [number, number] = [parseFloat(result.lat), parseFloat(result.lon)];
 
@@ -296,17 +311,50 @@ function findBestMatch(
         console.log(`[Geocode]    Coordenadas: [${coordinates[0].toFixed(4)}, ${coordinates[1].toFixed(4)}]`);
         console.log(`[Geocode]    Display: ${result.display_name}`);
 
-        return {
+        matches.push({
           coordinates,
           confidence: Math.min(result.importance || 0.5, 1),
           displayName: result.display_name,
           areaName: area.name,
-        };
+          areaId: area.id,
+          priority: area.priority || 0,
+        });
       }
     }
   }
 
-  return null;
+  return matches;
+}
+
+/**
+ * Encontra a melhor correspondência entre resultados e áreas ativas
+ * Usa prioridade para resolver áreas sobrepostas
+ */
+function findBestMatch(
+  results: NominatimResult[],
+  areas: DeliveryAreaData[]
+): GeocodeResult | null {
+  const matches = findAllMatches(results, areas);
+
+  if (matches.length === 0) {
+    return null;
+  }
+
+  // Se houver múltiplos matches, usar prioridade
+  if (matches.length > 1) {
+    console.log(`[Geocode] ⚠️ Múltiplos matches encontrados (${matches.length}), usando prioridade`);
+
+    // Ordenar por prioridade (maior primeiro), depois por confidence
+    matches.sort((a, b) => {
+      const priorityDiff = (b.priority || 0) - (a.priority || 0);
+      if (priorityDiff !== 0) return priorityDiff;
+      return b.confidence - a.confidence;
+    });
+
+    console.log(`[Geocode] Área selecionada: ${matches[0].areaName} (prioridade: ${matches[0].priority})`);
+  }
+
+  return matches[0];
 }
 
 /**
@@ -408,5 +456,91 @@ export function clearGeocodeCache(): void {
 export function getGeocodeStats(): { cacheSize: number } {
   return {
     cacheSize: geocodeCache.size,
+  };
+}
+
+/**
+ * Geocodifica endereço e retorna TODOS os matches possíveis
+ * Usado quando queremos dar opções ao usuário em caso de ambiguidade
+ *
+ * @param address - Endereço completo do cliente
+ * @param areas - Áreas de entrega ativas com polígonos
+ * @returns Todos os matches encontrados e flag de confirmação necessária
+ */
+export async function geocodeAddressWithAllMatches(
+  address: string,
+  areas: DeliveryAreaData[]
+): Promise<MultipleGeocodeResults> {
+  if (!address || address.trim().length < 5) {
+    console.error('[Geocode] Endereço muito curto');
+    return { results: [], needsUserConfirmation: false };
+  }
+
+  if (areas.length === 0) {
+    console.error('[Geocode] Nenhuma área ativa fornecida');
+    return { results: [], needsUserConfirmation: false };
+  }
+
+  console.log(`[Geocode Multi] Iniciando busca para: "${address}"`);
+  console.log(`[Geocode Multi] ${areas.length} área(s) ativa(s)`);
+
+  const contexts = extractContextsFromAreas(areas);
+  let lastRequestTime = 0;
+  let allMatches: GeocodeResult[] = [];
+
+  // Tentar cada contexto
+  for (const context of contexts) {
+    const now = Date.now();
+    const timeSinceLastRequest = now - lastRequestTime;
+    if (timeSinceLastRequest < RATE_LIMIT_DELAY) {
+      const delay = RATE_LIMIT_DELAY - timeSinceLastRequest;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    const results = await geocodeWithContext(address, context);
+    lastRequestTime = Date.now();
+
+    if (results.length > 0) {
+      const matches = findAllMatches(results, areas);
+      allMatches.push(...matches);
+
+      // Se encontrou matches, pode parar (não precisa tentar outros contextos)
+      if (matches.length > 0) {
+        break;
+      }
+    }
+  }
+
+  // Fallback genérico se não encontrou nada
+  if (allMatches.length === 0) {
+    console.log('[Geocode Multi] Tentando fallback genérico...');
+    await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
+    const genericResults = await geocodeAddressGeneric(address);
+
+    if (genericResults.length > 0) {
+      allMatches = findAllMatches(genericResults, areas);
+    }
+  }
+
+  // Remover duplicatas (mesma área)
+  const uniqueMatches = allMatches.filter((match, index, self) =>
+    index === self.findIndex((m) => m.areaId === match.areaId)
+  );
+
+  // Verificar se múltiplos resultados apontam para áreas DIFERENTES
+  const uniqueAreas = new Set(uniqueMatches.map(m => m.areaId));
+  const needsConfirmation = uniqueAreas.size > 1;
+
+  if (needsConfirmation) {
+    console.log(`[Geocode Multi] ⚠️ ${uniqueAreas.size} áreas diferentes encontradas - confirmação necessária`);
+  } else if (uniqueMatches.length > 0) {
+    console.log(`[Geocode Multi] ✅ Match único encontrado em: ${uniqueMatches[0].areaName}`);
+  } else {
+    console.log('[Geocode Multi] ❌ Nenhum match encontrado');
+  }
+
+  return {
+    results: uniqueMatches,
+    needsUserConfirmation: needsConfirmation,
   };
 }

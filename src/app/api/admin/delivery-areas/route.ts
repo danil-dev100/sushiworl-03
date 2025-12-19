@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
       deliveryType,
       deliveryFee,
       minOrderValue,
+      priority,
       isActive,
     } = body;
 
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
         deliveryType: deliveryType || 'PAID',
         deliveryFee: deliveryFee || 0,
         minOrderValue: minOrderValue || null,
+        priority: priority !== undefined ? priority : 0,
         isActive: isActive !== undefined ? isActive : true,
         sortOrder: (maxOrder?.sortOrder || 0) + 1,
       },

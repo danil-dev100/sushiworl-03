@@ -28,6 +28,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       deliveryType,
       deliveryFee,
       minOrderValue,
+      priority,
       isActive,
     } = body;
 
@@ -40,6 +41,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         ...(deliveryType && { deliveryType }),
         ...(deliveryFee !== undefined && { deliveryFee }),
         ...(minOrderValue !== undefined && { minOrderValue }),
+        ...(priority !== undefined && { priority }),
         ...(isActive !== undefined && { isActive }),
       },
     });

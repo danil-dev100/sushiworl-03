@@ -230,6 +230,9 @@ model Order {
   deliveryAddress Json // {street, number, neighborhood, city, postalCode, coordinates}
   deliveryAreaId  String?
   deliveryFee     Float    @default(0)
+
+  // Log de decisão de entrega (auditoria)
+  deliveryDecisionLog Json? // {coordinates, displayName, confidence, method, matchedAreaName, priority, timestamp}
   
   // Valores
   subtotal        Float
@@ -329,6 +332,9 @@ model DeliveryArea {
   // Contextos de busca para geocodificação (cidades/concelhos)
   // TEMPORARIAMENTE DESABILITADO - Execute o script SQL em scripts/add-search-contexts-column.sql
   // searchContexts  String[] @default([]) // Melhora precisão da busca de endereços
+
+  // Prioridade para áreas sobrepostas (maior = maior prioridade)
+  priority        Int      @default(0)
 
   isActive        Boolean  @default(true)
   sortOrder       Int      @default(0)

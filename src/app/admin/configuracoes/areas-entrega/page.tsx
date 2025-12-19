@@ -17,6 +17,7 @@ type DeliveryAreaWithPolygon = {
   deliveryType: 'FREE' | 'PAID';
   deliveryFee: number;
   minOrderValue: number | null;
+  priority: number;
   isActive: boolean;
   sortOrder: number;
 };
@@ -44,6 +45,7 @@ export default async function AreasEntregaPage() {
     deliveryType: area.deliveryType as 'FREE' | 'PAID',
     deliveryFee: area.deliveryFee,
     minOrderValue: area.minOrderValue,
+    priority: area.priority,
     isActive: area.isActive,
     sortOrder: area.sortOrder,
   }));

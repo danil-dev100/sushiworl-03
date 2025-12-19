@@ -17,10 +17,13 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Check Area API] Validando endereço: "${address}"`);
 
-    // Buscar áreas de entrega ativas
+    // Buscar áreas de entrega ativas, ordenadas por prioridade
     const deliveryAreas = await prisma.deliveryArea.findMany({
       where: { isActive: true },
-      orderBy: { sortOrder: 'asc' },
+      orderBy: [
+        { priority: 'desc' }, // Maior prioridade primeiro
+        { sortOrder: 'asc' }  // Depois por ordem de exibição
+      ],
       select: {
         id: true,
         name: true,
@@ -28,6 +31,7 @@ export async function POST(request: NextRequest) {
         deliveryType: true,
         deliveryFee: true,
         minOrderValue: true,
+        priority: true,
       },
     });
 
@@ -44,9 +48,14 @@ export async function POST(request: NextRequest) {
 
     // Preparar dados das áreas para geocodificação
     const areasData: DeliveryAreaData[] = deliveryAreas.map(area => ({
+      id: area.id,
       name: area.name,
       polygon: area.polygon as number[][],
       searchContexts: [],
+      priority: area.priority,
+      deliveryType: area.deliveryType as 'FREE' | 'PAID',
+      deliveryFee: area.deliveryFee,
+      minOrderValue: area.minOrderValue,
     }));
 
     // Usar geocodificação inteligente com contexto
@@ -84,8 +93,9 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Check Area API] ✅ Entrega disponível em: ${matchedArea.name}`);
     console.log(`[Check Area API] Confiança: ${(geocodeResult.confidence * 100).toFixed(1)}%`);
+    console.log(`[Check Area API] Prioridade: ${matchedArea.priority}`);
 
-    // Retornar sucesso com dados da área
+    // Retornar sucesso com dados da área e log de decisão
     return NextResponse.json({
       delivers: true,
       message: `Entregamos em ${matchedArea.name}!`,
@@ -98,6 +108,18 @@ export async function POST(request: NextRequest) {
         deliveryType: matchedArea.deliveryType,
         deliveryFee: matchedArea.deliveryFee,
         minOrderValue: matchedArea.minOrderValue,
+        priority: matchedArea.priority,
+      },
+      // Log de decisão para auditoria
+      decisionLog: {
+        coordinates: geocodeResult.coordinates,
+        displayName: geocodeResult.displayName,
+        confidence: geocodeResult.confidence,
+        method: 'geocoding_with_context',
+        matchedAreaName: matchedArea.name,
+        matchedAreaId: matchedArea.id,
+        priority: matchedArea.priority,
+        timestamp: new Date().toISOString(),
       },
     });
 

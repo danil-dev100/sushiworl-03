@@ -33,34 +33,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar área de entrega
+    // Validar área de entrega com prioridade e logs
     const deliveryAreas = await prisma.deliveryArea.findMany({
       where: { isActive: true },
+      orderBy: [
+        { priority: 'desc' },
+        { sortOrder: 'asc' }
+      ],
     });
 
     let deliveryAreaId: string | null = null;
     let actualDeliveryFee = deliveryFee || 0;
+    let deliveryDecisionLog: any = null;
 
     // Se há áreas configuradas, validar o endereço
     if (deliveryAreas.length > 0) {
-      const coords = await geocodeAddress(address);
+      // Preparar dados das áreas
+      const areasData = deliveryAreas.map(area => ({
+        id: area.id,
+        name: area.name,
+        polygon: area.polygon as number[][],
+        priority: area.priority,
+        deliveryType: area.deliveryType as 'FREE' | 'PAID',
+        deliveryFee: area.deliveryFee,
+        minOrderValue: area.minOrderValue,
+      }));
 
-      if (!coords) {
+      // Usar geocodificação com contexto e prioridade
+      const { geocodeAddressWithContext } = await import('@/lib/geo-utils');
+      const geocodeResult = await geocodeAddressWithContext(address, areasData);
+
+      if (!geocodeResult) {
         return NextResponse.json(
           { error: 'Não foi possível validar o endereço de entrega. Por favor, verifique o endereço.' },
           { status: 400 }
         );
       }
 
-      // Verificar se está dentro de alguma área
-      let matchedArea = null;
-      for (const area of deliveryAreas) {
-        const polygon = area.polygon as number[][];
-        if (isPointInPolygon(coords, polygon)) {
-          matchedArea = area;
-          break;
-        }
-      }
+      // Encontrar área correspondente
+      const matchedArea = deliveryAreas.find(a => a.name === geocodeResult.areaName);
 
       if (!matchedArea) {
         return NextResponse.json(
@@ -84,6 +95,20 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+
+      // Criar log de decisão de entrega
+      deliveryDecisionLog = {
+        coordinates: geocodeResult.coordinates,
+        displayName: geocodeResult.displayName,
+        confidence: geocodeResult.confidence,
+        method: 'geocoding_with_context',
+        matchedAreaName: matchedArea.name,
+        matchedAreaId: matchedArea.id,
+        priority: matchedArea.priority,
+        timestamp: new Date().toISOString(),
+      };
+
+      console.log('[Orders API] Delivery decision log:', deliveryDecisionLog);
     }
 
     // Buscar configurações do restaurante para VAT
@@ -208,6 +233,7 @@ export async function POST(request: NextRequest) {
         total,
         deliveryFee: actualDeliveryFee,
         deliveryAreaId: deliveryAreaId,
+        deliveryDecisionLog: deliveryDecisionLog || Prisma.JsonNull,
         observations: observations || null,
         paymentMethod: paymentMethod || 'CASH',
         status: 'PENDING',

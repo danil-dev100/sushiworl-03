@@ -32,6 +32,7 @@ import {
 import { toast } from 'sonner';
 import { Plus, Edit, Trash2, Map, MapPin, DollarSign } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { AddressSimulator } from '@/components/admin/delivery/AddressSimulator';
 
 // Importação dinâmica do mapa para evitar SSR
 const DeliveryMap = dynamic(
@@ -47,6 +48,7 @@ type DeliveryArea = {
   deliveryType: 'FREE' | 'PAID';
   deliveryFee: number;
   minOrderValue: number | null;
+  priority: number;
   isActive: boolean;
   sortOrder: number;
 };
@@ -70,6 +72,7 @@ export function DeliveryAreasPageContent({
   const [restaurantLocation, setRestaurantLocation] = useState('');
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [showMapView, setShowMapView] = useState(false);
+  const [highlightedAreaId, setHighlightedAreaId] = useState<string | null>(null);
 
   useEffect(() => {
     setRestaurantLocation(restaurantAddress);
@@ -248,6 +251,21 @@ export function DeliveryAreasPageContent({
         </div>
       </section>
 
+      {/* Simulador de Endereço */}
+      <AddressSimulator
+        onAreaHighlight={(areaId) => {
+          setHighlightedAreaId(areaId);
+          if (areaId) {
+            const area = areas.find(a => a.id === areaId);
+            if (area) {
+              setSelectedArea(area);
+            }
+          } else {
+            setSelectedArea(null);
+          }
+        }}
+      />
+
       <div className="flex-1 grid grid-cols-1 gap-6 lg:grid-cols-10 overflow-hidden">
         {/* Lista de Áreas */}
         <div className="flex flex-col gap-4 lg:col-span-3 overflow-hidden">
@@ -423,6 +441,26 @@ export function DeliveryAreasPageContent({
                 />
               </div>
             )}
+            <div>
+              <Label htmlFor="priority">
+                Prioridade (para áreas sobrepostas)
+              </Label>
+              <Input
+                id="priority"
+                type="number"
+                value={editingArea.priority || 0}
+                onChange={(e) =>
+                  setEditingArea({
+                    ...editingArea,
+                    priority: parseInt(e.target.value) || 0,
+                  })
+                }
+                placeholder="0"
+              />
+              <p className="text-xs text-[#a16b45] mt-1">
+                Maior valor = maior prioridade. Use para resolver conflitos quando áreas se sobrepõem.
+              </p>
+            </div>
             {drawnPolygon && drawnPolygon.length >= 3 && (
               <div className="rounded-lg border border-green-200 bg-green-50 p-3">
                 <p className="text-sm text-green-800">

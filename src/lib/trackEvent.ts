@@ -217,6 +217,11 @@ async function sendToBackend(
         gclid: new URLSearchParams(window.location.search).get('gclid'),
         fbclid: new URLSearchParams(window.location.search).get('fbclid'),
         ttclid: new URLSearchParams(window.location.search).get('ttclid'),
+        utmSource: new URLSearchParams(window.location.search).get('utm_source'),
+        utmMedium: new URLSearchParams(window.location.search).get('utm_medium'),
+        utmCampaign: new URLSearchParams(window.location.search).get('utm_campaign'),
+        utmTerm: new URLSearchParams(window.location.search).get('utm_term'),
+        utmContent: new URLSearchParams(window.location.search).get('utm_content'),
       },
     };
 

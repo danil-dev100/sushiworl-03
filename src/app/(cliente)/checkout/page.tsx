@@ -8,6 +8,14 @@ import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/trackEvent';
 
+interface CheckoutAdditionalItem {
+  id: string;
+  name: string;
+  price: number;
+  isActive: boolean;
+  isRequired: boolean;
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, additionalItems, totalPrice, clearCart } = useCart();
@@ -16,6 +24,10 @@ export default function CheckoutPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Itens adicionais do checkout
+  const [checkoutItems, setCheckoutItems] = useState<CheckoutAdditionalItem[]>([]);
+  const [selectedCheckoutItems, setSelectedCheckoutItems] = useState<Set<string>>(new Set());
 
   // Cupom
   const [couponCode, setCouponCode] = useState('');
@@ -64,7 +76,12 @@ export default function CheckoutPage() {
   const taxaEntrega = 5.00;
   const desconto = appliedCoupon?.discountAmount || 0;
 
-  const total = Math.max(0, subtotal + taxaEntrega - desconto);
+  // Calcular total dos itens adicionais do checkout selecionados
+  const checkoutItemsTotal = checkoutItems
+    .filter(item => selectedCheckoutItems.has(item.id))
+    .reduce((sum, item) => sum + item.price, 0);
+
+  const total = Math.max(0, subtotal + taxaEntrega + checkoutItemsTotal - desconto);
 
   const troco = valorEntregue ? parseFloat(valorEntregue) - total : 0;
 
@@ -144,6 +161,19 @@ export default function CheckoutPage() {
     setAppliedCoupon(null);
     setCouponCode('');
     toast.success('Cupom removido');
+  };
+
+  // Alternar seleção de item adicional do checkout
+  const toggleCheckoutItem = (itemId: string) => {
+    setSelectedCheckoutItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
   };
 
   // Obter localização do usuário (GPS)
@@ -239,6 +269,35 @@ export default function CheckoutPage() {
     }
   };
 
+  // Buscar itens adicionais do checkout das configurações
+  useEffect(() => {
+    const fetchCheckoutItems = async () => {
+      try {
+        const response = await fetch('/api/admin/settings');
+        if (response.ok) {
+          const settings = await response.json();
+          const items: CheckoutAdditionalItem[] = settings.checkoutAdditionalItems || [];
+
+          // Filtrar apenas itens ativos
+          const activeItems = items.filter(item => item.isActive);
+          setCheckoutItems(activeItems);
+
+          // Pré-selecionar itens obrigatórios
+          const required = new Set(
+            activeItems
+              .filter(item => item.isRequired)
+              .map(item => item.id)
+          );
+          setSelectedCheckoutItems(required);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar itens do checkout:', error);
+      }
+    };
+
+    fetchCheckoutItems();
+  }, []);
+
   // Carregar localização do usuário ao montar o componente
   useEffect(() => {
     getUserLocation();
@@ -280,6 +339,17 @@ export default function CheckoutPage() {
       const addressParts = [formData.endereco, formData.codigoPostal].filter(Boolean);
       const fullAddress = addressParts.join(', ');
 
+      // Itens adicionais do checkout selecionados
+      const selectedCheckoutItemsData = checkoutItems
+        .filter(item => selectedCheckoutItems.has(item.id))
+        .map(item => ({ name: item.name, price: item.price }));
+
+      // Combinar itens do carrinho com itens do checkout
+      const allAdditionalItems = [
+        ...additionalItems.map(item => ({ name: item.name, price: item.price })),
+        ...selectedCheckoutItemsData,
+      ];
+
       const orderData = {
         customerName: formData.nome,
         customerSurname: formData.sobrenome,
@@ -301,7 +371,7 @@ export default function CheckoutPage() {
         discount: desconto,
         couponCode: appliedCoupon?.code || null,
         promotionId: appliedCoupon?.id || null,
-        additionalItems: additionalItems.map(item => ({ name: item.name, price: item.price })),
+        additionalItems: allAdditionalItems,
       };
 
       const response = await fetch('/api/orders', {
@@ -587,6 +657,49 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
+                  {/* Itens Adicionais do Checkout */}
+                  {checkoutItems.length > 0 && (
+                    <div className="flex flex-col">
+                      <h2 className="px-4 pb-3 pt-5 text-[22px] font-bold leading-tight tracking-[-0.015em] text-[#333333] dark:text-[#f5f1e9]">
+                        Itens Adicionais
+                      </h2>
+                      <div className="space-y-3 px-4 py-3">
+                        {checkoutItems.map((item) => (
+                          <label
+                            key={item.id}
+                            className={`flex items-center justify-between gap-4 rounded-lg border p-4 cursor-pointer transition-colors ${
+                              selectedCheckoutItems.has(item.id)
+                                ? 'border-[#FF6B00] bg-[#FF6B00]/5'
+                                : 'border-[#ead9cd] dark:border-[#5a4a3e] hover:border-[#FF6B00]/50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                checked={selectedCheckoutItems.has(item.id)}
+                                onChange={() => toggleCheckoutItem(item.id)}
+                                className="h-5 w-5 rounded border-[#ead9cd] dark:border-[#5a4a3e] text-[#FF6B00] focus:ring-[#FF6B00]"
+                              />
+                              <div>
+                                <p className="text-base font-medium text-[#333333] dark:text-[#f5f1e9]">
+                                  {item.name}
+                                  {item.isRequired && (
+                                    <span className="ml-2 text-xs font-normal text-[#a16b45]">
+                                      (Recomendado)
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-base font-bold text-[#FF6B00]">
+                              +€{item.price.toFixed(2)}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Detalhes do Pedido */}
                   <div className="flex flex-col">
                     <h2 className="px-4 pb-3 pt-5 text-[22px] font-bold leading-tight tracking-[-0.015em] text-[#333333] dark:text-[#f5f1e9]">
@@ -717,6 +830,12 @@ export default function CheckoutPage() {
                         <span>Taxa de Entrega</span>
                         <span>€{taxaEntrega.toFixed(2)}</span>
                       </div>
+                      {checkoutItemsTotal > 0 && (
+                        <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                          <span>Itens Adicionais</span>
+                          <span>€{checkoutItemsTotal.toFixed(2)}</span>
+                        </div>
+                      )}
                       {appliedCoupon && (
                         <div className="flex justify-between text-green-600 dark:text-green-400">
                           <span>Desconto ({appliedCoupon.code})</span>

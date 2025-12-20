@@ -60,6 +60,9 @@ export async function PUT(request: NextRequest) {
           printerType: body.printerType,
           printerName: body.printerName,
           paperSize: body.paperSize,
+          printSettings: body.printSettings,
+          additionalItems: body.additionalItems,
+          checkoutAdditionalItems: body.checkoutAdditionalItems,
         },
       });
     } else {
@@ -72,6 +75,8 @@ export async function PUT(request: NextRequest) {
     // Revalidar páginas que usam as configurações
     revalidatePath('/');
     revalidatePath('/cardapio');
+    revalidatePath('/carrinho');
+    revalidatePath('/checkout');
     revalidatePath('/admin/configuracoes/empresa');
 
     return NextResponse.json(updatedSettings);

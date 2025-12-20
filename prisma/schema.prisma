@@ -873,6 +873,13 @@ model Settings {
   popupEnabled  Boolean  @default(false)
   popupConfig   Json?    // {type, imageUrl, text, buttonText, buttonColor, link}
 
+  // Configurações de impressão
+  printSettings Json?    // {layout: [], footerMessage: ''}
+
+  // Itens adicionais
+  additionalItems         Json?    // Array de itens opcionais no carrinho
+  checkoutAdditionalItems Json?    // Array de itens opcionais no checkout
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

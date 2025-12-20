@@ -1,13 +1,26 @@
 # 🚨 HOTFIX - Aplicar Migration do Banco de Dados
 
-## ❌ Erro Atual
+## 📋 Migrations Disponíveis
+
+### 1. Priority e DeliveryDecisionLog (APLICADO ✅)
+
+**Causa:** O código está tentando acessar os campos `priority` e `deliveryDecisionLog` que ainda não existem no banco de dados.
+
+### 2. Checkout Additional Items (NOVO)
+
+**Script:** [`scripts/add_checkout_items.sql`](scripts/add_checkout_items.sql)
+
+**Campos adicionados:**
+- `printSettings` - Configurações de layout de impressão
+- `additionalItems` - Itens opcionais do carrinho
+- `checkoutAdditionalItems` - Itens opcionais do checkout
+
+## ❌ Erro Comum
 
 ```
 Application error: a server-side exception has occurred
 Digest: 905235614
 ```
-
-**Causa:** O código está tentando acessar os campos `priority` e `deliveryDecisionLog` que ainda não existem no banco de dados.
 
 ---
 

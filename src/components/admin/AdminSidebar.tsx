@@ -94,16 +94,18 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="flex w-24 flex-col items-center gap-10 border-r border-[#ead9cd] bg-white p-4 dark:border-[#4a3c30] dark:bg-[#2a1e14]">
+    <aside className="flex w-24 flex-col items-center border-r border-[#ead9cd] bg-white dark:border-[#4a3c30] dark:bg-[#2a1e14] h-screen overflow-y-auto">
       {/* Logo */}
-      <Link href="/admin/dashboard" className="relative h-12 w-12">
-        <div className="aspect-square w-12 rounded-full bg-cover bg-center bg-no-repeat"
-             style={{backgroundImage: 'url("/logo.webp/logo-nova-sushiworl-santa-iria-sem-fundo.webp")'}}>
-        </div>
-      </Link>
+      <div className="sticky top-0 bg-white dark:bg-[#2a1e14] pt-4 pb-4 z-10">
+        <Link href="/admin/dashboard" className="relative h-12 w-12 block">
+          <div className="aspect-square w-12 rounded-full bg-cover bg-center bg-no-repeat"
+               style={{backgroundImage: 'url("/logo.webp/logo-nova-sushiworl-santa-iria-sem-fundo.webp")'}}>
+          </div>
+        </Link>
+      </div>
 
       {/* Menu Items */}
-      <nav className="flex flex-col gap-6">
+      <nav className="flex flex-col gap-4 px-4 pb-6 w-full items-center">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);

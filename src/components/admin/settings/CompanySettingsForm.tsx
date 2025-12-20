@@ -10,6 +10,7 @@ interface AdditionalItem {
   name: string;
   price: number;
   isActive: boolean;
+  isRequired: boolean; // Se o item é obrigatório ou opcional
 }
 
 interface CompanySettingsFormProps {
@@ -54,7 +55,7 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
       footerMessage: 'Obrigado pela preferência!',
     },
     additionalItems: initialData.additionalItems || [
-      { id: '1', name: 'Saco para Envio', price: 0.50, isActive: true },
+      { id: '1', name: 'Saco para Envio', price: 0.50, isActive: true, isRequired: false },
     ],
     checkoutAdditionalItems: initialData.checkoutAdditionalItems || [],
   });
@@ -188,6 +189,7 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
       name: '',
       price: 0,
       isActive: true,
+      isRequired: false,
     };
     setFormData({
       ...formData,
@@ -218,6 +220,7 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
       name: '',
       price: 0,
       isActive: true,
+      isRequired: false,
     };
     setFormData({
       ...formData,
@@ -590,7 +593,7 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
                     onChange={(e) => updateAdditionalItem(item.id, 'isActive', e.target.checked)}
                     className="h-5 w-5 rounded border-[#ead9cd] text-[#FF6B00] focus:ring-[#FF6B00]"
                   />
-                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-medium text-[#a16b45] mb-1">
                         Nome do Item
@@ -616,6 +619,19 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
                         className="block w-full rounded-lg border-[#ead9cd] bg-white text-sm text-[#333333] focus:border-[#FF6B00] focus:ring-[#FF6B00] dark:border-[#4a3c30] dark:bg-[#2a1e14] dark:text-[#f5f1e9]"
                       />
                     </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[#a16b45] mb-1">
+                        Tipo
+                      </label>
+                      <select
+                        value={item.isRequired ? 'required' : 'optional'}
+                        onChange={(e) => updateAdditionalItem(item.id, 'isRequired', e.target.value === 'required')}
+                        className="block w-full rounded-lg border-[#ead9cd] bg-white text-sm text-[#333333] focus:border-[#FF6B00] focus:ring-[#FF6B00] dark:border-[#4a3c30] dark:bg-[#2a1e14] dark:text-[#f5f1e9]"
+                      >
+                        <option value="optional">Opcional</option>
+                        <option value="required">Obrigatório</option>
+                      </select>
+                    </div>
                   </div>
                   <button
                     type="button"
@@ -639,7 +655,11 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
 
             <div className="mt-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 p-4">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                <strong>Dica:</strong> Estes itens aparecerão como opções no carrinho para o cliente marcar antes de finalizar o pedido.
+                <strong>Dica:</strong> Estes itens aparecerão no carrinho para o cliente selecionar antes de finalizar o pedido.
+                <br />
+                <strong>Opcional:</strong> Cliente pode escolher se quer ou não adicionar.
+                <br />
+                <strong>Obrigatório:</strong> Item já vem marcado e o cliente precisa desmarcar se não quiser.
               </p>
             </div>
           </div>
@@ -671,7 +691,7 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
                     onChange={(e) => updateCheckoutItem(item.id, 'isActive', e.target.checked)}
                     className="h-5 w-5 rounded border-[#ead9cd] text-[#FF6B00] focus:ring-[#FF6B00]"
                   />
-                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-medium text-[#a16b45] mb-1">
                         Nome do Item
@@ -697,6 +717,19 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
                         className="block w-full rounded-lg border-[#ead9cd] bg-white text-sm text-[#333333] focus:border-[#FF6B00] focus:ring-[#FF6B00] dark:border-[#4a3c30] dark:bg-[#2a1e14] dark:text-[#f5f1e9]"
                       />
                     </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[#a16b45] mb-1">
+                        Tipo
+                      </label>
+                      <select
+                        value={item.isRequired ? 'required' : 'optional'}
+                        onChange={(e) => updateCheckoutItem(item.id, 'isRequired', e.target.value === 'required')}
+                        className="block w-full rounded-lg border-[#ead9cd] bg-white text-sm text-[#333333] focus:border-[#FF6B00] focus:ring-[#FF6B00] dark:border-[#4a3c30] dark:bg-[#2a1e14] dark:text-[#f5f1e9]"
+                      >
+                        <option value="optional">Opcional</option>
+                        <option value="required">Obrigatório</option>
+                      </select>
+                    </div>
                   </div>
                   <button
                     type="button"
@@ -721,6 +754,10 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
             <div className="mt-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 p-4">
               <p className="text-sm text-blue-800 dark:text-blue-200">
                 <strong>Dica:</strong> Estes itens aparecerão na página final de checkout, onde o cliente confirma o pedido e escolhe a forma de pagamento.
+                <br />
+                <strong>Opcional:</strong> Cliente pode escolher se quer ou não adicionar.
+                <br />
+                <strong>Obrigatório:</strong> Item já vem marcado e o cliente precisa desmarcar se não quiser.
               </p>
             </div>
           </div>

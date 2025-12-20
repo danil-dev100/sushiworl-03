@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React from 'react';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -132,10 +131,22 @@ export function AdminSidebar() {
       </nav>
 
       {/* Settings at bottom */}
-      <div className="mt-auto flex flex-col items-center gap-1.5 text-[#a16b45] hover:text-[#FF6B00] dark:text-[#a16b45]">
-        <Link href="/admin/configuracoes/empresa" className="flex flex-col items-center gap-1.5">
+      <div className="mt-auto">
+        <Link
+          href="/admin/configuracoes/empresa"
+          className={`flex flex-col items-center gap-1.5 transition-colors ${
+            isActive('/admin/configuracoes/empresa')
+              ? 'text-[#FF6B00]'
+              : 'text-[#a16b45] hover:text-[#FF6B00] dark:text-[#a16b45]'
+          }`}
+          title="Ajustes"
+        >
           <Settings className="h-7 w-7" />
-          <p className="text-xs font-medium leading-normal">Ajustes</p>
+          <p className={`text-xs leading-normal ${
+            isActive('/admin/configuracoes/empresa') ? 'font-bold' : 'font-medium'
+          }`}>
+            Ajustes
+          </p>
         </Link>
       </div>
     </aside>

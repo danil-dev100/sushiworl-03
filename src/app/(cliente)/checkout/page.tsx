@@ -830,12 +830,15 @@ export default function CheckoutPage() {
                         <span>Taxa de Entrega</span>
                         <span>€{taxaEntrega.toFixed(2)}</span>
                       </div>
-                      {checkoutItemsTotal > 0 && (
-                        <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
-                          <span>Itens Adicionais</span>
-                          <span>€{checkoutItemsTotal.toFixed(2)}</span>
-                        </div>
-                      )}
+                      {checkoutItems
+                        .filter(item => selectedCheckoutItems.has(item.id))
+                        .map((item) => (
+                          <div key={item.id} className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                            <span>{item.name}</span>
+                            <span>€{item.price.toFixed(2)}</span>
+                          </div>
+                        ))
+                      }
                       {appliedCoupon && (
                         <div className="flex justify-between text-green-600 dark:text-green-400">
                           <span>Desconto ({appliedCoupon.code})</span>

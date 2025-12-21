@@ -305,6 +305,7 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
               background: white;
               box-shadow: 0 4px 6px rgba(0,0,0,0.1);
               border: 1px solid #ddd;
+              padding: 8px;
             }
             /* Estilos do recibo */
             .print-receipt > div {
@@ -436,7 +437,7 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
             @media print {
               @page {
                 size: ${printerSettings.paperSize === '58mm' ? '58mm' : '80mm'} auto;
-                margin: 0;
+                margin: 8mm;
               }
               body {
                 background: white;
@@ -448,6 +449,7 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
                 border: none;
                 max-width: 100%;
                 width: 100%;
+                padding: 0;
               }
               * {
                 -webkit-print-color-adjust: exact !important;
@@ -972,16 +974,6 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
               <Printer className="w-4 h-4" />
               Imprimir Teste
             </Button>
-          </div>
-
-          {/* Info sobre dados reais */}
-          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <p className="text-xs text-blue-800 dark:text-blue-200">
-              ℹ️ <strong>Dados Reais:</strong> Este preview usa dados reais do último pedido registrado e informações da empresa configuradas em{' '}
-              <a href="/admin/configuracoes/empresa" className="underline hover:text-blue-600">
-                Configurações da Empresa
-              </a>
-            </p>
           </div>
 
           <div className="flex justify-center">

@@ -336,6 +336,7 @@ function getPrintStyles(paperSize: string): string {
       background: white;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       border: 1px solid #ddd;
+      padding: 8px;
     }
     .print-receipt > div {
       padding: 0;
@@ -463,7 +464,7 @@ function getPrintStyles(paperSize: string): string {
     @media print {
       @page {
         size: ${paperSize === '58mm' ? '58mm' : '80mm'} auto;
-        margin: 0;
+        margin: 8mm;
       }
       body {
         background: white;
@@ -475,6 +476,7 @@ function getPrintStyles(paperSize: string): string {
         border: none;
         max-width: 100%;
         width: 100%;
+        padding: 0;
       }
       * {
         -webkit-print-color-adjust: exact !important;

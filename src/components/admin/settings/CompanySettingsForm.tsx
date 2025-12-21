@@ -27,6 +27,7 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
     address: initialData.address || '',
     phone: initialData.phone || '',
     email: initialData.email || '',
+    websiteUrl: initialData.websiteUrl || '',
     vatRate: initialData.vatRate || 13,
     vatType: initialData.vatType || 'INCLUSIVE',
     openingHours: initialData.openingHours || {},
@@ -214,6 +215,23 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
                 }
                 className="mt-1 block w-full rounded-lg border-[#ead9cd] bg-[#f5f1e9] text-sm text-[#333333] focus:border-[#FF6B00] focus:ring-[#FF6B00] dark:border-[#4a3c30] dark:bg-[#23170f] dark:text-[#f5f1e9]"
               />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
+                URL do Site
+              </label>
+              <input
+                type="url"
+                value={formData.websiteUrl}
+                onChange={(e) =>
+                  setFormData({ ...formData, websiteUrl: e.target.value })
+                }
+                placeholder="https://seurestaurante.com"
+                className="mt-1 block w-full rounded-lg border-[#ead9cd] bg-[#f5f1e9] text-sm text-[#333333] focus:border-[#FF6B00] focus:ring-[#FF6B00] dark:border-[#4a3c30] dark:bg-[#23170f] dark:text-[#f5f1e9]"
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Este URL será exibido no rodapé do recibo de impressão
+              </p>
             </div>
           </div>
         </details>

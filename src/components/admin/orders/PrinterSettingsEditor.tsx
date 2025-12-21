@@ -51,41 +51,6 @@ const defaultConfig: OrderReceiptConfig = {
   },
 };
 
-// Mock data para preview - será substituído por dados reais
-const mockOrder = {
-  id: '123',
-  orderNumber: '1117774633',
-  paymentMethod: 'Cartão na entrega',
-  asapTime: 60,
-  estimatedDriveTime: 13,
-  trafficInfo: 'Tivemos em consideração o estado do tráfego real em 22 de novembro às 22:18',
-  deliveryDistance: 'Norte 9,9 km',
-  deliveryAddress: 'Rua Das Camélias 21-1 Direito, 2695-538, São joão da talha',
-  placedAt: new Date().toISOString(),
-  acceptedAt: new Date().toISOString(),
-  completedAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-  customer: {
-    firstName: 'João',
-    lastName: 'Silva',
-    email: 'cliente@exemplo.com',
-    phone: '+351 910 000 000',
-  },
-  specialInstructions: 'Ligar quando chegar, não tocar a campainha por favor',
-  items: [
-    {
-      quantity: 1,
-      name: 'Combo 1',
-      variant: 'Cola 1/1 - Oferta: Cola 1/l',
-      notes: 'Sem picante.',
-      price: 29.50,
-    },
-  ],
-  subtotal: 29.50,
-  deliveryFee: 4.00,
-  bagFee: 0.50,
-  total: 34.00,
-};
-
 export default function PrinterSettingsEditor({ initialConfig, onSave }: PrinterSettingsEditorProps) {
   const [config, setConfig] = useState<OrderReceiptConfig>(initialConfig || defaultConfig);
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
@@ -101,6 +66,10 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
     printerName: '',
     paperSize: '80mm',
   });
+  const [orderData, setOrderData] = useState<any>(null);
+  const [isLoadingOrder, setIsLoadingOrder] = useState(true);
+  const [printerPort, setPrinterPort] = useState<any>(null);
+  const [isPrinterConnected, setIsPrinterConnected] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   // Buscar dados reais da empresa e configurações de impressão
@@ -110,10 +79,10 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
       .then((res) => res.json())
       .then((data) => {
         setCompanyInfo({
-          name: data.companyName,
-          address: data.companyAddress,
-          phone: data.companyPhone,
-          websiteUrl: data.websiteUrl,
+          name: data.companyName || 'Seu Restaurante',
+          address: data.companyAddress || 'Rua Exemplo, 123, Lisboa',
+          phone: data.companyPhone || '+351 000 000 000',
+          websiteUrl: data.websiteUrl || 'seusite.com',
         });
       })
       .catch((error) => {
@@ -156,7 +125,147 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
       .catch((error) => {
         console.error('Erro ao buscar configurações da impressora:', error);
       });
+
+    // Buscar pedido mais recente para usar como preview
+    fetch('/api/admin/orders/list?status=all')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.orders && data.orders.length > 0) {
+          const latestOrder = data.orders[0];
+
+          // Processar dados do pedido para o formato esperado
+          const processedOrder = {
+            id: latestOrder.id,
+            orderNumber: latestOrder.orderNumber.toString(),
+            paymentMethod: latestOrder.paymentMethod === 'CASH' ? 'Dinheiro' : 'Cartão na entrega',
+            asapTime: 60, // Tempo padrão ASAP
+            estimatedDriveTime: 13, // Tempo estimado
+            trafficInfo: `Pedido realizado em ${new Date(latestOrder.createdAt).toLocaleString('pt-PT')}`,
+            deliveryDistance: latestOrder.deliveryArea?.name || 'A calcular',
+            deliveryAddress: typeof latestOrder.deliveryAddress === 'string'
+              ? latestOrder.deliveryAddress
+              : `${latestOrder.deliveryAddress?.street || ''}, ${latestOrder.deliveryAddress?.city || ''}`,
+            placedAt: latestOrder.createdAt,
+            acceptedAt: latestOrder.acceptedAt || latestOrder.createdAt,
+            completedAt: latestOrder.completedAt || new Date().toISOString(),
+            customer: {
+              firstName: latestOrder.customerName.split(' ')[0] || latestOrder.customerName,
+              lastName: latestOrder.customerName.split(' ').slice(1).join(' ') || '',
+              email: latestOrder.customerEmail,
+              phone: latestOrder.customerPhone,
+            },
+            specialInstructions: latestOrder.observations || '',
+            items: (latestOrder.orderItems || []).map((item: any) => ({
+              quantity: item.quantity,
+              name: item.name,
+              variant: item.selectedOptions ? JSON.stringify(item.selectedOptions) : '',
+              notes: '',
+              price: item.priceAtTime,
+            })),
+            subtotal: latestOrder.subtotal,
+            deliveryFee: latestOrder.deliveryFee || 0,
+            bagFee: 0.50,
+            total: latestOrder.total,
+          };
+
+          setOrderData(processedOrder);
+        } else {
+          // Se não houver pedidos, usar dados de exemplo
+          setOrderData({
+            id: '123',
+            orderNumber: '0000000',
+            paymentMethod: 'Dinheiro',
+            asapTime: 60,
+            estimatedDriveTime: 13,
+            trafficInfo: 'Sem pedidos no sistema',
+            deliveryDistance: 'A calcular',
+            deliveryAddress: 'Aguardando primeiro pedido',
+            placedAt: new Date().toISOString(),
+            acceptedAt: new Date().toISOString(),
+            completedAt: new Date().toISOString(),
+            customer: {
+              firstName: 'Cliente',
+              lastName: 'Exemplo',
+              email: 'exemplo@email.com',
+              phone: '+351 000 000 000',
+            },
+            specialInstructions: 'Nenhum pedido registrado ainda',
+            items: [
+              {
+                quantity: 1,
+                name: 'Item de Exemplo',
+                variant: '',
+                notes: '',
+                price: 10.00,
+              },
+            ],
+            subtotal: 10.00,
+            deliveryFee: 2.00,
+            bagFee: 0.50,
+            total: 12.50,
+          });
+        }
+        setIsLoadingOrder(false);
+      })
+      .catch((error) => {
+        console.error('Erro ao buscar pedidos:', error);
+        setIsLoadingOrder(false);
+      });
   }, [initialConfig]);
+
+  // Função para conectar à impressora
+  const handleConnectPrinter = async () => {
+    if (!printerSettings.printerType || !printerSettings.printerName) {
+      toast.error('Preencha o tipo de conexão e nome da impressora primeiro');
+      return;
+    }
+
+    try {
+      if (printerSettings.printerType === 'USB') {
+        // Verificar se Web Serial API está disponível
+        if (!('serial' in navigator)) {
+          toast.error('Seu navegador não suporta Web Serial API. Use Chrome, Edge ou Opera.');
+          return;
+        }
+
+        // Solicitar porta serial
+        const port = await (navigator as any).serial.requestPort();
+        await port.open({ baudRate: 9600 });
+
+        setPrinterPort(port);
+        setIsPrinterConnected(true);
+        toast.success(`Impressora ${printerSettings.printerName} conectada via USB!`);
+      } else if (printerSettings.printerType === 'BLUETOOTH') {
+        // Verificar se Web Bluetooth API está disponível
+        if (!('bluetooth' in navigator)) {
+          toast.error('Seu navegador não suporta Web Bluetooth API. Use Chrome, Edge ou Opera.');
+          return;
+        }
+
+        // Solicitar dispositivo Bluetooth
+        const device = await (navigator as any).bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['battery_service'],
+        });
+
+        const server = await device.gatt.connect();
+
+        setPrinterPort(server);
+        setIsPrinterConnected(true);
+        toast.success(`Impressora ${printerSettings.printerName} conectada via Bluetooth!`);
+      }
+    } catch (error: any) {
+      console.error('Erro ao conectar impressora:', error);
+
+      if (error.name === 'NotFoundError') {
+        toast.error('Nenhuma impressora selecionada');
+      } else if (error.name === 'NotAllowedError') {
+        toast.error('Permissão negada para acessar a impressora');
+      } else {
+        toast.error(`Erro ao conectar impressora: ${error.message}`);
+      }
+    }
+  };
 
   // Função de impressão
   const handlePrint = () => {
@@ -475,18 +584,13 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
                 Configurações da Impressora
               </h3>
               <Button
-                variant="outline"
+                variant={isPrinterConnected ? "default" : "outline"}
                 size="sm"
-                onClick={() => {
-                  if (printerSettings.printerType && printerSettings.printerName) {
-                    toast.success(`Impressora ${printerSettings.printerName} conectada via ${printerSettings.printerType}!`);
-                  } else {
-                    toast.error('Preencha o tipo de conexão e nome da impressora primeiro');
-                  }
-                }}
+                onClick={handleConnectPrinter}
+                className={isPrinterConnected ? "bg-green-600 hover:bg-green-700" : ""}
               >
                 <Printer className="w-4 h-4 mr-2" />
-                Conectar Impressora
+                {isPrinterConnected ? 'Impressora Conectada' : 'Conectar Impressora'}
               </Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -873,7 +977,7 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
           {/* Info sobre dados reais */}
           <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <p className="text-xs text-blue-800 dark:text-blue-200">
-              ℹ️ <strong>Dados da empresa:</strong> Este preview usa as informações reais do seu restaurante configuradas em{' '}
+              ℹ️ <strong>Dados Reais:</strong> Este preview usa dados reais do último pedido registrado e informações da empresa configuradas em{' '}
               <a href="/admin/configuracoes/empresa" className="underline hover:text-blue-600">
                 Configurações da Empresa
               </a>
@@ -881,9 +985,22 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
           </div>
 
           <div className="flex justify-center">
-            <div ref={printRef}>
-              <OrderReceiptPreview order={mockOrder} companyInfo={companyInfo} config={config} />
-            </div>
+            {isLoadingOrder ? (
+              <div className="flex items-center justify-center p-8">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00] mx-auto mb-2"></div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Carregando dados do pedido...</p>
+                </div>
+              </div>
+            ) : orderData ? (
+              <div ref={printRef}>
+                <OrderReceiptPreview order={orderData} companyInfo={companyInfo} config={config} />
+              </div>
+            ) : (
+              <div className="text-center p-8 text-gray-500">
+                <p>Nenhum pedido disponível para preview</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

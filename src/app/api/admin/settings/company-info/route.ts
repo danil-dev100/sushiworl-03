@@ -3,15 +3,15 @@ import { prisma } from '@/lib/db';
 
 export async function GET() {
   try {
-    // Buscar configurações da empresa
-    const settings = await prisma.companySettings.findFirst().catch(() => null);
+    // Buscar configurações da empresa da tabela Settings
+    const settings = await prisma.settings.findFirst().catch(() => null);
 
     if (settings) {
       return NextResponse.json({
         companyName: settings.companyName || 'Seu Restaurante',
-        companyAddress: settings.companyAddress || 'Endereço da sua empresa',
-        companyPhone: settings.companyPhone || '+351 000 000 000',
-        companyEmail: settings.companyEmail || 'contato@empresa.com',
+        companyAddress: settings.address || 'Endereço da sua empresa',
+        companyPhone: settings.phone || '+351 000 000 000',
+        companyEmail: settings.email || 'contato@empresa.com',
         websiteUrl: settings.websiteUrl || 'seusite.com',
       });
     }

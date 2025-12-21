@@ -849,6 +849,7 @@ model Settings {
   address       String?
   phone         String?
   email         String?
+  websiteUrl    String?
 
   // Horários de atendimento
   openingHours  Json?   // {monday: {open: "11:00", close: "23:00", closed: false}, ...}

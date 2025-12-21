@@ -54,6 +54,7 @@ export async function PUT(request: NextRequest) {
           address: body.address,
           phone: body.phone,
           email: body.email,
+          websiteUrl: body.websiteUrl,
           vatRate: body.vatRate,
           vatType: body.vatType,
           openingHours: body.openingHours,

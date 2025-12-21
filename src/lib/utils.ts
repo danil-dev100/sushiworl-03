@@ -166,6 +166,7 @@ export function delay(ms: number): Promise<void> {
 
 /**
  * Verifica se está no horário de atendimento
+ * Suporta 2 períodos: almoço e jantar
  */
 export function isOpenNow(openingHours: any): boolean {
   if (!openingHours) return true;
@@ -177,30 +178,59 @@ export function isOpenNow(openingHours: any): boolean {
   const todayHours = openingHours[dayOfWeek];
   if (!todayHours || todayHours.closed) return false;
 
-  const [openHour, openMinute] = todayHours.open.split(':').map(Number);
-  const [closeHour, closeMinute] = todayHours.close.split(':').map(Number);
+  // Verificar período de almoço
+  if (todayHours.lunchOpen && todayHours.lunchClose) {
+    const [lunchOpenHour, lunchOpenMinute] = todayHours.lunchOpen.split(':').map(Number);
+    const [lunchCloseHour, lunchCloseMinute] = todayHours.lunchClose.split(':').map(Number);
+    const lunchOpenTime = lunchOpenHour * 60 + lunchOpenMinute;
+    const lunchCloseTime = lunchCloseHour * 60 + lunchCloseMinute;
 
-  const openTime = openHour * 60 + openMinute;
-  const closeTime = closeHour * 60 + closeMinute;
+    if (currentTime >= lunchOpenTime && currentTime <= lunchCloseTime) {
+      return true;
+    }
+  }
 
-  return currentTime >= openTime && currentTime <= closeTime;
+  // Verificar período de jantar
+  if (todayHours.dinnerOpen && todayHours.dinnerClose) {
+    const [dinnerOpenHour, dinnerOpenMinute] = todayHours.dinnerOpen.split(':').map(Number);
+    const [dinnerCloseHour, dinnerCloseMinute] = todayHours.dinnerClose.split(':').map(Number);
+    const dinnerOpenTime = dinnerOpenHour * 60 + dinnerOpenMinute;
+    const dinnerCloseTime = dinnerCloseHour * 60 + dinnerCloseMinute;
+
+    if (currentTime >= dinnerOpenTime && currentTime <= dinnerCloseTime) {
+      return true;
+    }
+  }
+
+  // Suporte retrocompatível para formato antigo
+  if (todayHours.open && todayHours.close) {
+    const [openHour, openMinute] = todayHours.open.split(':').map(Number);
+    const [closeHour, closeMinute] = todayHours.close.split(':').map(Number);
+    const openTime = openHour * 60 + openMinute;
+    const closeTime = closeHour * 60 + closeMinute;
+
+    return currentTime >= openTime && currentTime <= closeTime;
+  }
+
+  return false;
 }
 
 /**
  * Obtém próximo horário de abertura
+ * Suporta 2 períodos: almoço e jantar
  */
 export function getNextOpeningTime(openingHours: any): string | null {
   if (!openingHours) return null;
 
   const now = new Date();
   const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  
+
   // Procurar nos próximos 7 dias
   for (let i = 1; i <= 7; i++) {
     const checkDate = new Date(now);
     checkDate.setDate(checkDate.getDate() + i);
     const dayOfWeek = weekdays[checkDate.getDay()];
-    
+
     const dayHours = openingHours[dayOfWeek];
     if (dayHours && !dayHours.closed) {
       const dayName = {
@@ -212,8 +242,11 @@ export function getNextOpeningTime(openingHours: any): string | null {
         friday: 'Sexta-feira',
         saturday: 'Sábado',
       }[dayOfWeek];
-      
-      return `${dayName} às ${dayHours.open}`;
+
+      // Priorizar horário de almoço, se existir
+      const openTime = dayHours.lunchOpen || dayHours.dinnerOpen || dayHours.open;
+
+      return `${dayName} às ${openTime}`;
     }
   }
 

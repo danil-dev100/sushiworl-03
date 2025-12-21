@@ -62,6 +62,7 @@ export async function isRestaurantOpen(): Promise<{
 
 /**
  * Verifica se está dentro do horário de funcionamento
+ * Suporta 2 períodos: almoço (lunchOpen-lunchClose) e jantar (dinnerOpen-dinnerClose)
  */
 function checkOpeningHours(openingHours: any): boolean {
   if (!openingHours || typeof openingHours !== 'object') {
@@ -84,29 +85,48 @@ function checkOpeningHours(openingHours: any): boolean {
     return false; // Explicitamente fechado
   }
 
-  if (!dayConfig.open || !dayConfig.close) {
-    return true; // Sem horários definidos, considera aberto
-  }
-
   // Converter horário atual para minutos desde meia-noite
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-  // Converter horários de abertura/fechamento para minutos
-  const openMinutes = timeToMinutes(dayConfig.open);
-  const closeMinutes = timeToMinutes(dayConfig.close);
+  // Verificar período de almoço
+  if (dayConfig.lunchOpen && dayConfig.lunchClose) {
+    const lunchOpenMin = timeToMinutes(dayConfig.lunchOpen);
+    const lunchCloseMin = timeToMinutes(dayConfig.lunchClose);
 
-  if (openMinutes === null || closeMinutes === null) {
-    return true; // Erro ao parsear, considera aberto
+    if (lunchOpenMin !== null && lunchCloseMin !== null) {
+      if (currentMinutes >= lunchOpenMin && currentMinutes < lunchCloseMin) {
+        return true; // Dentro do horário de almoço
+      }
+    }
   }
 
-  // Verificar se está dentro do horário
-  if (closeMinutes > openMinutes) {
-    // Horário normal (ex: 11:00 - 23:00)
-    return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
-  } else {
-    // Horário que cruza meia-noite (ex: 22:00 - 02:00)
-    return currentMinutes >= openMinutes || currentMinutes < closeMinutes;
+  // Verificar período de jantar
+  if (dayConfig.dinnerOpen && dayConfig.dinnerClose) {
+    const dinnerOpenMin = timeToMinutes(dayConfig.dinnerOpen);
+    const dinnerCloseMin = timeToMinutes(dayConfig.dinnerClose);
+
+    if (dinnerOpenMin !== null && dinnerCloseMin !== null) {
+      if (currentMinutes >= dinnerOpenMin && currentMinutes < dinnerCloseMin) {
+        return true; // Dentro do horário de jantar
+      }
+    }
   }
+
+  // Suporte retrocompatível para formato antigo (open/close)
+  if (dayConfig.open && dayConfig.close) {
+    const openMinutes = timeToMinutes(dayConfig.open);
+    const closeMinutes = timeToMinutes(dayConfig.close);
+
+    if (openMinutes !== null && closeMinutes !== null) {
+      if (closeMinutes > openMinutes) {
+        return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+      } else {
+        return currentMinutes >= openMinutes || currentMinutes < closeMinutes;
+      }
+    }
+  }
+
+  return false; // Fora de qualquer horário configurado
 }
 
 /**

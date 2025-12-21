@@ -167,6 +167,22 @@ function renderSection(sectionId: string, order: any, company: any, fields: any)
       `;
 
     case 'delivery-info':
+      // Gerar QR Code SVG se necessário
+      let qrCodeSvg = '';
+      if (fields.showQRCode) {
+        const qrUrl = `${company.websiteUrl}/pedido/${order.id}`;
+        // Usar API do Google Charts para gerar QR Code
+        qrCodeSvg = `
+          <div class="flex justify-center mt-3">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrUrl)}"
+                 alt="QR Code"
+                 width="120"
+                 height="120"
+                 style="display: block; margin: 0 auto;" />
+          </div>
+        `;
+      }
+
       return `
         <div class="border-b border-gray-200">
           <div class="bg-[#2a2a2a] text-white px-4 py-2 flex justify-between items-center">
@@ -175,6 +191,7 @@ function renderSection(sectionId: string, order: any, company: any, fields: any)
           </div>
           <div class="px-4 py-3">
             <p class="text-sm text-gray-700">${order.deliveryAddress}</p>
+            ${qrCodeSvg}
           </div>
         </div>
       `;

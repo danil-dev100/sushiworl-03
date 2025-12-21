@@ -67,7 +67,9 @@ model Product {
   isVisible       Boolean  @default(true)
   isFeatured      Boolean  @default(false) // Para "Destaques"
   isTopSeller     Boolean  @default(false) // Para "Mais Vendidos"
-  
+  featuredOrder   Int?     // Ordem em Destaques (1, 2 ou 3)
+  bestSellerOrder Int?     // Ordem em Mais Vendidos (1, 2 ou 3)
+
   // Disponibilidade
   availableUntil  DateTime? // Data específica de disponibilidade
   outOfStock      Boolean  @default(false)

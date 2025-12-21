@@ -18,6 +18,51 @@ export async function PUT(
     const body = await request.json();
     const { id } = await params;
 
+    // Validação dos campos de ordem (1, 2 ou 3)
+    if (body.featuredOrder !== undefined && body.featuredOrder !== null) {
+      if (![1, 2, 3].includes(body.featuredOrder)) {
+        return NextResponse.json(
+          { error: 'featuredOrder deve ser 1, 2, 3 ou null' },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (body.bestSellerOrder !== undefined && body.bestSellerOrder !== null) {
+      if (![1, 2, 3].includes(body.bestSellerOrder)) {
+        return NextResponse.json(
+          { error: 'bestSellerOrder deve ser 1, 2, 3 ou null' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Resolução de conflitos: se um produto receber uma posição ocupada,
+    // o produto atual dessa posição deve ter sua posição zerada
+    if (body.featuredOrder !== undefined && body.featuredOrder !== null) {
+      await prisma.product.updateMany({
+        where: {
+          featuredOrder: body.featuredOrder,
+          id: { not: id },
+        },
+        data: {
+          featuredOrder: null,
+        },
+      });
+    }
+
+    if (body.bestSellerOrder !== undefined && body.bestSellerOrder !== null) {
+      await prisma.product.updateMany({
+        where: {
+          bestSellerOrder: body.bestSellerOrder,
+          id: { not: id },
+        },
+        data: {
+          bestSellerOrder: null,
+        },
+      });
+    }
+
     const product = await prisma.product.update({
       where: { id },
       data: {
@@ -33,6 +78,8 @@ export async function PUT(
         isVisible: body.isVisible,
         isFeatured: body.isFeatured,
         isTopSeller: body.isTopSeller,
+        featuredOrder: body.featuredOrder !== undefined ? body.featuredOrder : undefined,
+        bestSellerOrder: body.bestSellerOrder !== undefined ? body.bestSellerOrder : undefined,
         outOfStock: body.outOfStock,
         availableUntil: body.availableUntil ? new Date(body.availableUntil) : null,
         isHot: body.isHot,

@@ -45,6 +45,49 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'SKU ja existe' }, { status: 400 });
     }
 
+    // Validação dos campos de ordem (1, 2 ou 3)
+    if (body.featuredOrder !== undefined && body.featuredOrder !== null) {
+      if (![1, 2, 3].includes(body.featuredOrder)) {
+        return NextResponse.json(
+          { error: 'featuredOrder deve ser 1, 2, 3 ou null' },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (body.bestSellerOrder !== undefined && body.bestSellerOrder !== null) {
+      if (![1, 2, 3].includes(body.bestSellerOrder)) {
+        return NextResponse.json(
+          { error: 'bestSellerOrder deve ser 1, 2, 3 ou null' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Resolução de conflitos: se um novo produto receber uma posição ocupada,
+    // o produto atual dessa posição deve ter sua posição zerada
+    if (body.featuredOrder !== undefined && body.featuredOrder !== null) {
+      await prisma.product.updateMany({
+        where: {
+          featuredOrder: body.featuredOrder,
+        },
+        data: {
+          featuredOrder: null,
+        },
+      });
+    }
+
+    if (body.bestSellerOrder !== undefined && body.bestSellerOrder !== null) {
+      await prisma.product.updateMany({
+        where: {
+          bestSellerOrder: body.bestSellerOrder,
+        },
+        data: {
+          bestSellerOrder: null,
+        },
+      });
+    }
+
     const product = await prisma.product.create({
       data: {
         sku: body.sku,
@@ -58,6 +101,8 @@ export async function POST(request: NextRequest) {
         isVisible: body.isVisible ?? true,
         isFeatured: body.isFeatured || false,
         isTopSeller: body.isTopSeller || false,
+        featuredOrder: body.featuredOrder || null,
+        bestSellerOrder: body.bestSellerOrder || null,
         outOfStock: body.outOfStock || false,
         availableUntil: body.availableUntil,
         isHot: body.isHot || false,

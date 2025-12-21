@@ -314,35 +314,125 @@ export function ProductBasicInfo({ form, categories }: ProductBasicInfoProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="isFeatured"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>Destaque (aparece na seção Destaques)</FormLabel>
-              </div>
-            </FormItem>
-          )}
-        />
+        <div className="space-y-2 rounded-lg border border-[#ead9cd] bg-[#faf8f5] p-3">
+          <FormField
+            control={form.control}
+            name="isFeatured"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked);
+                      if (!checked) {
+                        form.setValue('featuredOrder', null);
+                      }
+                    }}
+                  />
+                </FormControl>
+                <div className="flex-1 space-y-1 leading-none">
+                  <FormLabel>Aparecer em Destaques</FormLabel>
+                  <FormDescription className="text-sm">
+                    Produto aparecerá na seção "Destaques" da página inicial
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="isTopSeller"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>Mais Vendido (aparece na seção Mais Vendidos)</FormLabel>
-              </div>
-            </FormItem>
+          {form.watch('isFeatured') && (
+            <FormField
+              control={form.control}
+              name="featuredOrder"
+              render={({ field }) => (
+                <FormItem className="ml-7">
+                  <FormLabel>Posição em Destaques</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(value === 'null' ? null : parseInt(value))}
+                    value={field.value?.toString() || 'null'}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a posição" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="null">Sem posição definida</SelectItem>
+                      <SelectItem value="1">Posição 1</SelectItem>
+                      <SelectItem value="2">Posição 2</SelectItem>
+                      <SelectItem value="3">Posição 3</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription className="text-xs">
+                    Escolha a posição (1, 2 ou 3). Se escolher uma posição já ocupada, este produto substituirá o item atual dessa posição.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           )}
-        />
+        </div>
+
+        <div className="space-y-2 rounded-lg border border-[#ead9cd] bg-[#faf8f5] p-3">
+          <FormField
+            control={form.control}
+            name="isTopSeller"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked);
+                      if (!checked) {
+                        form.setValue('bestSellerOrder', null);
+                      }
+                    }}
+                  />
+                </FormControl>
+                <div className="flex-1 space-y-1 leading-none">
+                  <FormLabel>Aparecer em Mais Vendidos</FormLabel>
+                  <FormDescription className="text-sm">
+                    Produto aparecerá na seção "Mais Vendidos" da página inicial
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          {form.watch('isTopSeller') && (
+            <FormField
+              control={form.control}
+              name="bestSellerOrder"
+              render={({ field }) => (
+                <FormItem className="ml-7">
+                  <FormLabel>Posição em Mais Vendidos</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(value === 'null' ? null : parseInt(value))}
+                    value={field.value?.toString() || 'null'}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a posição" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="null">Sem posição definida</SelectItem>
+                      <SelectItem value="1">Posição 1</SelectItem>
+                      <SelectItem value="2">Posição 2</SelectItem>
+                      <SelectItem value="3">Posição 3</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription className="text-xs">
+                    Escolha a posição (1, 2 ou 3). Se escolher uma posição já ocupada, este produto substituirá o item atual dessa posição.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+        </div>
 
         <FormField
           control={form.control}

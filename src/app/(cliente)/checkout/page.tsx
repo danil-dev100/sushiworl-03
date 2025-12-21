@@ -24,6 +24,7 @@ export default function CheckoutPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showMobileSummary, setShowMobileSummary] = useState(false);
 
   // Itens adicionais do checkout
   const [checkoutItems, setCheckoutItems] = useState<CheckoutAdditionalItem[]>([]);
@@ -416,6 +417,104 @@ export default function CheckoutPage() {
               <h1 className="text-4xl font-black leading-tight tracking-[-0.033em] text-[#333333] dark:text-[#f5f1e9]">
                 Finalizar Pedido
               </h1>
+            </div>
+
+            {/* Resumo Mobile Colapsável */}
+            <div className="md:hidden mx-4 mb-4">
+              <button
+                type="button"
+                onClick={() => setShowMobileSummary(!showMobileSummary)}
+                className="w-full flex items-center justify-between rounded-lg border border-[#ead9cd] dark:border-[#4a3c30] bg-white dark:bg-[#2a1e14] p-4 shadow-sm"
+              >
+                <span className="text-lg font-bold text-[#333333] dark:text-[#f5f1e9]">
+                  Ver Resumo do Pedido
+                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xl font-bold text-[#FF6B00]">
+                    €{total.toFixed(2)}
+                  </span>
+                  <span className={`transition-transform ${showMobileSummary ? 'rotate-180' : ''}`}>
+                    ▼
+                  </span>
+                </div>
+              </button>
+
+              {showMobileSummary && (
+                <div className="mt-2 rounded-lg border border-[#ead9cd] dark:border-[#4a3c30] bg-white dark:bg-[#2a1e14] p-4 shadow-sm">
+                  <div className="space-y-3 border-b border-[#ead9cd] dark:border-[#4a3c30] pb-3">
+                    {items.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="relative w-12 h-12 flex-shrink-0">
+                            <Image
+                              src={item.image || '/placeholder-product.png'}
+                              alt={item.name}
+                              fill
+                              className="rounded-md object-cover"
+                            />
+                          </div>
+                          <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
+                            {item.quantity}x {item.name}
+                          </span>
+                        </div>
+                        <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9] flex-shrink-0">
+                          €{(item.price * item.quantity).toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                    {additionalItems.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex w-12 h-12 flex-shrink-0 items-center justify-center rounded-md bg-[#FF6B00]/10">
+                            <span className="text-xl">🛍️</span>
+                          </div>
+                          <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
+                            {item.name}
+                          </span>
+                        </div>
+                        <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9] flex-shrink-0">
+                          €{item.price.toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    <div className="flex justify-between text-sm text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                      <span>Subtotal</span>
+                      <span>€{subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                      <span>Taxa de Entrega</span>
+                      <span>€{taxaEntrega.toFixed(2)}</span>
+                    </div>
+                    {checkoutItems
+                      .filter(item => selectedCheckoutItems.has(item.id))
+                      .map((item) => (
+                        <div key={item.id} className="flex justify-between text-sm text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                          <span>{item.name}</span>
+                          <span>€{item.price.toFixed(2)}</span>
+                        </div>
+                      ))
+                    }
+                    {appliedCoupon && (
+                      <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
+                        <span>Desconto ({appliedCoupon.code})</span>
+                        <span>-€{appliedCoupon.discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="text-sm text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                      <span>IVA ({taxaIVA}% incluído)</span>
+                    </div>
+                    <div className="flex justify-between text-base font-bold text-[#333333] dark:text-[#f5f1e9]">
+                      <span>Total</span>
+                      <span className="text-[#FF6B00]">€{total.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-end text-xs text-[#a16b45]">
+                      <span>(IVA incluído)</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {items.length === 0 ? (

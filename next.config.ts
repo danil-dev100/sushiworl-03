@@ -34,8 +34,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
   },
-  // Externalizar jsdom e DOMPurify para evitar erros de file system no build
-  serverExternalPackages: ['jsdom', 'isomorphic-dompurify'],
+  // Externalizar jsdom, DOMPurify e Prisma para evitar erros de file system no build
+  serverExternalPackages: ['jsdom', 'isomorphic-dompurify', '@prisma/client', 'prisma'],
 };
 
 export default nextConfig;

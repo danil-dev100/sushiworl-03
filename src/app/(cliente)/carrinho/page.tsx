@@ -1,12 +1,22 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Trash2, Plus, Minus } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
+interface CartAdditionalItem {
+  id: string;
+  name: string;
+  price: number;
+  isActive: boolean;
+  isRequired: boolean;
+}
+
 export default function CarrinhoPage() {
   const { items, additionalItems, updateQuantity, removeItem, addAdditionalItem, removeAdditionalItem, totalPrice } = useCart();
+  const [availableCartItems, setAvailableCartItems] = useState<CartAdditionalItem[]>([]);
 
   // TODO: Buscar taxa de IVA das configurações do banco de dados
   const taxaIVA = 13; // Taxa de IVA em percentual (13% conforme especificado)
@@ -16,16 +26,43 @@ export default function CarrinhoPage() {
 
   const total = subtotal + taxaEntrega;
 
-  // Verificar se o saco está adicionado
-  const sacoAdicionado = additionalItems.some(item => item.name === 'Saco para Envio');
+  // Buscar itens adicionais configurados
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const response = await fetch('/api/admin/settings');
+        if (response.ok) {
+          const settings = await response.json();
+          const items: CartAdditionalItem[] = settings.additionalItems || [];
 
-  const handleSacoChange = (checked: boolean) => {
+          // Filtrar apenas itens ativos
+          const activeItems = items.filter(item => item.isActive);
+          setAvailableCartItems(activeItems);
+
+          // Adicionar automaticamente itens obrigatórios
+          const requiredItems = activeItems.filter(item => item.isRequired);
+          requiredItems.forEach(item => {
+            const alreadyAdded = additionalItems.some(added => added.name === item.name);
+            if (!alreadyAdded) {
+              addAdditionalItem({ name: item.name, price: item.price });
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao buscar itens do carrinho:', error);
+      }
+    };
+
+    fetchCartItems();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleItemToggle = (item: CartAdditionalItem, checked: boolean) => {
     if (checked) {
-      addAdditionalItem({ name: 'Saco para Envio', price: 0.50 });
+      addAdditionalItem({ name: item.name, price: item.price });
     } else {
-      const saco = additionalItems.find(item => item.name === 'Saco para Envio');
-      if (saco) {
-        removeAdditionalItem(saco.id);
+      const addedItem = additionalItems.find(added => added.name === item.name);
+      if (addedItem) {
+        removeAdditionalItem(addedItem.id);
       }
     }
   };
@@ -115,21 +152,48 @@ export default function CarrinhoPage() {
                     </div>
                   ))}
 
-                  {/* Order Bump - Saco de Envio */}
-                  <div className="flex items-start gap-4 rounded-lg border-2 border-dashed border-[#FF6B00]/50 bg-[#FF6B00]/10 dark:bg-[#FF6B00]/20 p-4">
-                    <input
-                      type="checkbox"
-                      className="form-checkbox mt-1 h-5 w-5 rounded border-[#ead9cd] dark:border-[#5a4a3e] text-[#FF6B00] focus:ring-[#FF6B00]"
-                      id="order-bump"
-                      checked={sacoAdicionado}
-                      onChange={(e) => handleSacoChange(e.target.checked)}
-                    />
-                    <label className="flex-1 cursor-pointer" htmlFor="order-bump">
-                      <p className="text-base font-bold text-[#333333] dark:text-[#f5f1e9]">
-                        Sim, quero adicionar saco para envio por €0,50!
-                      </p>
-                    </label>
-                  </div>
+                  {/* Itens Adicionais do Carrinho */}
+                  {availableCartItems.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-bold text-[#333333] dark:text-[#f5f1e9]">
+                        Itens Adicionais
+                      </h3>
+                      {availableCartItems.map((item) => {
+                        const isAdded = additionalItems.some(added => added.name === item.name);
+                        const isDisabled = item.isRequired; // Obrigatórios não podem ser desmarcados
+
+                        return (
+                          <div
+                            key={item.id}
+                            className={`flex items-start gap-4 rounded-lg border-2 p-4 ${
+                              item.isRequired
+                                ? 'border-solid border-[#FF6B00] bg-[#FF6B00]/5'
+                                : 'border-dashed border-[#FF6B00]/50 bg-[#FF6B00]/10 dark:bg-[#FF6B00]/20'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              className="form-checkbox mt-1 h-5 w-5 rounded border-[#ead9cd] dark:border-[#5a4a3e] text-[#FF6B00] focus:ring-[#FF6B00] disabled:opacity-50 disabled:cursor-not-allowed"
+                              id={`cart-item-${item.id}`}
+                              checked={isAdded}
+                              disabled={isDisabled}
+                              onChange={(e) => handleItemToggle(item, e.target.checked)}
+                            />
+                            <label className="flex-1 cursor-pointer" htmlFor={`cart-item-${item.id}`}>
+                              <p className="text-base font-bold text-[#333333] dark:text-[#f5f1e9]">
+                                {item.name} - €{item.price.toFixed(2)}
+                                {item.isRequired && (
+                                  <span className="ml-2 text-sm font-normal text-[#a16b45]">
+                                    (Obrigatório)
+                                  </span>
+                                )}
+                              </p>
+                            </label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </main>
 
                 {/* Resumo */}

@@ -98,8 +98,9 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
   });
   const printRef = useRef<HTMLDivElement>(null);
 
-  // Buscar dados reais da empresa
+  // Buscar dados reais da empresa e configurações de impressão
   useEffect(() => {
+    // Buscar dados da empresa
     fetch('/api/admin/settings/company-info')
       .then((res) => res.json())
       .then((data) => {
@@ -112,7 +113,6 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
       })
       .catch((error) => {
         console.error('Erro ao buscar dados da empresa:', error);
-        // Manter valores padrão em caso de erro
         setCompanyInfo({
           name: 'Seu Restaurante',
           address: 'Rua Exemplo, 123, Lisboa',
@@ -120,7 +120,22 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
           websiteUrl: 'seusite.com',
         });
       });
-  }, []);
+
+    // Buscar configurações de impressão salvas
+    if (!initialConfig) {
+      fetch('/api/admin/settings/printer')
+        .then((res) => res.json())
+        .then((savedConfig) => {
+          if (savedConfig && savedConfig.sections) {
+            setConfig(savedConfig);
+          }
+        })
+        .catch((error) => {
+          console.error('Erro ao buscar configurações de impressão:', error);
+          // Manter config padrão em caso de erro
+        });
+    }
+  }, [initialConfig]);
 
   // Função de impressão
   const handlePrint = () => {

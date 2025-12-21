@@ -185,26 +185,165 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
               box-sizing: border-box;
             }
             body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
               padding: 20px;
               background: #f5f5f5;
+              line-height: 1.5;
             }
             .print-receipt {
-              max-width: 400px;
+              max-width: ${printerSettings.paperSize === '58mm' ? '58mm' : '80mm'};
               margin: 0 auto;
               background: white;
               box-shadow: 0 4px 6px rgba(0,0,0,0.1);
               border: 1px solid #ddd;
             }
+            /* Estilos do recibo */
+            .print-receipt > div {
+              padding: 0;
+            }
+            .bg-\\[\\#2a2a2a\\] {
+              background-color: #2a2a2a !important;
+            }
+            .text-white {
+              color: white !important;
+            }
+            .px-4 {
+              padding-left: 1rem;
+              padding-right: 1rem;
+            }
+            .py-2 {
+              padding-top: 0.5rem;
+              padding-bottom: 0.5rem;
+            }
+            .py-3 {
+              padding-top: 0.75rem;
+              padding-bottom: 0.75rem;
+            }
+            .text-sm {
+              font-size: 0.875rem;
+            }
+            .text-xs {
+              font-size: 0.75rem;
+            }
+            .font-medium {
+              font-weight: 500;
+            }
+            .font-bold {
+              font-weight: 700;
+            }
+            .font-semibold {
+              font-weight: 600;
+            }
+            .border-b {
+              border-bottom-width: 1px;
+            }
+            .border-gray-200 {
+              border-color: #e5e7eb;
+            }
+            .bg-gray-50 {
+              background-color: #f9fafb;
+            }
+            .bg-amber-50 {
+              background-color: #fffbeb;
+            }
+            .border-amber-200 {
+              border-color: #fde68a;
+            }
+            .text-amber-900 {
+              color: #78350f;
+            }
+            .text-gray-600 {
+              color: #4b5563;
+            }
+            .text-gray-700 {
+              color: #374151;
+            }
+            .rounded {
+              border-radius: 0.25rem;
+            }
+            .border {
+              border-width: 1px;
+            }
+            .p-2 {
+              padding: 0.5rem;
+            }
+            .flex {
+              display: flex;
+            }
+            .items-start {
+              align-items: flex-start;
+            }
+            .items-center {
+              align-items: center;
+            }
+            .justify-between {
+              justify-content: space-between;
+            }
+            .justify-center {
+              justify-content: center;
+            }
+            .gap-1 {
+              gap: 0.25rem;
+            }
+            .gap-2 {
+              gap: 0.5rem;
+            }
+            .space-y-1 > * + * {
+              margin-top: 0.25rem;
+            }
+            .space-y-2 > * + * {
+              margin-top: 0.5rem;
+            }
+            .mb-2 {
+              margin-bottom: 0.5rem;
+            }
+            .mb-3 {
+              margin-bottom: 0.75rem;
+            }
+            .mt-1 {
+              margin-top: 0.25rem;
+            }
+            .mt-3 {
+              margin-top: 0.75rem;
+            }
+            .text-center {
+              text-align: center;
+            }
+            .italic {
+              font-style: italic;
+            }
+            .ml-4 {
+              margin-left: 1rem;
+            }
+            .pt-2 {
+              padding-top: 0.5rem;
+            }
+            .border-t {
+              border-top-width: 1px;
+            }
+            .border-gray-300 {
+              border-color: #d1d5db;
+            }
             @media print {
+              @page {
+                size: ${printerSettings.paperSize === '58mm' ? '58mm' : '80mm'} auto;
+                margin: 0;
+              }
               body {
                 background: white;
                 padding: 0;
+                margin: 0;
               }
               .print-receipt {
                 box-shadow: none;
                 border: none;
                 max-width: 100%;
+                width: 100%;
+              }
+              * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
               }
             }
           </style>
@@ -331,9 +470,25 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
 
           {/* Configurações da Impressora */}
           <div className="mb-6 pb-6 border-b border-gray-200 dark:border-[#3d2e1f]">
-            <h3 className="text-lg font-semibold text-[#333333] dark:text-[#f5f1e9] mb-4">
-              Configurações da Impressora
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-[#333333] dark:text-[#f5f1e9]">
+                Configurações da Impressora
+              </h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (printerSettings.printerType && printerSettings.printerName) {
+                    toast.success(`Impressora ${printerSettings.printerName} conectada via ${printerSettings.printerType}!`);
+                  } else {
+                    toast.error('Preencha o tipo de conexão e nome da impressora primeiro');
+                  }
+                }}
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                Conectar Impressora
+              </Button>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="printerType" className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">

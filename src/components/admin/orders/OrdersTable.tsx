@@ -237,37 +237,82 @@ export function OrdersTable({ orders }: OrdersTableProps) {
     });
   };
 
-  const handlePrint = (orderId: string) => {
+  const handlePrint = async (orderId: string) => {
     setPendingAction(`print:${orderId}`);
-    startTransition(async () => {
-      try {
-        const response = await fetch(
-          `/api/admin/orders/${orderId}/print`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
 
-        if (!response.ok) {
-          const error = await response.json().catch(() => null);
-          throw new Error(error?.error || 'Falha ao registrar impressão');
-        }
-
-        toast.success('Pedido enviado para impressão (simulado).');
-        router.refresh();
-      } catch (error) {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : 'Erro ao imprimir pedido. Tente novamente.'
-        );
-      } finally {
-        setPendingAction(null);
+    try {
+      // Buscar dados do pedido
+      const orderResponse = await fetch(`/api/admin/orders/${orderId}`);
+      if (!orderResponse.ok) {
+        throw new Error('Erro ao carregar pedido');
       }
-    });
+      const orderData = await orderResponse.json();
+
+      // Buscar configurações de impressão
+      const configResponse = await fetch('/api/admin/settings/printer');
+      const printerConfig = await configResponse.json();
+
+      // Buscar configurações da impressora
+      const settingsResponse = await fetch('/api/admin/settings');
+      const settings = await settingsResponse.json();
+
+      // Buscar dados da empresa
+      const companyResponse = await fetch('/api/admin/settings/company-info');
+      const companyInfo = await companyResponse.json();
+
+      // Gerar janela de impressão usando o OrderReceiptPreview
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      if (!printWindow) {
+        toast.error('Bloqueador de pop-ups impediu a impressão');
+        setPendingAction(null);
+        return;
+      }
+
+      // Importar dinâmicamente o OrderReceiptPreview para gerar o HTML
+      const { renderOrderReceipt } = await import('@/lib/print-utils');
+      const receiptHTML = renderOrderReceipt(orderData, companyInfo, printerConfig, settings.paperSize || '80mm');
+
+      printWindow.document.write(receiptHTML);
+      printWindow.document.close();
+
+      // Registrar impressão
+      startTransition(async () => {
+        try {
+          const response = await fetch(
+            `/api/admin/orders/${orderId}/print`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (!response.ok) {
+            const error = await response.json().catch(() => null);
+            throw new Error(error?.error || 'Falha ao registrar impressão');
+          }
+
+          toast.success('Pedido enviado para impressão.');
+          router.refresh();
+        } catch (error) {
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : 'Erro ao imprimir pedido. Tente novamente.'
+          );
+        } finally {
+          setPendingAction(null);
+        }
+      });
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Erro ao gerar impressão'
+      );
+      setPendingAction(null);
+    }
   };
 
   const canConfirm = (status: string) => status === 'PENDING';

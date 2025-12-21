@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import { emitNewOrderEvent } from '@/lib/socket-emitter';
-import { geocodeAddress, isPointInPolygon } from '@/lib/geo-utils';
 import { triggersService } from '@/lib/triggers-service';
+import { isRestaurantOpen } from '@/lib/restaurant-status';
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,6 +29,18 @@ export async function POST(request: NextRequest) {
     if (!customerName || !customerEmail || !customerPhone || !address || !items || items.length === 0) {
       return NextResponse.json(
         { error: 'Dados incompletos para criar o pedido.' },
+        { status: 400 }
+      );
+    }
+
+    // Verificar se o restaurante está aberto
+    const restaurantStatus = await isRestaurantOpen();
+    if (!restaurantStatus.isOpen) {
+      return NextResponse.json(
+        {
+          error: restaurantStatus.message || 'Restaurante fechado no momento',
+          reason: restaurantStatus.reason,
+        },
         { status: 400 }
       );
     }

@@ -664,38 +664,46 @@ export default function CheckoutPage() {
                         Itens Adicionais
                       </h2>
                       <div className="space-y-3 px-4 py-3">
-                        {checkoutItems.map((item) => (
-                          <label
-                            key={item.id}
-                            className={`flex items-center justify-between gap-4 rounded-lg border p-4 cursor-pointer transition-colors ${
-                              selectedCheckoutItems.has(item.id)
-                                ? 'border-[#FF6B00] bg-[#FF6B00]/5'
-                                : 'border-[#ead9cd] dark:border-[#5a4a3e] hover:border-[#FF6B00]/50'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                checked={selectedCheckoutItems.has(item.id)}
-                                onChange={() => toggleCheckoutItem(item.id)}
-                                className="h-5 w-5 rounded border-[#ead9cd] dark:border-[#5a4a3e] text-[#FF6B00] focus:ring-[#FF6B00]"
-                              />
-                              <div>
-                                <p className="text-base font-medium text-[#333333] dark:text-[#f5f1e9]">
-                                  {item.name}
-                                  {item.isRequired && (
-                                    <span className="ml-2 text-xs font-normal text-[#a16b45]">
-                                      (Recomendado)
-                                    </span>
-                                  )}
-                                </p>
+                        {checkoutItems.map((item) => {
+                          const isSelected = selectedCheckoutItems.has(item.id);
+                          const isDisabled = item.isRequired; // Obrigatórios não podem ser desmarcados
+
+                          return (
+                            <label
+                              key={item.id}
+                              className={`flex items-center justify-between gap-4 rounded-lg border p-4 transition-colors ${
+                                item.isRequired
+                                  ? 'border-[#FF6B00] bg-[#FF6B00]/5 cursor-default'
+                                  : isSelected
+                                  ? 'border-[#FF6B00] bg-[#FF6B00]/5 cursor-pointer'
+                                  : 'border-[#ead9cd] dark:border-[#5a4a3e] hover:border-[#FF6B00]/50 cursor-pointer'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  disabled={isDisabled}
+                                  onChange={() => !isDisabled && toggleCheckoutItem(item.id)}
+                                  className="h-5 w-5 rounded border-[#ead9cd] dark:border-[#5a4a3e] text-[#FF6B00] focus:ring-[#FF6B00] disabled:opacity-50 disabled:cursor-not-allowed"
+                                />
+                                <div>
+                                  <p className="text-base font-medium text-[#333333] dark:text-[#f5f1e9]">
+                                    {item.name}
+                                    {item.isRequired && (
+                                      <span className="ml-2 text-xs font-normal text-[#a16b45]">
+                                        (Obrigatório)
+                                      </span>
+                                    )}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                            <span className="text-base font-bold text-[#FF6B00]">
-                              +€{item.price.toFixed(2)}
-                            </span>
-                          </label>
-                        ))}
+                              <span className="text-base font-bold text-[#FF6B00]">
+                                +€{item.price.toFixed(2)}
+                              </span>
+                            </label>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

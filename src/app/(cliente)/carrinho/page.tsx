@@ -30,7 +30,13 @@ export default function CarrinhoPage() {
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await fetch('/api/admin/settings');
+        const response = await fetch('/api/admin/settings', {
+          cache: 'no-store', // Não usar cache
+          headers: {
+            'Cache-Control': 'no-cache',
+          }
+        });
+
         if (response.ok) {
           const settings = await response.json();
           const items: CartAdditionalItem[] = settings.additionalItems || [];
@@ -38,6 +44,14 @@ export default function CarrinhoPage() {
           // Filtrar apenas itens ativos
           const activeItems = items.filter(item => item.isActive);
           setAvailableCartItems(activeItems);
+
+          // Remover do carrinho itens que não existem mais ou foram desativados
+          const currentItemNames = activeItems.map(item => item.name);
+          additionalItems.forEach(addedItem => {
+            if (!currentItemNames.includes(addedItem.name)) {
+              removeAdditionalItem(addedItem.id);
+            }
+          });
 
           // Adicionar automaticamente itens obrigatórios
           const requiredItems = activeItems.filter(item => item.isRequired);

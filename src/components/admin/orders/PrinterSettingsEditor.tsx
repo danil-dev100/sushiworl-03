@@ -96,6 +96,11 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
     phone: '',
     websiteUrl: '',
   });
+  const [printerSettings, setPrinterSettings] = useState({
+    printerType: '',
+    printerName: '',
+    paperSize: '80mm',
+  });
   const printRef = useRef<HTMLDivElement>(null);
 
   // Buscar dados reais da empresa e configurações de impressão
@@ -135,13 +140,86 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
           // Manter config padrão em caso de erro
         });
     }
+
+    // Buscar configurações da impressora (tipo, nome, tamanho)
+    fetch('/api/admin/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          setPrinterSettings({
+            printerType: data.printerType || '',
+            printerName: data.printerName || '',
+            paperSize: data.paperSize || '80mm',
+          });
+        }
+      })
+      .catch((error) => {
+        console.error('Erro ao buscar configurações da impressora:', error);
+      });
   }, [initialConfig]);
 
   // Função de impressão
   const handlePrint = () => {
-    if (typeof window !== 'undefined') {
-      window.print();
+    if (typeof window === 'undefined' || !printRef.current) return;
+
+    // Capturar o HTML do preview
+    const printContent = printRef.current.innerHTML;
+
+    // Abrir janela de impressão
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) {
+      toast.error('Bloqueador de pop-ups impediu a impressão. Por favor, permita pop-ups para este site.');
+      return;
     }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Teste de Impressão - ${companyInfo.name}</title>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              padding: 20px;
+              background: #f5f5f5;
+            }
+            .print-receipt {
+              max-width: 400px;
+              margin: 0 auto;
+              background: white;
+              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+              border: 1px solid #ddd;
+            }
+            @media print {
+              body {
+                background: white;
+                padding: 0;
+              }
+              .print-receipt {
+                box-shadow: none;
+                border: none;
+                max-width: 100%;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${printContent}
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const handleDragStart = (index: number) => {
@@ -200,13 +278,23 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch('/api/admin/settings/printer', {
+      // Salvar configurações de layout de impressão
+      const printerConfigResponse = await fetch('/api/admin/settings/printer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),
       });
 
-      if (!response.ok) throw new Error('Erro ao salvar configurações');
+      if (!printerConfigResponse.ok) throw new Error('Erro ao salvar configurações de layout');
+
+      // Salvar configurações da impressora (tipo, nome, tamanho)
+      const printerSettingsResponse = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(printerSettings),
+      });
+
+      if (!printerSettingsResponse.ok) throw new Error('Erro ao salvar configurações da impressora');
 
       toast.success('Configurações de impressão salvas com sucesso!');
       if (onSave) onSave(config);
@@ -238,6 +326,57 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
                 <Save className="w-4 h-4 mr-2" />
                 {isSaving ? 'Salvando...' : 'Salvar'}
               </Button>
+            </div>
+          </div>
+
+          {/* Configurações da Impressora */}
+          <div className="mb-6 pb-6 border-b border-gray-200 dark:border-[#3d2e1f]">
+            <h3 className="text-lg font-semibold text-[#333333] dark:text-[#f5f1e9] mb-4">
+              Configurações da Impressora
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="printerType" className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
+                  Tipo de Conexão
+                </Label>
+                <select
+                  id="printerType"
+                  value={printerSettings.printerType}
+                  onChange={(e) => setPrinterSettings({ ...printerSettings, printerType: e.target.value })}
+                  className="mt-1 block w-full rounded-lg border-[#e5d5b5] dark:border-[#3d2e1f] bg-white dark:bg-[#1a120c] text-sm text-[#333333] dark:text-[#f5f1e9] focus:border-[#FF6B00] focus:ring-[#FF6B00] p-2"
+                >
+                  <option value="">Selecione...</option>
+                  <option value="USB">USB</option>
+                  <option value="BLUETOOTH">Bluetooth</option>
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="paperSize" className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
+                  Tamanho do Papel
+                </Label>
+                <select
+                  id="paperSize"
+                  value={printerSettings.paperSize}
+                  onChange={(e) => setPrinterSettings({ ...printerSettings, paperSize: e.target.value })}
+                  className="mt-1 block w-full rounded-lg border-[#e5d5b5] dark:border-[#3d2e1f] bg-white dark:bg-[#1a120c] text-sm text-[#333333] dark:text-[#f5f1e9] focus:border-[#FF6B00] focus:ring-[#FF6B00] p-2"
+                >
+                  <option value="58mm">58mm</option>
+                  <option value="80mm">80mm</option>
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <Label htmlFor="printerName" className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
+                  Nome da Impressora
+                </Label>
+                <input
+                  id="printerName"
+                  type="text"
+                  value={printerSettings.printerName}
+                  onChange={(e) => setPrinterSettings({ ...printerSettings, printerName: e.target.value })}
+                  placeholder="Ex: EPSON TM-T20"
+                  className="mt-1 block w-full rounded-lg border-[#e5d5b5] dark:border-[#3d2e1f] bg-white dark:bg-[#1a120c] text-sm text-[#333333] dark:text-[#f5f1e9] focus:border-[#FF6B00] focus:ring-[#FF6B00] p-2"
+                />
+              </div>
             </div>
           </div>
 

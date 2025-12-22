@@ -40,6 +40,10 @@ const productSchema = z.object({
   outOfStock: z.boolean(),
   availableUntil: z.string().optional().nullable(),
 
+  // Campos de posicionamento em Destaques e Mais Vendidos
+  featuredOrder: z.number().int().min(1).max(3).optional().nullable(),
+  bestSellerOrder: z.number().int().min(1).max(3).optional().nullable(),
+
   // Configurações
   isHot: z.boolean(),
   isHalal: z.boolean(),
@@ -103,6 +107,8 @@ export function ProductDialog({
       isTopSeller: false,
       outOfStock: false,
       availableUntil: null,
+      featuredOrder: null,
+      bestSellerOrder: null,
       isHot: false,
       isHalal: false,
       isVegan: false,
@@ -144,6 +150,8 @@ export function ProductDialog({
         availableUntil: product.availableUntil
           ? new Date(product.availableUntil).toISOString().split('T')[0]
           : null,
+        featuredOrder: product.featuredOrder || null,
+        bestSellerOrder: product.bestSellerOrder || null,
         isHot: product.isHot,
         isHalal: product.isHalal,
         isVegan: product.isVegan,

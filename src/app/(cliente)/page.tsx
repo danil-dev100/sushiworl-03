@@ -34,8 +34,6 @@ export const metadata: Metadata = {
 // Buscar produtos em destaque - DIRETO DO PRISMA (Server Component)
 async function getFeaturedProducts() {
   try {
-    console.log('[getFeaturedProducts] Buscando DIRETO do Prisma');
-
     const products = await prisma.product.findMany({
       where: {
         featuredOrder: { gt: 0 },
@@ -46,11 +44,6 @@ async function getFeaturedProducts() {
       take: 3,
     });
 
-    console.log('🔥 PRISMA FEATURED:', products.length, 'produtos');
-    if (products.length > 0) {
-      console.log('Produtos:', products.map(p => ({ name: p.name, order: p.featuredOrder })));
-    }
-
     // Mapear para o formato esperado pelo ProductSection
     return products.map((product) => ({
       id: product.id,
@@ -64,7 +57,7 @@ async function getFeaturedProducts() {
       outOfStock: false,
     }));
   } catch (error) {
-    console.error('❌ Erro ao buscar produtos em destaque:', error);
+    console.error('Erro ao buscar produtos em destaque:', error);
     return [];
   }
 }
@@ -72,8 +65,6 @@ async function getFeaturedProducts() {
 // Buscar mais vendidos - DIRETO DO PRISMA (Server Component)
 async function getBestSellerProducts() {
   try {
-    console.log('[getBestSellerProducts] Buscando DIRETO do Prisma');
-
     const products = await prisma.product.findMany({
       where: {
         bestSellerOrder: { gt: 0 },
@@ -84,11 +75,6 @@ async function getBestSellerProducts() {
       take: 3,
     });
 
-    console.log('🔥 PRISMA BEST SELLERS:', products.length, 'produtos');
-    if (products.length > 0) {
-      console.log('Produtos:', products.map(p => ({ name: p.name, order: p.bestSellerOrder })));
-    }
-
     // Mapear para o formato esperado pelo ProductSection
     return products.map((product) => ({
       id: product.id,
@@ -102,7 +88,7 @@ async function getBestSellerProducts() {
       outOfStock: false,
     }));
   } catch (error) {
-    console.error('❌ Erro ao buscar produtos mais vendidos:', error);
+    console.error('Erro ao buscar produtos mais vendidos:', error);
     return [];
   }
 }
@@ -111,16 +97,8 @@ export default async function HomePage() {
   const maisVendidos = await getBestSellerProducts();
   const destaques = await getFeaturedProducts();
 
-  // TESTE ATÔMICO - CONFIRMAR QUE ESTA É A HOME REAL
-  console.log('🔥🔥🔥 HOMEPAGE EXECUTADA - maisVendidos:', maisVendidos.length, 'destaques:', destaques.length);
-
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">
-      {/* TESTE NUCLEAR - DEVE APARECER NO TOPO */}
-      <div style={{ background: 'black', color: 'lime', padding: '40px', textAlign: 'center', fontSize: '24px', fontWeight: 'bold', zIndex: 9999, position: 'relative' }}>
-        🔥 HOME CORRETA CARREGADA - DESTAQUES: {destaques.length} | MAIS VENDIDOS: {maisVendidos.length}
-      </div>
-
       <div className="flex-1">
         <HeroBanner />
 
@@ -135,24 +113,6 @@ export default async function HomePage() {
           <SidebarMenu />
 
           <main className="flex-1 py-8">
-            {/* TESTE NUCLEAR - DEBUG VISUAL */}
-            {destaques.length > 0 && (
-              <div style={{ backgroundColor: 'red', color: 'white', padding: '20px', marginBottom: '20px' }}>
-                <h3>🔥 DEBUG DESTAQUES - DADOS RECEBIDOS:</h3>
-                <pre style={{ fontSize: '12px', overflow: 'auto' }}>
-                  {JSON.stringify(destaques, null, 2)}
-                </pre>
-              </div>
-            )}
-            {maisVendidos.length > 0 && (
-              <div style={{ backgroundColor: 'blue', color: 'white', padding: '20px', marginBottom: '20px' }}>
-                <h3>🔥 DEBUG MAIS VENDIDOS - DADOS RECEBIDOS:</h3>
-                <pre style={{ fontSize: '12px', overflow: 'auto' }}>
-                  {JSON.stringify(maisVendidos, null, 2)}
-                </pre>
-              </div>
-            )}
-
             <section id="mais-vendidos">
               <h2 className="text-[#FF6B00] text-2xl font-bold tracking-tight pb-6">Mais Vendidos</h2>
               <ProductSection products={maisVendidos} />

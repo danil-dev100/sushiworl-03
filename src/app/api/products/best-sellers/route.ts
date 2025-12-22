@@ -22,20 +22,6 @@ export async function GET() {
       },
     });
 
-    console.log('[API Best Sellers] Query executada');
-    console.log('[API Best Sellers] Produtos encontrados:', products.length);
-    if (products.length > 0) {
-      console.log('[API Best Sellers] Produtos:', products.map(p => ({
-        id: p.id,
-        name: p.name,
-        order: p.bestSellerOrder,
-        isVisible: true,
-        status: 'AVAILABLE'
-      })));
-    } else {
-      console.log('[API Best Sellers] Nenhum produto encontrado com bestSellerOrder > 0, isVisible: true, status: AVAILABLE');
-    }
-
     return NextResponse.json(products);
   } catch (error) {
     console.error('Erro ao buscar produtos mais vendidos:', error);

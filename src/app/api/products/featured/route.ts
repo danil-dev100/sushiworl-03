@@ -22,20 +22,6 @@ export async function GET() {
       },
     });
 
-    console.log('[API Featured] Query executada');
-    console.log('[API Featured] Produtos encontrados:', products.length);
-    if (products.length > 0) {
-      console.log('[API Featured] Produtos:', products.map(p => ({
-        id: p.id,
-        name: p.name,
-        order: p.featuredOrder,
-        isVisible: true,
-        status: 'AVAILABLE'
-      })));
-    } else {
-      console.log('[API Featured] Nenhum produto encontrado com featuredOrder > 0, isVisible: true, status: AVAILABLE');
-    }
-
     return NextResponse.json(products);
   } catch (error) {
     console.error('Erro ao buscar produtos em destaque:', error);

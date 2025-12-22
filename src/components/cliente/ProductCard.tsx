@@ -306,7 +306,7 @@ export default function ProductCard({
 
   return (
     <div className="flex flex-col group bg-white/50 dark:bg-black/20 rounded-xl p-4 shadow-sm hover:shadow-lg transition-shadow duration-300">
-      <div className="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-lg mb-4 overflow-hidden transform group-hover:scale-105 transition-transform duration-300">
+      <div className="relative w-full bg-center bg-no-repeat aspect-[4/3] bg-cover rounded-lg mb-4 overflow-hidden transform group-hover:scale-105 transition-transform duration-300 max-h-48">
         <Image
           src={imageUrl}
           alt={altText}

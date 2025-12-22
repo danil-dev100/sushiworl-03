@@ -3,6 +3,7 @@ import HeroBanner from '@/components/cliente/HeroBanner';
 import SidebarMenu from '@/components/cliente/SidebarMenu';
 import ProductSection from '@/components/cliente/ProductSection';
 import DeliveryNotice from '@/components/cliente/DeliveryNotice';
+import { prisma } from '@/lib/db';
 
 // Forçar página dinâmica para sempre buscar dados atualizados
 export const dynamic = 'force-dynamic';
@@ -30,75 +31,78 @@ export const metadata: Metadata = {
   },
 };
 
-// Buscar produtos em destaque e mais vendidos
+// Buscar produtos em destaque - DIRETO DO PRISMA (Server Component)
 async function getFeaturedProducts() {
   try {
-    // Em produção, usar URL absoluta; em dev, usar relativa
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/products/featured`, {
-      cache: 'no-store',
+    console.log('[getFeaturedProducts] Buscando DIRETO do Prisma');
+
+    const products = await prisma.product.findMany({
+      where: {
+        featuredOrder: { gt: 0 },
+        isVisible: true,
+        status: 'AVAILABLE',
+      },
+      orderBy: { featuredOrder: 'asc' },
+      take: 3,
     });
-    if (!response.ok) {
-      console.error('[Home] Erro ao buscar featured products:', response.status);
-      return [];
+
+    console.log('🔥 PRISMA FEATURED:', products.length, 'produtos');
+    if (products.length > 0) {
+      console.log('Produtos:', products.map(p => ({ name: p.name, order: p.featuredOrder })));
     }
-    const products = await response.json();
-    console.log('🔥 HOME FEATURED RECEBIDO:', products);
-    console.log('[Home] Featured products recebidos:', products.length);
+
     // Mapear para o formato esperado pelo ProductSection
-    const mapped = products.map((product: any) => ({
+    return products.map((product) => ({
       id: product.id,
       name: product.name,
       description: product.description || '',
       price: `€${product.price.toFixed(2)}`,
       discountPrice: product.discountPrice ? `€${product.discountPrice.toFixed(2)}` : undefined,
-      category: product.category || 'Produtos', // CAMPO OBRIGATÓRIO
+      category: product.category,
       image: product.imageUrl,
       status: 'AVAILABLE' as const,
       outOfStock: false,
     }));
-    console.log('[Home] Featured products mapeados:', mapped);
-    return mapped;
   } catch (error) {
-    console.error('Erro ao buscar produtos em destaque:', error);
+    console.error('❌ Erro ao buscar produtos em destaque:', error);
     return [];
   }
 }
 
+// Buscar mais vendidos - DIRETO DO PRISMA (Server Component)
 async function getBestSellerProducts() {
   try {
-    // Em produção, usar URL absoluta; em dev, usar relativa
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/products/best-sellers`, {
-      cache: 'no-store',
+    console.log('[getBestSellerProducts] Buscando DIRETO do Prisma');
+
+    const products = await prisma.product.findMany({
+      where: {
+        bestSellerOrder: { gt: 0 },
+        isVisible: true,
+        status: 'AVAILABLE',
+      },
+      orderBy: { bestSellerOrder: 'asc' },
+      take: 3,
     });
-    if (!response.ok) {
-      console.error('[Home] Erro ao buscar best seller products:', response.status);
-      return [];
+
+    console.log('🔥 PRISMA BEST SELLERS:', products.length, 'produtos');
+    if (products.length > 0) {
+      console.log('Produtos:', products.map(p => ({ name: p.name, order: p.bestSellerOrder })));
     }
-    const products = await response.json();
-    console.log('🔥 HOME BEST SELLERS RECEBIDO:', products);
-    console.log('[Home] Best seller products recebidos:', products.length);
+
     // Mapear para o formato esperado pelo ProductSection
-    const mapped = products.map((product: any) => ({
+    return products.map((product) => ({
       id: product.id,
       name: product.name,
       description: product.description || '',
       price: `€${product.price.toFixed(2)}`,
       discountPrice: product.discountPrice ? `€${product.discountPrice.toFixed(2)}` : undefined,
-      category: product.category || 'Produtos', // CAMPO OBRIGATÓRIO
+      category: product.category,
       image: product.imageUrl,
       status: 'AVAILABLE' as const,
       outOfStock: false,
     }));
-    console.log('[Home] Best seller products mapeados:', mapped);
-    return mapped;
   } catch (error) {
-    console.error('Erro ao buscar produtos mais vendidos:', error);
+    console.error('❌ Erro ao buscar produtos mais vendidos:', error);
     return [];
   }
 }

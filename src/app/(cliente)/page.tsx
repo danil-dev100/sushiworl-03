@@ -45,18 +45,22 @@ async function getFeaturedProducts() {
       return [];
     }
     const products = await response.json();
+    console.log('🔥 HOME FEATURED RECEBIDO:', products);
     console.log('[Home] Featured products recebidos:', products.length);
     // Mapear para o formato esperado pelo ProductSection
-    return products.map((product: any) => ({
+    const mapped = products.map((product: any) => ({
       id: product.id,
       name: product.name,
       description: product.description || '',
       price: `€${product.price.toFixed(2)}`,
       discountPrice: product.discountPrice ? `€${product.discountPrice.toFixed(2)}` : undefined,
+      category: product.category || 'Produtos', // CAMPO OBRIGATÓRIO
       image: product.imageUrl,
       status: 'AVAILABLE' as const,
       outOfStock: false,
     }));
+    console.log('[Home] Featured products mapeados:', mapped);
+    return mapped;
   } catch (error) {
     console.error('Erro ao buscar produtos em destaque:', error);
     return [];
@@ -77,18 +81,22 @@ async function getBestSellerProducts() {
       return [];
     }
     const products = await response.json();
+    console.log('🔥 HOME BEST SELLERS RECEBIDO:', products);
     console.log('[Home] Best seller products recebidos:', products.length);
     // Mapear para o formato esperado pelo ProductSection
-    return products.map((product: any) => ({
+    const mapped = products.map((product: any) => ({
       id: product.id,
       name: product.name,
       description: product.description || '',
       price: `€${product.price.toFixed(2)}`,
       discountPrice: product.discountPrice ? `€${product.discountPrice.toFixed(2)}` : undefined,
+      category: product.category || 'Produtos', // CAMPO OBRIGATÓRIO
       image: product.imageUrl,
       status: 'AVAILABLE' as const,
       outOfStock: false,
     }));
+    console.log('[Home] Best seller products mapeados:', mapped);
+    return mapped;
   } catch (error) {
     console.error('Erro ao buscar produtos mais vendidos:', error);
     return [];
@@ -114,6 +122,24 @@ export default async function HomePage() {
           <SidebarMenu />
 
           <main className="flex-1 py-8">
+            {/* TESTE NUCLEAR - DEBUG VISUAL */}
+            {destaques.length > 0 && (
+              <div style={{ backgroundColor: 'red', color: 'white', padding: '20px', marginBottom: '20px' }}>
+                <h3>🔥 DEBUG DESTAQUES - DADOS RECEBIDOS:</h3>
+                <pre style={{ fontSize: '12px', overflow: 'auto' }}>
+                  {JSON.stringify(destaques, null, 2)}
+                </pre>
+              </div>
+            )}
+            {maisVendidos.length > 0 && (
+              <div style={{ backgroundColor: 'blue', color: 'white', padding: '20px', marginBottom: '20px' }}>
+                <h3>🔥 DEBUG MAIS VENDIDOS - DADOS RECEBIDOS:</h3>
+                <pre style={{ fontSize: '12px', overflow: 'auto' }}>
+                  {JSON.stringify(maisVendidos, null, 2)}
+                </pre>
+              </div>
+            )}
+
             <section id="mais-vendidos">
               <h2 className="text-[#FF6B00] text-2xl font-bold tracking-tight pb-6">Mais Vendidos</h2>
               <ProductSection products={maisVendidos} />

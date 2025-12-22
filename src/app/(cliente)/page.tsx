@@ -106,8 +106,17 @@ async function getBestSellerProducts() {
 export default async function HomePage() {
   const maisVendidos = await getBestSellerProducts();
   const destaques = await getFeaturedProducts();
+
+  // TESTE ATÔMICO - CONFIRMAR QUE ESTA É A HOME REAL
+  console.log('🔥🔥🔥 HOMEPAGE EXECUTADA - maisVendidos:', maisVendidos.length, 'destaques:', destaques.length);
+
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">
+      {/* TESTE NUCLEAR - DEVE APARECER NO TOPO */}
+      <div style={{ background: 'black', color: 'lime', padding: '40px', textAlign: 'center', fontSize: '24px', fontWeight: 'bold', zIndex: 9999, position: 'relative' }}>
+        🔥 HOME CORRETA CARREGADA - DESTAQUES: {destaques.length} | MAIS VENDIDOS: {maisVendidos.length}
+      </div>
+
       <div className="flex-1">
         <HeroBanner />
 

@@ -29,7 +29,10 @@ export const metadata: Metadata = {
 // Buscar produtos em destaque e mais vendidos
 async function getFeaturedProducts() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    // Em produção, usar URL absoluta; em dev, usar relativa
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/products/featured`, {
       cache: 'no-store',
     });
@@ -54,7 +57,10 @@ async function getFeaturedProducts() {
 
 async function getBestSellerProducts() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    // Em produção, usar URL absoluta; em dev, usar relativa
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000';
     const response = await fetch(`${baseUrl}/api/products/best-sellers`, {
       cache: 'no-store',
     });

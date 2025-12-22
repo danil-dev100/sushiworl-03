@@ -63,6 +63,9 @@ export async function PUT(
       });
     }
 
+    console.log('[API Update Product] featuredOrder:', body.featuredOrder);
+    console.log('[API Update Product] bestSellerOrder:', body.bestSellerOrder);
+
     const product = await prisma.product.update({
       where: { id },
       data: {

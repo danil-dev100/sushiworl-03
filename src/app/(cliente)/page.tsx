@@ -4,6 +4,9 @@ import SidebarMenu from '@/components/cliente/SidebarMenu';
 import ProductSection from '@/components/cliente/ProductSection';
 import DeliveryNotice from '@/components/cliente/DeliveryNotice';
 
+// Forçar página dinâmica para sempre buscar dados atualizados
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'SushiWorld: Sushi Delivery em Santa Iria | Peça Online',
   description: 'Peça o melhor sushi de Santa Iria no SushiWorld. Combinados, hots, sashimi e muito mais. Delivery rápido e saboroso. Confira nosso cardápio!',
@@ -36,8 +39,12 @@ async function getFeaturedProducts() {
     const response = await fetch(`${baseUrl}/api/products/featured`, {
       cache: 'no-store',
     });
-    if (!response.ok) return [];
+    if (!response.ok) {
+      console.error('[Home] Erro ao buscar featured products:', response.status);
+      return [];
+    }
     const products = await response.json();
+    console.log('[Home] Featured products recebidos:', products.length);
     // Mapear para o formato esperado pelo ProductSection
     return products.map((product: any) => ({
       id: product.id,
@@ -64,8 +71,12 @@ async function getBestSellerProducts() {
     const response = await fetch(`${baseUrl}/api/products/best-sellers`, {
       cache: 'no-store',
     });
-    if (!response.ok) return [];
+    if (!response.ok) {
+      console.error('[Home] Erro ao buscar best seller products:', response.status);
+      return [];
+    }
     const products = await response.json();
+    console.log('[Home] Best seller products recebidos:', products.length);
     // Mapear para o formato esperado pelo ProductSection
     return products.map((product: any) => ({
       id: product.id,

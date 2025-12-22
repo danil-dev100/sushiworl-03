@@ -88,6 +88,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    console.log('[API Create Product] featuredOrder:', body.featuredOrder);
+    console.log('[API Create Product] bestSellerOrder:', body.bestSellerOrder);
+
     const product = await prisma.product.create({
       data: {
         sku: body.sku,

@@ -21,6 +21,9 @@ export async function GET() {
       },
     });
 
+    console.log('[API Best Sellers] Produtos encontrados:', products.length);
+    console.log('[API Best Sellers] Produtos:', products.map(p => ({ name: p.name, order: p.bestSellerOrder })));
+
     return NextResponse.json(products);
   } catch (error) {
     console.error('Erro ao buscar produtos mais vendidos:', error);

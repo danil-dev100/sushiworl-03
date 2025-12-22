@@ -21,6 +21,9 @@ export async function GET() {
       },
     });
 
+    console.log('[API Featured] Produtos encontrados:', products.length);
+    console.log('[API Featured] Produtos:', products.map(p => ({ name: p.name, order: p.featuredOrder })));
+
     return NextResponse.json(products);
   } catch (error) {
     console.error('Erro ao buscar produtos em destaque:', error);

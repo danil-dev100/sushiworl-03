@@ -20,7 +20,8 @@
     "db:seed:cardapio": "tsx scripts/importar-cardapio.ts",
     "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
-    "db:validate": "prisma validate"
+    "db:validate": "prisma validate",
+    "verify:featured": "tsx scripts/verify-featured-products.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

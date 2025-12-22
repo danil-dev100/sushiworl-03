@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const products = await prisma.product.findMany({
       where: {
-        bestSellerOrder: { not: null },
+        bestSellerOrder: { gt: 0 },
         isVisible: true,
         status: 'AVAILABLE',
       },
@@ -21,8 +21,19 @@ export async function GET() {
       },
     });
 
+    console.log('[API Best Sellers] Query executada');
     console.log('[API Best Sellers] Produtos encontrados:', products.length);
-    console.log('[API Best Sellers] Produtos:', products.map(p => ({ name: p.name, order: p.bestSellerOrder })));
+    if (products.length > 0) {
+      console.log('[API Best Sellers] Produtos:', products.map(p => ({
+        id: p.id,
+        name: p.name,
+        order: p.bestSellerOrder,
+        isVisible: true,
+        status: 'AVAILABLE'
+      })));
+    } else {
+      console.log('[API Best Sellers] Nenhum produto encontrado com bestSellerOrder > 0, isVisible: true, status: AVAILABLE');
+    }
 
     return NextResponse.json(products);
   } catch (error) {

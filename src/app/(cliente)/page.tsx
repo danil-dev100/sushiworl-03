@@ -6,6 +6,7 @@ import DeliveryNotice from '@/components/cliente/DeliveryNotice';
 
 // Forçar página dinâmica para sempre buscar dados atualizados
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 export const metadata: Metadata = {
   title: 'SushiWorld: Sushi Delivery em Santa Iria | Peça Online',

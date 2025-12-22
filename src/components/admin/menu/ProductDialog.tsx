@@ -184,13 +184,31 @@ export function ProductDialog({
       const url = product
         ? `/api/admin/menu/products/${product.id}`
         : '/api/admin/menu/products';
-      
+
       const method = product ? 'PUT' : 'POST';
+
+      // Garantir que featuredOrder e bestSellerOrder sejam enviados como number ou null
+      const payload = {
+        ...data,
+        featuredOrder: data.isFeatured
+          ? (typeof data.featuredOrder === 'number' && data.featuredOrder >= 1 && data.featuredOrder <= 3
+              ? data.featuredOrder
+              : 1) // Fallback para 1 se marcado mas sem posição válida
+          : null,
+        bestSellerOrder: data.isTopSeller
+          ? (typeof data.bestSellerOrder === 'number' && data.bestSellerOrder >= 1 && data.bestSellerOrder <= 3
+              ? data.bestSellerOrder
+              : 1) // Fallback para 1 se marcado mas sem posição válida
+          : null,
+      };
+
+      console.log('[Form Submit] featuredOrder:', payload.featuredOrder, 'type:', typeof payload.featuredOrder);
+      console.log('[Form Submit] bestSellerOrder:', payload.bestSellerOrder, 'type:', typeof payload.bestSellerOrder);
 
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {

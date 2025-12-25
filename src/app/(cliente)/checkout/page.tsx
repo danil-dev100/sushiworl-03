@@ -273,7 +273,8 @@ export default function CheckoutPage() {
   useEffect(() => {
     const fetchCheckoutItems = async () => {
       try {
-        const response = await fetch('/api/admin/settings');
+        // ✅ CORREÇÃO DE SEGURANÇA: Usar rota pública em vez de /api/admin/settings
+        const response = await fetch('/api/public/settings');
         if (response.ok) {
           const settings = await response.json();
           const items: CheckoutAdditionalItem[] = settings.checkoutAdditionalItems || [];
@@ -386,16 +387,9 @@ export default function CheckoutPage() {
         // Limpar carrinho
         clearCart();
 
-        // Salvar dados do pedido no sessionStorage para a página de obrigado
-        sessionStorage.setItem('lastOrder', JSON.stringify({
-          id: result.order.id,
-          total: result.order.total,
-          items: result.order.items,
-          emailSent: result.emailSent,
-        }));
-
-        // Redirecionar para página de obrigado
-        router.push('/obrigado');
+        // ✅ CORREÇÃO DE SEGURANÇA: Passar orderId na URL (não sessionStorage)
+        // Redirecionar para página de obrigado com orderId validado
+        router.push(`/obrigado?orderId=${result.order.id}`);
       } else {
         setShowErrorModal(true);
       }

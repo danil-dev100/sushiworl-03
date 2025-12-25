@@ -6,6 +6,16 @@ import { revalidatePath } from 'next/cache';
 
 export async function GET(request: NextRequest) {
   try {
+    // ✅ CORREÇÃO DE SEGURANÇA: Validar autenticação antes de retornar dados sensíveis
+    const session = await getServerSession(authOptions);
+
+    if (!session || !canManageSettings(session.user.role)) {
+      return NextResponse.json(
+        { error: 'Não autorizado. Esta rota requer permissões de administrador.' },
+        { status: 401 }
+      );
+    }
+
     const settings = await prisma.settings.findFirst();
 
     if (!settings) {
@@ -15,6 +25,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // ✅ Retornar TODOS os dados apenas para usuários autenticados
     return NextResponse.json(settings);
   } catch (error) {
     console.error('Erro ao buscar configurações:', error);

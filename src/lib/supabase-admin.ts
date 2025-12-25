@@ -22,24 +22,20 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl) {
-  throw new Error(
-    'NEXT_PUBLIC_SUPABASE_URL não está definida no .env! ' +
+  console.warn(
+    '⚠️ NEXT_PUBLIC_SUPABASE_URL não está definida! ' +
     'Adicione: NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co'
   );
 }
 
 if (!supabaseServiceRoleKey) {
-  throw new Error(
-    'SUPABASE_SERVICE_ROLE_KEY não está definida no .env! ' +
-    '\n\n' +
+  console.warn(
+    '⚠️ SUPABASE_SERVICE_ROLE_KEY não está definida! ' +
     'Para obter a service_role key:\n' +
     '1. Acesse o Dashboard do Supabase\n' +
     '2. Vá em Settings > API\n' +
-    '3. Copie a "service_role" key (NÃO a "anon" key!)\n' +
-    '4. Adicione no .env: SUPABASE_SERVICE_ROLE_KEY=eyJ...\n' +
-    '\n' +
-    '⚠️ ATENÇÃO: NUNCA commite esta chave no Git!\n' +
-    '⚠️ ATENÇÃO: Esta chave tem permissões TOTAIS no banco!'
+    '3. Copie a "service_role" key\n' +
+    '4. Adicione nas variáveis de ambiente: SUPABASE_SERVICE_ROLE_KEY=eyJ...'
   );
 }
 
@@ -51,15 +47,19 @@ if (!supabaseServiceRoleKey) {
  * - Pode fazer upload/delete de arquivos
  * - Use com EXTREMO cuidado!
  */
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-  db: {
-    schema: 'public',
-  },
-});
+export const supabaseAdmin = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseServiceRoleKey || 'placeholder-key',
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+    db: {
+      schema: 'public',
+    },
+  }
+);
 
 /**
  * Exemplo de uso seguro em API Route:

@@ -146,3 +146,30 @@ schema.sql
 *.local.ts
 *.test.ts
 *.spec.ts
+# ============================================
+# ARQUIVOS SENSÍVEIS (NÃO COMMITAR!)
+# ============================================
+.env
+.env.local
+.env*.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+*.env
+*.local
+
+# Chaves e certificados
+*.pem
+*.key
+*.cert
+*.p12
+secrets/
+credentials/
+
+# Backup de banco de dados
+*.sql
+*.dump
+*.backup

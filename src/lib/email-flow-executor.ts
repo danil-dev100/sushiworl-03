@@ -1,5 +1,6 @@
 import { prisma } from './db';
 import nodemailer from 'nodemailer';
+import { renderEmailTemplate, formatOrderVariables, type EmailTemplateVariables } from './email-template-renderer';
 
 export interface FlowExecutionContext {
   customerId?: string;
@@ -423,11 +424,23 @@ export class EmailFlowExecutor {
   }
 
   private processTemplate(template: string, context: FlowExecutionContext): string {
-    return template
+    // Backward compatibility: suporta formato antigo [Nome Cliente]
+    let processed = template
       .replace(/\[Nome Cliente\]/g, context.customerName || 'Cliente')
       .replace(/\[Email Cliente\]/g, context.customerEmail)
       .replace(/\[Número Pedido\]/g, context.orderId || 'N/A')
-      .replace(/\[Total\]/g, context.orderValue ? `R$ ${context.orderValue.toFixed(2)}` : 'N/A');
+      .replace(/\[Total\]/g, context.orderValue ? `€${context.orderValue.toFixed(2)}` : 'N/A');
+
+    // Novo formato: suporta {{variavel}}
+    const variables: EmailTemplateVariables = {
+      customer_name: context.customerName || 'Cliente',
+      customer_email: context.customerEmail,
+      order_id: context.orderId || '',
+      order_total: context.orderValue ? `€${context.orderValue.toFixed(2)}` : '',
+      ...context.metadata, // Permite passar variáveis adicionais via metadata
+    };
+
+    return renderEmailTemplate(processed, variables);
   }
 
   private async sendEmail(options: {

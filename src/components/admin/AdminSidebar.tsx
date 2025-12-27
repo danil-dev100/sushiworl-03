@@ -80,7 +80,11 @@ const menuItems = [
   },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  onItemClick?: () => void;
+}
+
+export function AdminSidebar({ onItemClick }: AdminSidebarProps = {}) {
   const pathname = usePathname();
 
   // Hook de polling para mostrar badge de pedidos pendentes
@@ -97,7 +101,11 @@ export function AdminSidebar() {
     <aside className="flex w-24 flex-col items-center border-r border-[#ead9cd] bg-white dark:border-[#4a3c30] dark:bg-[#2a1e14] h-screen overflow-y-auto">
       {/* Logo */}
       <div className="sticky top-0 bg-white dark:bg-[#2a1e14] pt-4 pb-4 z-10">
-        <Link href="/admin/dashboard" className="relative h-12 w-12 block">
+        <Link
+          href="/admin/dashboard"
+          className="relative h-12 w-12 block"
+          onClick={onItemClick}
+        >
           <div className="aspect-square w-12 rounded-full bg-cover bg-center bg-no-repeat"
                style={{backgroundImage: 'url("/logo.webp/logo-nova-sushiworl-santa-iria-sem-fundo.webp")'}}>
           </div>
@@ -122,6 +130,7 @@ export function AdminSidebar() {
                   : 'text-[#a16b45] hover:text-[#FF6B00] dark:text-[#a16b45]'
               }`}
               title={item.label}
+              onClick={onItemClick}
             >
               <Icon className="h-7 w-7" />
               <p className={`text-xs leading-normal ${active ? 'font-bold' : 'font-medium'}`}>

@@ -332,44 +332,45 @@ export function OrdersTable({ orders }: OrdersTableProps) {
   };
 
   return (
-    <div className="rounded-xl border border-[#ead9cd] bg-white p-6 dark:border-[#4a3c30] dark:bg-[#2a1e14]">
+    <div className="rounded-xl border border-[#ead9cd] bg-white p-3 sm:p-6 dark:border-[#4a3c30] dark:bg-[#2a1e14]">
       {hasOrders && (
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                checked={selectedOrders.length === localOrders.length && localOrders.length > 0}
-                onCheckedChange={handleSelectAll}
-                id="select-all"
-              />
-              <label
-                htmlFor="select-all"
-                className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]"
-              >
-                Selecionar todos ({selectedOrders.length} de {localOrders.length})
-              </label>
-            </div>
-            {selectedOrders.length > 0 && (
-              <Button
-                onClick={handleDeleteSelected}
-                variant="destructive"
-                size="sm"
-                disabled={isPending || pendingAction === 'delete-selected'}
-              >
-                {pendingAction === 'delete-selected' ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Deletando...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Deletar ({selectedOrders.length})
-                  </>
-                )}
-              </Button>
-            )}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Checkbox
+              checked={selectedOrders.length === localOrders.length && localOrders.length > 0}
+              onCheckedChange={handleSelectAll}
+              id="select-all"
+            />
+            <label
+              htmlFor="select-all"
+              className="text-xs sm:text-sm font-medium text-[#333333] dark:text-[#f5f1e9]"
+            >
+              <span className="hidden sm:inline">Selecionar todos </span>
+              <span className="sm:hidden">Todos </span>
+              ({selectedOrders.length}/{localOrders.length})
+            </label>
           </div>
+          {selectedOrders.length > 0 && (
+            <Button
+              onClick={handleDeleteSelected}
+              variant="destructive"
+              size="sm"
+              disabled={isPending || pendingAction === 'delete-selected'}
+              className="w-full sm:w-auto"
+            >
+              {pendingAction === 'delete-selected' ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deletando...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Deletar ({selectedOrders.length})
+                </>
+              )}
+            </Button>
+          )}
         </div>
       )}
       {hasOrders ? (

@@ -1,9 +1,8 @@
 import React from 'react';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { AdminHeader } from '@/components/admin/AdminHeader';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
+import { AdminLayoutClient } from '@/components/admin/AdminLayoutClient';
 
 export default async function AdminLayout({
   children,
@@ -22,19 +21,5 @@ export default async function AdminLayout({
     redirect('/');
   }
 
-  return (
-    <div className="flex h-screen overflow-hidden bg-[#f5f1e9] dark:bg-[#23170f]">
-      <AdminSidebar />
-      
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <AdminHeader user={user} />
-        
-        <main className="flex-1 overflow-y-auto p-6 lg:p-10">
-          <div className="mx-auto max-w-7xl">
-            {children}
-          </div>
-        </main>
-      </div>
-    </div>
-  );
+  return <AdminLayoutClient user={user}>{children}</AdminLayoutClient>;
 }

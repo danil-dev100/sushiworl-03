@@ -91,54 +91,80 @@ export function MenuPageContent({ initialProducts, categories }: MenuPageContent
   };
 
   return (
-    <div className="flex h-full">
-      {/* Sidebar de categorias */}
-      <MenuSidebar
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-      />
+    <div className="flex flex-col lg:flex-row h-full">
+      {/* Sidebar de categorias - Oculta em mobile */}
+      <div className="hidden lg:block">
+        <MenuSidebar
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+        />
+      </div>
 
       {/* Conteúdo principal */}
-      <div className="flex-1 p-6 lg:p-10">
+      <div className="flex-1 p-4 sm:p-6 lg:p-10">
         {/* Header */}
-        <header className="mb-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
+        <header className="mb-6 flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-2">
-              <h1 className="text-4xl font-black text-[#FF6B00]">Cardápio</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#FF6B00]">Cardápio</h1>
               <TooltipHelper text="Gerencie todos os produtos do seu cardápio digital, incluindo preços, categorias e disponibilidade" />
             </div>
-            <div className="relative flex items-center gap-2">
+
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Link href="/admin/cardapio/opcoes" className="w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto border-[#FF6B00] text-[#FF6B00] hover:bg-[#FF6B00]/10"
+                >
+                  <ListChecks className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Opções Globais</span>
+                  <span className="sm:hidden">Opções</span>
+                </Button>
+              </Link>
+              <Button
+                onClick={handleAddProduct}
+                className="w-full sm:w-auto bg-[#FF6B00] hover:bg-[#FF6B00]/90"
+                size="lg"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Adicionar Produto</span>
+                <span className="sm:hidden">Adicionar</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Seletor de categoria mobile + busca */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Categoria mobile */}
+            <div className="lg:hidden">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full rounded-md border border-[#ead9cd] bg-[#f5f1e9] px-4 py-2 text-sm text-[#333333] focus:border-[#FF6B00] focus:outline-none focus:ring-2 focus:ring-[#FF6B00] dark:border-[#4a3c30] dark:bg-[#23170f] dark:text-[#f5f1e9]"
+              >
+                <option value="all">Todas as categorias</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Busca */}
+            <div className="relative flex-1 flex items-center gap-2">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a16b45]" />
               <Input
                 type="text"
                 placeholder="Buscar por nome ou SKU..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-80 pl-10"
+                className="w-full pl-10"
               />
-              <TooltipHelper text="Busque produtos rapidamente por nome ou código SKU" />
+              <div className="hidden sm:block">
+                <TooltipHelper text="Busque produtos rapidamente por nome ou código SKU" />
+              </div>
             </div>
-          </div>
-          <div className="flex gap-3">
-            <Link href="/admin/cardapio/opcoes">
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-[#FF6B00] text-[#FF6B00] hover:bg-[#FF6B00]/10"
-              >
-                <ListChecks className="mr-2 h-4 w-4" />
-                Opções Globais
-              </Button>
-            </Link>
-            <Button
-              onClick={handleAddProduct}
-              className="bg-[#FF6B00] hover:bg-[#FF6B00]/90"
-              size="lg"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Produto
-            </Button>
           </div>
         </header>
 

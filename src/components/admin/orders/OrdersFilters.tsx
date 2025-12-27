@@ -114,12 +114,12 @@ export function OrdersFilters({ counts, currentStatus }: OrdersFiltersProps) {
         className="rounded-md border border-[#ead9cd] bg-[#f5f1e9] px-4 py-2 text-sm text-[#333333] focus:border-[#FF6B00] focus:outline-none focus:ring-2 focus:ring-[#FF6B00] dark:border-[#4a3c30] dark:bg-[#23170f] dark:text-[#f5f1e9]"
       />
 
-      {/* Status Filters */}
-      <div className="flex flex-shrink-0 items-center gap-2 rounded-lg bg-[#f5f1e9] p-1 dark:bg-[#23170f]">
+      {/* Status Filters - Grid 2x2 no mobile, linha no desktop */}
+      <div className="grid grid-cols-2 gap-2 md:flex md:flex-shrink-0 md:items-center md:gap-2 rounded-lg bg-[#f5f1e9] p-1 dark:bg-[#23170f]">
         <button
           type="button"
           onClick={() => handleStatusClick('today')}
-          className={`flex-1 whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-semibold transition-colors ${
+          className={`whitespace-nowrap rounded-md px-3 py-2 text-xs sm:text-sm font-semibold transition-colors min-h-[48px] md:min-h-0 md:py-1.5 md:px-4 ${
             !currentStatus || currentStatus === ''
               ? 'bg-[#FF6B00] text-white shadow-sm'
               : 'text-[#333333] hover:bg-white dark:text-[#f5f1e9] dark:hover:bg-[#2a1e14]'
@@ -130,7 +130,7 @@ export function OrdersFilters({ counts, currentStatus }: OrdersFiltersProps) {
         <button
           type="button"
           onClick={() => handleStatusClick('pending')}
-          className={`flex-1 whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-semibold transition-colors ${
+          className={`whitespace-nowrap rounded-md px-3 py-2 text-xs sm:text-sm font-semibold transition-colors min-h-[48px] md:min-h-0 md:py-1.5 md:px-4 ${
             currentStatus === 'pending'
               ? 'bg-[#FF6B00] text-white shadow-sm'
               : 'text-[#333333] hover:bg-white dark:text-[#f5f1e9] dark:hover:bg-[#2a1e14]'
@@ -141,7 +141,7 @@ export function OrdersFilters({ counts, currentStatus }: OrdersFiltersProps) {
         <button
           type="button"
           onClick={() => handleStatusClick('confirmed')}
-          className={`flex-1 whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-semibold transition-colors ${
+          className={`whitespace-nowrap rounded-md px-3 py-2 text-xs sm:text-sm font-semibold transition-colors min-h-[48px] md:min-h-0 md:py-1.5 md:px-4 ${
             currentStatus === 'confirmed'
               ? 'bg-[#FF6B00] text-white shadow-sm'
               : 'text-[#333333] hover:bg-white dark:text-[#f5f1e9] dark:hover:bg-[#2a1e14]'
@@ -152,7 +152,7 @@ export function OrdersFilters({ counts, currentStatus }: OrdersFiltersProps) {
         <button
           type="button"
           onClick={() => handleStatusClick('all')}
-          className={`flex-1 whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-semibold transition-colors ${
+          className={`whitespace-nowrap rounded-md px-3 py-2 text-xs sm:text-sm font-semibold transition-colors min-h-[48px] md:min-h-0 md:py-1.5 md:px-4 ${
             currentStatus === 'all'
               ? 'bg-[#FF6B00] text-white shadow-sm'
               : 'text-[#333333] hover:bg-white dark:text-[#f5f1e9] dark:hover:bg-[#2a1e14]'

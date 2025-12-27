@@ -97,7 +97,11 @@ export async function PUT(
       return NextResponse.json({ error: 'Fluxo não encontrado' }, { status: 404 });
     }
 
-    if (existingFlow.createdBy !== session.user.id) {
+    // Permitir edição se for o dono OU se for admin/gerente
+    const isOwner = existingFlow.createdBy === session.user.id;
+    const isAdmin = session.user.role === 'ADMIN' || session.user.role === 'MANAGER';
+
+    if (!isOwner && !isAdmin) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
     }
 
@@ -165,7 +169,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'Fluxo não encontrado' }, { status: 404 });
     }
 
-    if (existingFlow.createdBy !== session.user.id) {
+    // Permitir edição se for o dono OU se for admin/gerente
+    const isOwner = existingFlow.createdBy === session.user.id;
+    const isAdmin = session.user.role === 'ADMIN' || session.user.role === 'MANAGER';
+
+    if (!isOwner && !isAdmin) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
     }
 
@@ -215,7 +223,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Fluxo não encontrado' }, { status: 404 });
     }
 
-    if (existingFlow.createdBy !== session.user.id) {
+    // Permitir edição se for o dono OU se for admin/gerente
+    const isOwner = existingFlow.createdBy === session.user.id;
+    const isAdmin = session.user.role === 'ADMIN' || session.user.role === 'MANAGER';
+
+    if (!isOwner && !isAdmin) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
     }
 

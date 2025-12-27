@@ -98,7 +98,7 @@ export class FlowExecutionService {
       }
 
       // Verificar se trigger corresponde ao evento
-      if (!this.checkTriggerMatch(triggerNode, context)) {
+      if (!(await this.checkTriggerMatch(triggerNode, context))) {
         console.log('⏭️ Trigger não corresponde ao evento');
         return;
       }
@@ -122,12 +122,40 @@ export class FlowExecutionService {
   /**
    * Verifica se o trigger corresponde ao contexto do evento
    */
-  private checkTriggerMatch(triggerNode: any, context: FlowExecutionContext): boolean {
+  private async checkTriggerMatch(triggerNode: any, context: FlowExecutionContext): Promise<boolean> {
     const eventType = triggerNode.data?.eventType;
+    const isFirstOrder = triggerNode.data?.isFirstOrder; // Nova propriedade
 
     switch (eventType) {
       case 'order_created':
-        return !!context.orderId;
+        if (!context.orderId) return false;
+
+        // Se o trigger especifica que deve ser primeiro pedido
+        if (isFirstOrder === true) {
+          // Verificar se é realmente o primeiro pedido do cliente
+          const previousOrders = await prisma.order.count({
+            where: {
+              customerEmail: context.email,
+              status: { not: 'CANCELLED' },
+            }
+          });
+          return previousOrders === 1; // Retorna true se este for o primeiro (count = 1 porque inclui o pedido atual)
+        }
+
+        // Se o trigger especifica que NÃO deve ser primeiro pedido
+        if (isFirstOrder === false) {
+          const previousOrders = await prisma.order.count({
+            where: {
+              customerEmail: context.email,
+              status: { not: 'CANCELLED' },
+            }
+          });
+          return previousOrders > 1; // Retorna true se já houve pedidos anteriores
+        }
+
+        // Se não especifica, aceita qualquer pedido
+        return true;
+
       case 'cart_abandoned':
         return !!context.cartId;
       case 'user_registered':

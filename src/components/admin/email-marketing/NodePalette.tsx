@@ -84,8 +84,32 @@ export default function NodePalette({ onAddNode, onLoadFlowTemplate }: NodePalet
     // Triggers
     {
       type: 'trigger',
-      label: 'Novo Pedido',
-      description: 'Dispara quando um novo pedido é confirmado',
+      label: 'Primeiro Pedido',
+      description: 'Dispara APENAS no primeiro pedido do cliente',
+      icon: Zap,
+      color: '#FF6B00',
+      data: {
+        eventType: 'order_created',
+        isFirstOrder: true,
+        filters: {}
+      }
+    },
+    {
+      type: 'trigger',
+      label: 'Pedido Recorrente',
+      description: 'Dispara em pedidos de clientes que já compraram antes',
+      icon: Zap,
+      color: '#FF6B00',
+      data: {
+        eventType: 'order_created',
+        isFirstOrder: false,
+        filters: {}
+      }
+    },
+    {
+      type: 'trigger',
+      label: 'Qualquer Pedido',
+      description: 'Dispara em todos os pedidos (primeiro ou recorrente)',
       icon: Zap,
       color: '#FF6B00',
       data: {

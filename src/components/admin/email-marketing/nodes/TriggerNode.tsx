@@ -10,6 +10,7 @@ interface TriggerNodeData {
   eventType?: string;
   waitMinutes?: number;
   filters?: Record<string, any>;
+  isFirstOrder?: boolean; // Nova propriedade para distinguir primeiro pedido
 }
 
 function TriggerNode({ data, selected }: NodeProps<TriggerNodeData>) {
@@ -31,6 +32,11 @@ function TriggerNode({ data, selected }: NodeProps<TriggerNodeData>) {
   const getEventLabel = () => {
     switch (data.eventType) {
       case 'order_created':
+        if (data.isFirstOrder === true) {
+          return 'Primeiro Pedido';
+        } else if (data.isFirstOrder === false) {
+          return 'Pedido Recorrente';
+        }
         return 'Novo Pedido';
       case 'cart_abandoned':
         return `Carrinho Abandonado (${data.waitMinutes}min)`;

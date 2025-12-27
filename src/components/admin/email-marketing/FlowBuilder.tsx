@@ -20,20 +20,14 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-// Importação condicional dos componentes
-let TriggerNode: any, EmailNode: any, DelayNode: any, ConditionNode: any, ActionNode: any, NodePalette: any, NodeConfigPanel: any;
-
-try {
-  TriggerNode = require('./nodes/TriggerNode').default;
-  EmailNode = require('./nodes/EmailNode').default;
-  DelayNode = require('./nodes/DelayNode').default;
-  ConditionNode = require('./nodes/ConditionNode').default;
-  ActionNode = require('./nodes/ActionNode').default;
-  NodePalette = require('./NodePalette').default;
-  NodeConfigPanel = require('./NodeConfigPanel').default;
-} catch (error) {
-  console.error('Erro ao importar componentes:', error);
-}
+// Importação dos componentes
+import TriggerNode from './nodes/TriggerNode';
+import EmailNode from './nodes/EmailNode';
+import DelayNode from './nodes/DelayNode';
+import ConditionNode from './nodes/ConditionNode';
+import ActionNode from './nodes/ActionNode';
+import NodePalette from './NodePalette';
+import NodeConfigPanel from './NodeConfigPanel';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

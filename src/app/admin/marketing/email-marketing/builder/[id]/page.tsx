@@ -69,12 +69,15 @@ export default function FlowBuilderPage() {
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]"></div>
       </div>
     }>
-      <FlowBuilder
-        flowId={flowId}
-        initialFlow={flow}
-        templates={templates}
-        onFlowChange={(updatedFlow) => setFlow(updatedFlow)}
-      />
+      {/* Container absoluto para FlowBuilder ocupar viewport completo */}
+      <div className="fixed inset-0 top-[60px] sm:top-[64px] lg:top-[73px] left-0 lg:left-24" style={{ zIndex: 1 }}>
+        <FlowBuilder
+          flowId={flowId}
+          initialFlow={flow}
+          templates={templates}
+          onFlowChange={(updatedFlow) => setFlow(updatedFlow)}
+        />
+      </div>
     </Suspense>
   );
 }

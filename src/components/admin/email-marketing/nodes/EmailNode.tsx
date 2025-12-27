@@ -15,7 +15,7 @@ interface EmailNodeData {
 
 function EmailNode({ data, selected }: NodeProps<EmailNodeData>) {
   const hasTemplate = data.templateId && data.templateName;
-  const hasCustomContent = data.customContent && data.customContent.trim();
+  const hasCustomContent = data.customContent && typeof data.customContent === 'string' && data.customContent.trim();
 
   return (
     <div className={`

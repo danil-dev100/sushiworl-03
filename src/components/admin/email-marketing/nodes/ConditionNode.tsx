@@ -10,11 +10,12 @@ interface ConditionNodeData {
   conditionType?: string;
   operator?: string;
   value?: any;
+  conditionActive?: boolean;
 }
 
 function ConditionNode({ data, selected }: NodeProps<ConditionNodeData>) {
   const getConditionText = () => {
-    const type = data.conditionType || 'order_value';
+    const type = data.conditionType || 'cart_value';
     const operator = data.operator || 'greater_than';
     const value = data.value;
 
@@ -24,19 +25,74 @@ function ConditionNode({ data, selected }: NodeProps<ConditionNodeData>) {
 
     // Tipo da condição
     switch (type) {
-      case 'order_value':
-        typeText = 'Valor do pedido';
+      // Carrinho
+      case 'cart_value':
+        typeText = 'Valor do carrinho';
         valueText = `R$ ${value || 0}`;
         break;
-      case 'order_items':
-        typeText = 'Quantidade de itens';
+      case 'cart_items_count':
+        typeText = 'Qtd. de itens';
         break;
-      case 'customer_type':
-        typeText = 'Tipo de cliente';
-        valueText = value || 'novo';
+      case 'cart_has_product':
+        typeText = 'Tem produto';
         break;
-      case 'time_since_registration':
-        typeText = 'Dias desde cadastro';
+      case 'cart_has_category':
+        typeText = 'Tem categoria';
+        break;
+      case 'cart_has_coupon':
+        typeText = 'Cupom aplicado';
+        break;
+      case 'shipping_value':
+        typeText = 'Valor do frete';
+        valueText = `R$ ${value || 0}`;
+        break;
+      // Cliente
+      case 'is_first_order':
+        typeText = 'Primeira compra';
+        break;
+      case 'has_ordered_before':
+        typeText = 'Já comprou';
+        break;
+      case 'total_orders':
+        typeText = 'Total de pedidos';
+        break;
+      case 'total_spent':
+        typeText = 'Total gasto';
+        valueText = `R$ ${value || 0}`;
+        break;
+      case 'days_inactive':
+        typeText = 'Dias inativo';
+        break;
+      // Tempo
+      case 'time_since_abandoned':
+        typeText = 'Tempo abandonado';
+        valueText = `${value || 0} min`;
+        break;
+      case 'day_of_week':
+        typeText = 'Dia da semana';
+        break;
+      case 'hour_of_day':
+        typeText = 'Horário';
+        valueText = `${value || 0}h`;
+        break;
+      case 'device_type':
+        typeText = 'Dispositivo';
+        break;
+      // Marketing
+      case 'utm_source':
+        typeText = 'UTM Source';
+        break;
+      case 'utm_campaign':
+        typeText = 'UTM Campaign';
+        break;
+      case 'received_discount_before':
+        typeText = 'Já recebeu desconto';
+        break;
+      case 'opened_email':
+        typeText = 'Abriu email';
+        break;
+      case 'clicked_email':
+        typeText = 'Clicou em email';
         break;
       default:
         typeText = 'Condição';
@@ -56,8 +112,25 @@ function ConditionNode({ data, selected }: NodeProps<ConditionNodeData>) {
       case 'less_than':
         operatorText = '<';
         break;
+      case 'greater_or_equal':
+        operatorText = '≥';
+        break;
+      case 'less_or_equal':
+        operatorText = '≤';
+        break;
       case 'contains':
         operatorText = 'contém';
+        break;
+      case 'not_contains':
+        operatorText = 'não contém';
+        break;
+      case 'is_true':
+        operatorText = 'é';
+        valueText = '✓';
+        break;
+      case 'is_false':
+        operatorText = 'não é';
+        valueText = '✗';
         break;
       default:
         operatorText = operator;
@@ -66,9 +139,12 @@ function ConditionNode({ data, selected }: NodeProps<ConditionNodeData>) {
     return `${typeText} ${operatorText} ${valueText}`;
   };
 
+  const isInactive = data.conditionActive === false;
+
   return (
     <div className={`
       px-4 py-3 shadow-lg rounded-lg bg-white border-2 transition-all duration-200 min-w-[240px]
+      ${isInactive ? 'opacity-50 border-gray-300' : ''}
       ${selected ? 'border-[#8B5CF6] shadow-[#8B5CF6]/20' : 'border-purple-300 hover:border-[#8B5CF6]/70'}
     `}>
       {/* Header */}

@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
-import { Mail, FileText, Send } from 'lucide-react';
+import { Mail, FileText, Send, Percent, Truck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface EmailNodeData {
@@ -11,6 +11,9 @@ interface EmailNodeData {
   templateName?: string;
   subject?: string;
   customContent?: string;
+  discountPercentage?: number;
+  freeShipping?: boolean;
+  couponValidity?: number; // em horas (24, 48, etc)
 }
 
 function EmailNode({ data, selected }: NodeProps<EmailNodeData>) {
@@ -55,6 +58,24 @@ function EmailNode({ data, selected }: NodeProps<EmailNodeData>) {
         {hasCustomContent && (
           <div className="text-xs text-gray-500">
             Conteúdo personalizado
+          </div>
+        )}
+
+        {/* Desconto e Frete Grátis */}
+        {(data.discountPercentage || data.freeShipping) && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {data.discountPercentage && data.discountPercentage > 0 && (
+              <div className="flex items-center gap-1 bg-orange-100 text-orange-700 px-2 py-0.5 rounded text-xs">
+                <Percent className="h-3 w-3" />
+                {data.discountPercentage}% off
+              </div>
+            )}
+            {data.freeShipping && (
+              <div className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">
+                <Truck className="h-3 w-3" />
+                Frete grátis
+              </div>
+            )}
           </div>
         )}
 

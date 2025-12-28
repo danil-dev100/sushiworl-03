@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { X, Save, Trash2, Plus, Tag, Percent } from 'lucide-react';
 import { toast } from 'sonner';
+import { TemplateVariables } from './TemplateVariables';
 
 interface NodeConfigPanelProps {
   selectedNode: Node;
@@ -150,6 +151,72 @@ export default function NodeConfigPanel({
             rows={4}
           />
         </div>
+
+        {/* Seção de Desconto e Cupom */}
+        <div className="border-t pt-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-semibold">Cupom de Desconto</Label>
+            <Badge variant="secondary" className="text-xs">Opcional</Badge>
+          </div>
+
+          <div>
+            <Label htmlFor="discountPercentage" className="flex items-center gap-2">
+              <Percent className="h-4 w-4" />
+              Desconto (%)
+            </Label>
+            <Input
+              id="discountPercentage"
+              type="number"
+              value={config.discountPercentage || ''}
+              onChange={(e) => setConfig({ ...config, discountPercentage: e.target.value ? parseInt(e.target.value) : undefined })}
+              placeholder="Ex: 10, 15, 20"
+              min="1"
+              max="100"
+            />
+            <p className="text-xs text-gray-500 mt-1">Deixe vazio para não aplicar desconto</p>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="freeShipping">Frete Grátis</Label>
+              <p className="text-xs text-gray-500">Aplicar frete grátis no cupom</p>
+            </div>
+            <Switch
+              id="freeShipping"
+              checked={config.freeShipping || false}
+              onCheckedChange={(checked) => setConfig({ ...config, freeShipping: checked })}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="couponValidity">Validade do Cupom (horas)</Label>
+            <Select
+              value={String(config.couponValidity || 24)}
+              onValueChange={(value) => setConfig({ ...config, couponValidity: parseInt(value) })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="12">12 horas</SelectItem>
+                <SelectItem value="24">24 horas (1 dia)</SelectItem>
+                <SelectItem value="48">48 horas (2 dias)</SelectItem>
+                <SelectItem value="72">72 horas (3 dias)</SelectItem>
+                <SelectItem value="168">168 horas (7 dias)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {(config.discountPercentage || config.freeShipping) && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs text-blue-800">
+                <strong>ℹ️ Cupom será gerado automaticamente</strong>
+                <br />
+                O cupom será único por cliente e aplicado automaticamente no link de checkout enviado por email.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -198,10 +265,41 @@ export default function NodeConfigPanel({
             <SelectValue placeholder="Selecione o tipo" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="order_value">Valor do Pedido</SelectItem>
-            <SelectItem value="order_items">Quantidade de Itens</SelectItem>
-            <SelectItem value="customer_type">Tipo de Cliente</SelectItem>
-            <SelectItem value="time_since_registration">Tempo desde Cadastro</SelectItem>
+            <SelectItem value="__group_cart" disabled className="font-semibold text-gray-900">
+              📦 Pedido / Carrinho
+            </SelectItem>
+            <SelectItem value="cart_value">Valor do Carrinho</SelectItem>
+            <SelectItem value="cart_items_count">Quantidade de Itens</SelectItem>
+            <SelectItem value="cart_has_product">Contém Produto Específico</SelectItem>
+            <SelectItem value="cart_has_category">Contém Categoria</SelectItem>
+            <SelectItem value="cart_has_coupon">Cupom Aplicado</SelectItem>
+            <SelectItem value="shipping_value">Valor do Frete</SelectItem>
+
+            <SelectItem value="__group_customer" disabled className="font-semibold text-gray-900 mt-2">
+              👤 Cliente
+            </SelectItem>
+            <SelectItem value="is_first_order">Primeira Compra</SelectItem>
+            <SelectItem value="has_ordered_before">Já Comprou Antes</SelectItem>
+            <SelectItem value="total_orders">Total de Pedidos</SelectItem>
+            <SelectItem value="total_spent">Total Gasto Histórico</SelectItem>
+            <SelectItem value="days_inactive">Cliente Inativo há X Dias</SelectItem>
+
+            <SelectItem value="__group_time" disabled className="font-semibold text-gray-900 mt-2">
+              🕐 Tempo / Comportamento
+            </SelectItem>
+            <SelectItem value="time_since_abandoned">Tempo desde Abandono (min)</SelectItem>
+            <SelectItem value="day_of_week">Dia da Semana</SelectItem>
+            <SelectItem value="hour_of_day">Horário do Dia</SelectItem>
+            <SelectItem value="device_type">Dispositivo (mobile/desktop)</SelectItem>
+
+            <SelectItem value="__group_marketing" disabled className="font-semibold text-gray-900 mt-2">
+              📊 Marketing
+            </SelectItem>
+            <SelectItem value="utm_source">UTM Source</SelectItem>
+            <SelectItem value="utm_campaign">UTM Campaign</SelectItem>
+            <SelectItem value="received_discount_before">Já Recebeu Desconto</SelectItem>
+            <SelectItem value="opened_email">Abriu Email Anterior</SelectItem>
+            <SelectItem value="clicked_email">Clicou em Email Anterior</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -220,7 +318,12 @@ export default function NodeConfigPanel({
             <SelectItem value="not_equals">Diferente (≠)</SelectItem>
             <SelectItem value="greater_than">Maior que (&gt;)</SelectItem>
             <SelectItem value="less_than">Menor que (&lt;)</SelectItem>
+            <SelectItem value="greater_or_equal">Maior ou Igual (≥)</SelectItem>
+            <SelectItem value="less_or_equal">Menor ou Igual (≤)</SelectItem>
             <SelectItem value="contains">Contém</SelectItem>
+            <SelectItem value="not_contains">Não Contém</SelectItem>
+            <SelectItem value="is_true">É Verdadeiro</SelectItem>
+            <SelectItem value="is_false">É Falso</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -232,6 +335,24 @@ export default function NodeConfigPanel({
           value={config.value || ''}
           onChange={(e) => setConfig({ ...config, value: e.target.value })}
           placeholder="Digite o valor para comparação"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          {config.conditionType === 'day_of_week' && 'Ex: Segunda, Terça, etc.'}
+          {config.conditionType === 'device_type' && 'mobile ou desktop'}
+          {config.conditionType === 'cart_has_product' && 'ID do produto'}
+          {config.conditionType === 'cart_has_category' && 'Nome da categoria'}
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between pt-2 border-t">
+        <div className="space-y-0.5">
+          <Label htmlFor="conditionActive">Condição Ativa</Label>
+          <p className="text-xs text-gray-500">Desative para ignorar esta condição</p>
+        </div>
+        <Switch
+          id="conditionActive"
+          checked={config.conditionActive !== false}
+          onCheckedChange={(checked) => setConfig({ ...config, conditionActive: checked })}
         />
       </div>
     </div>
@@ -358,7 +479,7 @@ export default function NodeConfigPanel({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -372,6 +493,11 @@ export default function NodeConfigPanel({
             {renderConfig()}
           </CardContent>
         </Card>
+
+        {/* Mostrar variáveis disponíveis apenas para nó de email */}
+        {selectedNode.type === 'email' && (
+          <TemplateVariables />
+        )}
       </div>
 
       {/* Footer */}

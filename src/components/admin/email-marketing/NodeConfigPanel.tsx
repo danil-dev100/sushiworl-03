@@ -469,9 +469,9 @@ export default function NodeConfigPanel({
   };
 
   return (
-    <div className="absolute right-0 top-0 h-full w-96 bg-white border-l border-gray-200 shadow-xl z-50 flex flex-col">
+    <div className="fixed right-0 top-0 bottom-0 w-96 bg-white border-l border-gray-200 shadow-xl z-50 flex flex-col max-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white">
         <h3 className="text-lg font-semibold">Configurar Nó</h3>
         <Button variant="ghost" size="sm" onClick={onClose}>
           <X className="h-4 w-4" />
@@ -479,7 +479,7 @@ export default function NodeConfigPanel({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -501,7 +501,7 @@ export default function NodeConfigPanel({
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200 flex gap-2">
+      <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white flex gap-2">
         <Button onClick={handleSave} className="flex-1 bg-[#FF6B00] hover:bg-[#FF6B00]/90">
           <Save className="h-4 w-4 mr-2" />
           Salvar

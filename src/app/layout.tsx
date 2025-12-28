@@ -4,6 +4,7 @@ import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { PixelScripts } from "@/components/tracking/PixelScripts";
+import { PWAInstaller } from "@/components/pwa/PWAInstaller";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
@@ -19,10 +20,26 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SushiWorld - Delivery de Sushi em Santa Iria",
   description: "O melhor sushi de Santa Iria. Peça online e receba em casa!",
+  manifest: "/manifest.json",
   icons: {
-    icon: "/logo.webp",
-    shortcut: "/logo.webp",
-    apple: "/logo.webp",
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    shortcut: "/icon-192.png",
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Sushi World",
+  },
+  themeColor: "#FF6B00",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
   },
 };
 
@@ -37,6 +54,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <PixelScripts />
+        <PWAInstaller />
         <SessionProvider>
           {children}
           <Toaster />

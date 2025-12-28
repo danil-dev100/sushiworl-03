@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")     // Pooler (porta 6543) - para runtime e migrations
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Pooler (porta 6543) - para runtime e migrations
 }
 
 // ============================================
@@ -15,34 +15,34 @@ datasource db {
 // ============================================
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  name          String
-  phone         String?
-  password      String?  // Hash da senha (apenas para admin/managers)
-  role          Role     @default(CUSTOMER)
-  managerLevel  ManagerLevel? // Nível de acesso para gerentes
-  
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String
+  phone        String?
+  password     String? // Hash da senha (apenas para admin/managers)
+  role         Role          @default(CUSTOMER)
+  managerLevel ManagerLevel? // Nível de acesso para gerentes
+
   // Tracking de marketing (apenas para clientes)
-  gclid         String?
-  fbclid        String?
-  utmSource     String?
-  utmMedium     String?
-  utmCampaign   String?
-  utmTerm       String?
-  utmContent    String?
-  
+  gclid       String?
+  fbclid      String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
+
   // Estatísticas do cliente
-  totalSpent    Float    @default(0)
-  orderCount    Int      @default(0)
-  
+  totalSpent Float @default(0)
+  orderCount Int   @default(0)
+
   // Controle
-  firstLogin    Boolean  @default(true) // Para forçar troca de senha
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  orders        Order[]
+  firstLogin Boolean  @default(true) // Para forçar troca de senha
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  orders            Order[]
   emailCampaignLogs EmailCampaignLog[]
 }
 
@@ -51,61 +51,61 @@ model User {
 // ============================================
 
 model Product {
-  id              String   @id @default(cuid())
-  sku             String   @unique
-  name            String   @db.VarChar(100)
-  description     String?  @db.VarChar(300)
-  price           Float
-  discountPrice   Float?
-  category        String
-  imageUrl        String
-  ogImageUrl      String?  // Imagem para redes sociais
-  ogDescription   String?  // Descrição para redes sociais
-  
+  id            String  @id @default(cuid())
+  sku           String  @unique
+  name          String  @db.VarChar(100)
+  description   String? @db.VarChar(300)
+  price         Float
+  discountPrice Float?
+  category      String
+  imageUrl      String
+  ogImageUrl    String? // Imagem para redes sociais
+  ogDescription String? // Descrição para redes sociais
+
   // Status e visibilidade
   status          ProductStatus @default(AVAILABLE)
-  isVisible       Boolean  @default(true)
-  isFeatured      Boolean  @default(false) // Para "Destaques"
-  isTopSeller     Boolean  @default(false) // Para "Mais Vendidos"
-  featuredOrder   Int?     // Ordem em Destaques (1, 2 ou 3)
-  bestSellerOrder Int?     // Ordem em Mais Vendidos (1, 2 ou 3)
+  isVisible       Boolean       @default(true)
+  isFeatured      Boolean       @default(false) // Para "Destaques"
+  isTopSeller     Boolean       @default(false) // Para "Mais Vendidos"
+  featuredOrder   Int? // Ordem em Destaques (1, 2 ou 3)
+  bestSellerOrder Int? // Ordem em Mais Vendidos (1, 2 ou 3)
 
   // Disponibilidade
-  availableUntil  DateTime? // Data específica de disponibilidade
-  outOfStock      Boolean  @default(false)
-  
+  availableUntil DateTime? // Data específica de disponibilidade
+  outOfStock     Boolean   @default(false)
+
   // Configurações do produto
-  isHot           Boolean  @default(false)
-  isHalal         Boolean  @default(false)
-  isVegan         Boolean  @default(false)
-  isVegetarian    Boolean  @default(false)
-  isDairyFree     Boolean  @default(false)
-  isRaw           Boolean  @default(false)
-  isGlutenFree    Boolean  @default(false)
-  isNutFree       Boolean  @default(false)
-  
+  isHot        Boolean @default(false)
+  isHalal      Boolean @default(false)
+  isVegan      Boolean @default(false)
+  isVegetarian Boolean @default(false)
+  isDairyFree  Boolean @default(false)
+  isRaw        Boolean @default(false)
+  isGlutenFree Boolean @default(false)
+  isNutFree    Boolean @default(false)
+
   // Informações detalhadas
-  ingredients     String?  @db.Text // Até 2000 caracteres
-  additives       String?  @db.Text // Até 2000 caracteres
-  allergens       String[] // Array de alérgenos
-  tags            String[] // Tags do produto
-  
+  ingredients String?  @db.Text // Até 2000 caracteres
+  additives   String?  @db.Text // Até 2000 caracteres
+  allergens   String[] // Array de alérgenos
+  tags        String[] // Tags do produto
+
   // Valores nutricionais
-  nutritionPer    NutritionPer? // Por serviço ou por 100g
-  calories        Float?
-  carbs           Float?
-  totalFat        Float?
-  protein         Float?
-  sugar           Float?
-  salt            Float?
-  
+  nutritionPer NutritionPer? // Por serviço ou por 100g
+  calories     Float?
+  carbs        Float?
+  totalFat     Float?
+  protein      Float?
+  sugar        Float?
+  salt         Float?
+
   // Metadados
-  orderCount      Int      @default(0) // Para calcular "mais vendidos"
-  viewCount       Int      @default(0) // Para analytics
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  orderCount Int @default(0) // Para calcular "mais vendidos"
+  viewCount  Int @default(0) // Para analytics
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   orderItems      OrderItem[]
   productOptions  ProductOption[]
   promotionItems  PromotionItem[]
@@ -113,45 +113,45 @@ model Product {
 }
 
 model ProductOption {
-  id          String   @id @default(cuid())
-  productId   String
-  
-  name        String   @db.VarChar(80)
+  id        String @id @default(cuid())
+  productId String
+
+  name        String     @db.VarChar(80)
   type        OptionType // REQUIRED ou OPTIONAL
-  description String?  @db.VarChar(150)
-  
+  description String?    @db.VarChar(150)
+
   // Configurações
-  minSelection Int     @default(0)
-  maxSelection Int     @default(1)
-  allowMultiple Boolean @default(false)
-  displayAt   DisplayAt @default(CART) // SITE ou CART
-  isPaid      Boolean  @default(false) // Se a opção base é paga
-  basePrice   Float    @default(0) // Preço base da opção (se isPaid = true)
-  
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  choices     ProductOptionChoice[]
+  minSelection  Int       @default(0)
+  maxSelection  Int       @default(1)
+  allowMultiple Boolean   @default(false)
+  displayAt     DisplayAt @default(CART) // SITE ou CART
+  isPaid        Boolean   @default(false) // Se a opção base é paga
+  basePrice     Float     @default(0) // Preço base da opção (se isPaid = true)
+
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  choices ProductOptionChoice[]
 }
 
 model ProductOptionChoice {
-  id          String   @id @default(cuid())
-  optionId    String
+  id       String @id @default(cuid())
+  optionId String
 
-  name        String   @db.VarChar(80)
-  price       Float    @default(0) // Valor adicional
-  isDefault   Boolean  @default(false) // Pré-selecionado
-  isActive    Boolean  @default(true)
-  sortOrder   Int      @default(0)
+  name      String  @db.VarChar(80)
+  price     Float   @default(0) // Valor adicional
+  isDefault Boolean @default(false) // Pré-selecionado
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  option      ProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  option ProductOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
 }
 
 // ============================================
@@ -159,53 +159,53 @@ model ProductOptionChoice {
 // ============================================
 
 model GlobalOption {
-  id            String                    @id @default(cuid())
-  name          String                    @db.VarChar(80)
-  type          OptionType                @default(OPTIONAL)
-  description   String?                   @db.VarChar(150)
-  displayAt     DisplayAt                 @default(CART)
-  isPaid        Boolean                   @default(false)
-  basePrice     Float                     @default(0)
-  isActive      Boolean                   @default(true)
-  sortOrder     Int                       @default(0)
-  createdAt     DateTime                  @default(now())
-  updatedAt     DateTime                  @updatedAt
+  id          String     @id @default(cuid())
+  name        String     @db.VarChar(80)
+  type        OptionType @default(OPTIONAL)
+  description String?    @db.VarChar(150)
+  displayAt   DisplayAt  @default(CART)
+  isPaid      Boolean    @default(false)
+  basePrice   Float      @default(0)
+  isActive    Boolean    @default(true)
+  sortOrder   Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
-  choices       GlobalOptionChoice[]
-  assignments   GlobalOptionAssignment[]
+  choices     GlobalOptionChoice[]
+  assignments GlobalOptionAssignment[]
 
   @@index([isActive])
 }
 
 model GlobalOptionChoice {
-  id          String       @id @default(cuid())
-  optionId    String
-  name        String       @db.VarChar(80)
-  price       Float        @default(0)
-  isDefault   Boolean      @default(false)
-  isActive    Boolean      @default(true)
-  sortOrder   Int          @default(0)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id        String   @id @default(cuid())
+  optionId  String
+  name      String   @db.VarChar(80)
+  price     Float    @default(0)
+  isDefault Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  option      GlobalOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  option GlobalOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
 
   @@index([optionId])
 }
 
 model GlobalOptionAssignment {
-  id              String         @id @default(cuid())
-  globalOptionId  String
-  assignmentType  AssignmentType
-  targetId        String?        // categoryId ou productId (null se SITE_WIDE)
-  minSelection    Int            @default(0)
-  maxSelection    Int            @default(1)
-  allowMultiple   Boolean        @default(false)
-  sortOrder       Int            @default(0)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id             String         @id @default(cuid())
+  globalOptionId String
+  assignmentType AssignmentType
+  targetId       String? // categoryId ou productId (null se SITE_WIDE)
+  minSelection   Int            @default(0)
+  maxSelection   Int            @default(1)
+  allowMultiple  Boolean        @default(false)
+  sortOrder      Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
-  globalOption    GlobalOption   @relation(fields: [globalOptionId], references: [id], onDelete: Cascade)
+  globalOption GlobalOption @relation(fields: [globalOptionId], references: [id], onDelete: Cascade)
 
   @@unique([globalOptionId, assignmentType, targetId])
   @@index([globalOptionId])
@@ -218,100 +218,100 @@ model GlobalOptionAssignment {
 // ============================================
 
 model Order {
-  id              String    @id @default(cuid())
-  orderNumber     Int       @unique @default(autoincrement()) // Número único sequencial
-  userId          String?   
-  
+  id          String  @id @default(cuid())
+  orderNumber Int     @unique @default(autoincrement()) // Número único sequencial
+  userId      String?
+
   // Dados do cliente
-  customerName    String
-  customerEmail   String
-  customerPhone   String
-  customerNif     String?
-  
+  customerName  String
+  customerEmail String
+  customerPhone String
+  customerNif   String?
+
   // Endereço de entrega
   deliveryAddress Json // {street, number, neighborhood, city, postalCode, coordinates}
   deliveryAreaId  String?
-  deliveryFee     Float    @default(0)
+  deliveryFee     Float   @default(0)
 
   // Log de decisão de entrega (auditoria)
   deliveryDecisionLog Json? // {coordinates, displayName, confidence, method, matchedAreaName, priority, timestamp}
-  
+
   // Valores
-  subtotal        Float
-  discount        Float    @default(0)
-  vatAmount       Float    @default(0)
-  total           Float
-  
+  subtotal  Float
+  discount  Float @default(0)
+  vatAmount Float @default(0)
+  total     Float
+
   // Pagamento
-  status          OrderStatus @default(PENDING)
-  paymentMethod   PaymentMethod @default(CASH)
-  changeFor       Float?
-  
+  status        OrderStatus   @default(PENDING)
+  paymentMethod PaymentMethod @default(CASH)
+  changeFor     Float?
+
   // Promoções
-  couponCode      String?
-  promotionId     String?
-  
+  couponCode  String?
+  promotionId String?
+
   // Observações
-  observations    String?  @db.Text
+  observations String? @db.Text
 
   // Tracking
-  gclid           String?
-  fbclid          String?
-  utmSource       String?
+  gclid     String?
+  fbclid    String?
+  utmSource String?
 
   // Pedidos de teste (criados no painel admin para demonstração)
-  isTest          Boolean  @default(false)
+  isTest Boolean @default(false)
 
   // Controle
-  acceptedAt      DateTime?
-  cancelledAt     DateTime?
-  deliveredAt     DateTime?
-  printedAt       DateTime?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  user            User?     @relation(fields: [userId], references: [id])
-  deliveryArea    DeliveryArea? @relation(fields: [deliveryAreaId], references: [id])
-  promotion       Promotion? @relation(fields: [promotionId], references: [id])
-  orderItems      OrderItem[]
-  printHistory    PrintHistory[]
-  
+  acceptedAt  DateTime?
+  cancelledAt DateTime?
+  deliveredAt DateTime?
+  printedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User?          @relation(fields: [userId], references: [id])
+  deliveryArea DeliveryArea?  @relation(fields: [deliveryAreaId], references: [id])
+  promotion    Promotion?     @relation(fields: [promotionId], references: [id])
+  orderItems   OrderItem[]
+  printHistory PrintHistory[]
+
   @@index([orderNumber])
   @@index([status])
   @@index([createdAt])
 }
 
 model OrderItem {
-  id            String   @id @default(cuid())
-  orderId       String
-  productId     String
-  
-  name          String   // Nome do produto no momento
-  quantity      Int
-  priceAtTime   Float
-  
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+
+  name        String // Nome do produto no momento
+  quantity    Int
+  priceAtTime Float
+
   // Opções selecionadas (JSON com as escolhas)
   selectedOptions Json?
-  
-  createdAt     DateTime @default(now())
-  
-  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product       Product  @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
 }
 
 model PrintHistory {
-  id          String   @id @default(cuid())
-  orderId     String
-  
-  printerName String?
-  paperSize   String?  // 58mm, 80mm
-  status      PrintStatus @default(SUCCESS)
+  id      String @id @default(cuid())
+  orderId String
+
+  printerName  String?
+  paperSize    String? // 58mm, 80mm
+  status       PrintStatus @default(SUCCESS)
   errorMessage String?
-  
-  printedAt   DateTime @default(now())
-  
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  printedAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 // ============================================
@@ -319,32 +319,32 @@ model PrintHistory {
 // ============================================
 
 model DeliveryArea {
-  id              String   @id @default(cuid())
-  name            String
+  id   String @id @default(cuid())
+  name String
 
   // Polígono (array de coordenadas)
-  polygon         Json // [[lat, lng], [lat, lng], ...]
-  color           String   @default("#3B82F6") // Cor no mapa
+  polygon Json // [[lat, lng], [lat, lng], ...]
+  color   String @default("#3B82F6") // Cor no mapa
 
   // Configuração de entrega
-  deliveryType    DeliveryType
-  deliveryFee     Float    @default(0)
-  minOrderValue   Float?   // Valor mínimo para frete grátis
+  deliveryType  DeliveryType
+  deliveryFee   Float        @default(0)
+  minOrderValue Float? // Valor mínimo para frete grátis
 
   // Contextos de busca para geocodificação (cidades/concelhos)
   // TEMPORARIAMENTE DESABILITADO - Execute o script SQL em scripts/add-search-contexts-column.sql
   // searchContexts  String[] @default([]) // Melhora precisão da busca de endereços
 
   // Prioridade para áreas sobrepostas (maior = maior prioridade)
-  priority        Int      @default(0)
+  priority Int @default(0)
 
-  isActive        Boolean  @default(true)
-  sortOrder       Int      @default(0)
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  orders          Order[]
+  orders Order[]
 }
 
 // ============================================
@@ -352,61 +352,61 @@ model DeliveryArea {
 // ============================================
 
 model Promotion {
-  id              String   @id @default(cuid())
-  name            String
-  code            String?  @unique // Código do cupom (se aplicável)
-  type            PromotionType
-  
+  id   String        @id @default(cuid())
+  name String
+  code String?       @unique // Código do cupom (se aplicável)
+  type PromotionType
+
   // Configuração do desconto
-  discountType    DiscountType // FIXED ou PERCENTAGE
-  discountValue   Float
-  minOrderValue   Float?
-  
+  discountType  DiscountType // FIXED ou PERCENTAGE
+  discountValue Float
+  minOrderValue Float?
+
   // Configuração de exibição
-  title           String?  @db.VarChar(35)
-  description     String?  @db.VarChar(100)
-  imageUrl        String?
-  
+  title       String? @db.VarChar(35)
+  description String? @db.VarChar(100)
+  imageUrl    String?
+
   // Regras de aplicação
-  triggerType     TriggerType? // PRODUCT, CATEGORY, CART
-  triggerValue    String?  // ID do produto/categoria
-  
+  triggerType  TriggerType? // PRODUCT, CATEGORY, CART
+  triggerValue String? // ID do produto/categoria
+
   // Up-sell/Down-sell específico
   suggestedProductId String?
-  displayMessage  String?  @db.Text
-  
+  displayMessage     String? @db.Text
+
   // Controle
-  isActive        Boolean  @default(true)
+  isActive            Boolean @default(true)
   isFirstPurchaseOnly Boolean @default(false)
-  
+
   // Limites
-  usageLimit      Int?     // Limite total de usos
-  usageCount      Int      @default(0)
-  
+  usageLimit Int? // Limite total de usos
+  usageCount Int  @default(0)
+
   // Validade
-  validFrom       DateTime?
-  validUntil      DateTime?
-  
+  validFrom  DateTime?
+  validUntil DateTime?
+
   // Horário (opcional)
   timeRestriction Json? // {startHour, endHour}
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  orders          Order[]
-  promotionItems  PromotionItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders         Order[]
+  promotionItems PromotionItem[]
 }
 
 model PromotionItem {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   promotionId String
   productId   String
-  
-  sortOrder   Int      @default(0)
-  
-  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
+
+  sortOrder Int @default(0)
+
+  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
   @@unique([promotionId, productId])
 }
 
@@ -415,51 +415,51 @@ model PromotionItem {
 // ============================================
 
 model EmailCampaign {
-  id          String   @id @default(cuid())
-  name        String
-  subject     String
-  
+  id      String @id @default(cuid())
+  name    String
+  subject String
+
   // Conteúdo
-  htmlContent String   @db.Text
-  textContent String?  @db.Text
-  
+  htmlContent String  @db.Text
+  textContent String? @db.Text
+
   // Tipo e trigger
-  type        EmailType
-  trigger     EmailTrigger?
-  
+  type    EmailType
+  trigger EmailTrigger?
+
   // Configurações
-  fromName    String   @default("SushiWorld")
-  fromEmail   String   @default("pedidosushiworld@gmail.com")
-  
+  fromName  String @default("SushiWorld")
+  fromEmail String @default("pedidosushiworld@gmail.com")
+
   // Controle
-  isActive    Boolean  @default(true)
-  
+  isActive Boolean @default(true)
+
   // Estatísticas
-  sentCount   Int      @default(0)
-  openCount   Int      @default(0)
-  clickCount  Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  logs        EmailCampaignLog[]
+  sentCount  Int @default(0)
+  openCount  Int @default(0)
+  clickCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logs EmailCampaignLog[]
 }
 
 model EmailCampaignLog {
-  id          String   @id @default(cuid())
-  campaignId  String
-  userId      String?
-  
-  email       String
-  status      EmailStatus
-  
-  sentAt      DateTime @default(now())
-  openedAt    DateTime?
-  clickedAt   DateTime?
-  
-  campaign    EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  user        User?     @relation(fields: [userId], references: [id])
-  
+  id         String  @id @default(cuid())
+  campaignId String
+  userId     String?
+
+  email  String
+  status EmailStatus
+
+  sentAt    DateTime  @default(now())
+  openedAt  DateTime?
+  clickedAt DateTime?
+
+  campaign EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user     User?         @relation(fields: [userId], references: [id])
+
   @@index([email])
   @@index([sentAt])
 }
@@ -469,12 +469,12 @@ model EmailCampaignLog {
 // ============================================
 
 model AnalyticsEvent {
-  id          String   @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Evento
-  eventName   String   // page_view, add_to_cart, purchase, etc.
-  eventData   Json?    // Dados adicionais do evento
-  
+  eventName String // page_view, add_to_cart, purchase, etc.
+  eventData Json? // Dados adicionais do evento
+
   // Tracking
   sessionId   String?
   userId      String?
@@ -483,25 +483,25 @@ model AnalyticsEvent {
   utmSource   String?
   utmMedium   String?
   utmCampaign String?
-  
+
   // Página
-  pageUrl     String?
-  referrer    String?
-  
+  pageUrl  String?
+  referrer String?
+
   // Device
-  userAgent   String?
-  ipAddress   String?
-  
-  createdAt   DateTime @default(now())
-  
+  userAgent String?
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+
   @@index([eventName])
   @@index([sessionId])
   @@index([createdAt])
 }
 
 model UTMLink {
-  id          String   @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // URL e Parâmetros
   url         String
   utmSource   String
@@ -509,22 +509,22 @@ model UTMLink {
   utmCampaign String
   utmTerm     String?
   utmContent  String?
-  
+
   // Link completo gerado
-  fullUrl     String   @db.Text
-  
+  fullUrl String @db.Text
+
   // Estatísticas
-  clicks      Int      @default(0)
-  conversions Int      @default(0) // Pedidos realizados
-  revenue     Float    @default(0)
-  
+  clicks      Int   @default(0)
+  conversions Int   @default(0) // Pedidos realizados
+  revenue     Float @default(0)
+
   // Controle
-  createdBy   String?  // ID do usuário que criou
-  isActive    Boolean  @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdBy String? // ID do usuário que criou
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([utmSource])
   @@index([utmCampaign])
   @@index([createdAt])
@@ -535,73 +535,73 @@ model UTMLink {
 // ============================================
 
 model Integration {
-  id          String   @id @default(cuid())
-  name        String?
+  id   String  @id @default(cuid())
+  name String?
 
-  platform    IntegrationPlatform
-  type        String   // pixel, capi, analytics, etc.
+  platform IntegrationPlatform
+  type     String // pixel, capi, analytics, etc.
 
   // Credenciais
-  apiKey      String?
-  apiSecret   String?
-  pixelId     String?
+  apiKey        String?
+  apiSecret     String?
+  pixelId       String?
   measurementId String?
-  accessToken String?
+  accessToken   String?
 
   // Configuração
-  config      Json?    // Configurações específicas
+  config Json? // Configurações específicas
 
-  isActive    Boolean  @default(true)
-  lastSyncAt  DateTime?
+  isActive   Boolean   @default(true)
+  lastSyncAt DateTime?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Logs de eventos
-  eventLogs   TrackingEvent[]
+  eventLogs TrackingEvent[]
 
   @@unique([platform, type, pixelId])
 }
 
 // Log de eventos de tracking
 model TrackingEvent {
-  id            String   @id @default(cuid())
+  id String @id @default(cuid())
 
   integrationId String?
   integration   Integration? @relation(fields: [integrationId], references: [id], onDelete: SetNull)
 
-  eventType     String   // page_view, purchase, add_to_cart, etc.
-  eventData     Json?    // Dados do evento
+  eventType String // page_view, purchase, add_to_cart, etc.
+  eventData Json? // Dados do evento
 
   // Origem do tráfego
-  pageUrl       String?
-  referrer      String?
+  pageUrl  String?
+  referrer String?
 
   // Identificadores de cliques
-  gclid         String?  // Google Click ID
-  fbclid        String?  // Facebook Click ID
-  ttclid        String?  // TikTok Click ID
+  gclid  String? // Google Click ID
+  fbclid String? // Facebook Click ID
+  ttclid String? // TikTok Click ID
 
   // UTM parameters
-  utmSource     String?
-  utmMedium     String?
-  utmCampaign   String?
-  utmContent    String?
-  utmTerm       String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmContent  String?
+  utmTerm     String?
 
   // Status do envio
-  platform      String?  // facebook, google, tiktok, etc.
-  status        String   @default("pending") // pending, sent, failed
-  statusCode    Int?
-  errorMessage  String?
+  platform     String? // facebook, google, tiktok, etc.
+  status       String  @default("pending") // pending, sent, failed
+  statusCode   Int?
+  errorMessage String?
 
   // Dados do usuário
-  userId        String?
-  sessionId     String?
-  ipAddress     String?
-  userAgent     String?
+  userId    String?
+  sessionId String?
+  ipAddress String?
+  userAgent String?
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([eventType])
   @@index([platform])
@@ -613,79 +613,79 @@ model TrackingEvent {
 
 // Configuração de Open Graph / Social Share
 model SocialShareConfig {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // OG Tags padrão
   ogTitle       String?
   ogDescription String?
   ogImage       String?
-  ogType        String   @default("website")
+  ogType        String  @default("website")
 
   // Twitter Card
-  twitterCard   String   @default("summary_large_image")
-  twitterSite   String?
+  twitterCard    String  @default("summary_large_image")
+  twitterSite    String?
   twitterCreator String?
 
   // Configuração adicional
-  siteName      String?
-  locale        String   @default("pt_BR")
+  siteName String?
+  locale   String  @default("pt_BR")
 
-  isActive      Boolean  @default(true)
+  isActive Boolean @default(true)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Webhook {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  name        String
-  url         String
-  method      String   @default("POST") // POST, GET, PUT
+  name   String
+  url    String
+  method String @default("POST") // POST, GET, PUT
 
   // Direção do webhook
-  direction   WebhookDirection @default(OUTBOUND)
+  direction WebhookDirection @default(OUTBOUND)
 
   // Eventos que disparam o webhook
-  events      String[] // order.created, order.confirmed, etc.
+  events String[] // order.created, order.confirmed, etc.
 
   // Headers customizados e segurança
-  headers     Json?
-  secret      String?  // Secret para validação
+  headers Json?
+  secret  String? // Secret para validação
 
   // Controle
-  isActive    Boolean  @default(true)
+  isActive Boolean @default(true)
 
   // Estatísticas
   lastTriggeredAt DateTime?
-  successCount Int     @default(0)
-  failureCount Int     @default(0)
+  successCount    Int       @default(0)
+  failureCount    Int       @default(0)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  logs        WebhookLog[]
+  logs WebhookLog[]
 }
 
 model WebhookLog {
-  id          String   @id @default(cuid())
-  webhookId   String
+  id        String @id @default(cuid())
+  webhookId String
 
-  event       String
-  status      WebhookStatus
-  statusCode  Int?
+  event      String
+  status     WebhookStatus
+  statusCode Int?
 
   // Dados da requisição/resposta
-  requestBody Json?
+  requestBody  Json?
   responseBody String? @db.Text
   errorMessage String?
 
   // Tempo de execução
-  duration    Int?     // em milissegundos
+  duration Int? // em milissegundos
 
   triggeredAt DateTime @default(now())
 
-  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
   @@index([webhookId])
   @@index([triggeredAt])
@@ -697,97 +697,97 @@ model WebhookLog {
 // ============================================
 
 model EmailAutomation {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   name        String
   description String?
 
   // Fluxo da automação (JSON com nós e conexões)
-  flow        Json // {nodes: [], connections: []}
+  flow Json // {nodes: [], connections: []}
 
-  isActive    Boolean  @default(true)
-  isDraft     Boolean  @default(true)
+  isActive Boolean @default(true)
+  isDraft  Boolean @default(true)
 
   // Estatísticas
   totalExecutions Int @default(0)
   successCount    Int @default(0)
   failureCount    Int @default(0)
 
-  createdBy   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  logs        EmailAutomationLog[]
+  logs EmailAutomationLog[]
 }
 
 model EmailAutomationLog {
-  id            String   @id @default(cuid())
-  automationId  String
+  id           String @id @default(cuid())
+  automationId String
 
   // Dados da execução
-  userId        String?
-  email         String
-  trigger       String
-  nodeId        String
+  userId  String?
+  email   String
+  trigger String
+  nodeId  String
 
-  status        EmailAutomationStatus
-  errorMessage  String?
+  status       EmailAutomationStatus
+  errorMessage String?
 
-  executedAt    DateTime @default(now())
+  executedAt DateTime @default(now())
 
-  automation    EmailAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  automation EmailAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
 
   @@index([automationId])
   @@index([executedAt])
 }
 
 model EmailTemplate {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   name        String
   subject     String
-  htmlContent String   @db.Text
-  textContent String?  @db.Text
+  htmlContent String  @db.Text
+  textContent String? @db.Text
 
   // Configurações
-  fromName    String   @default("SushiWorld")
-  fromEmail   String   @default("pedidosushiworld@gmail.com")
+  fromName  String @default("SushiWorld")
+  fromEmail String @default("pedidosushiworld@gmail.com")
 
   // Botão personalizado
   buttonText  String?
   buttonUrl   String?
-  buttonColor String?  @default("#FF6B00")
+  buttonColor String? @default("#FF6B00")
 
-  isActive    Boolean  @default(true)
+  isActive Boolean @default(true)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model SmtpSettings {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Servidor SMTP
-  smtpServer  String   @default("smtp.gmail.com")
-  smtpPort    Int      @default(587)
-  smtpUser    String?
+  smtpServer   String  @default("smtp.gmail.com")
+  smtpPort     Int     @default(587)
+  smtpUser     String?
   smtpPassword String?
-  useTls      Boolean  @default(true)
+  useTls       Boolean @default(true)
 
   // Remetente padrão
   defaultFromName  String @default("SushiWorld")
   defaultFromEmail String @default("pedidosushiworld@gmail.com")
 
   // Anti-spam
-  minDelaySeconds  Int    @default(60)  // Delay mínimo entre emails
-  maxDelaySeconds  Int    @default(300) // Delay máximo entre emails
-  maxEmailsPerHour Int    @default(100) // Limite por hora
+  minDelaySeconds  Int @default(60) // Delay mínimo entre emails
+  maxDelaySeconds  Int @default(300) // Delay máximo entre emails
+  maxEmailsPerHour Int @default(100) // Limite por hora
 
   // Retenção de dados
-  emailRetentionDays Int  @default(30)  // Dias para manter emails
+  emailRetentionDays Int @default(30) // Dias para manter emails
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ============================================
@@ -795,46 +795,46 @@ model SmtpSettings {
 // ============================================
 
 model SmartPromotion {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  name            String
-  description     String?
+  name        String
+  description String?
 
-  type            SmartPromotionType // UPSELL, ORDER_BUMP, DOWNSELL
+  type SmartPromotionType // UPSELL, ORDER_BUMP, DOWNSELL
 
   // Gatilho
-  triggerType     TriggerType? // PRODUCT, CATEGORY, CART, CART_VALUE
-  triggerValue    String?  // ID do produto/categoria ou valor
+  triggerType  TriggerType? // PRODUCT, CATEGORY, CART, CART_VALUE
+  triggerValue String? // ID do produto/categoria ou valor
 
   // Oferta
-  offerProductId  String?  // Produto oferecido
-  discountType    DiscountType // FIXED ou PERCENTAGE
-  discountValue   Float
+  offerProductId String? // Produto oferecido
+  discountType   DiscountType // FIXED ou PERCENTAGE
+  discountValue  Float
 
   // Mensagem
-  title           String?  @db.VarChar(35)
-  message         String?  @db.Text
-  displayMessage  String?  @db.Text
+  title          String? @db.VarChar(35)
+  message        String? @db.Text
+  displayMessage String? @db.Text
 
   // Condições
-  minCartValue    Float?   // Valor mínimo do carrinho
-  timeRestriction Json?    // {startHour, endHour}
-  maxUses         Int?     // Limite de uso por pedido
+  minCartValue    Float? // Valor mínimo do carrinho
+  timeRestriction Json? // {startHour, endHour}
+  maxUses         Int? // Limite de uso por pedido
 
   // Controle
-  priority        Int      @default(0) // Ordem de prioridade
-  isMandatory     Boolean  @default(false) // Checkbox obrigatório
-  isActive        Boolean  @default(true)
+  priority    Int     @default(0) // Ordem de prioridade
+  isMandatory Boolean @default(false) // Checkbox obrigatório
+  isActive    Boolean @default(true)
 
   // Estatísticas
-  shownCount      Int      @default(0)
-  acceptedCount   Int      @default(0)
-  revenue         Float    @default(0)
+  shownCount    Int   @default(0)
+  acceptedCount Int   @default(0)
+  revenue       Float @default(0)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  offerProduct    Product? @relation(fields: [offerProductId], references: [id])
+  offerProduct Product? @relation(fields: [offerProductId], references: [id])
 }
 
 // ============================================
@@ -842,49 +842,49 @@ model SmartPromotion {
 // ============================================
 
 model Settings {
-  id            String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Empresa
-  companyName   String
-  billingName   String?
-  nif           String
-  address       String?
-  phone         String?
-  email         String?
-  websiteUrl    String?
+  companyName String
+  billingName String?
+  nif         String
+  address     String?
+  phone       String?
+  email       String?
+  websiteUrl  String?
 
   // Horários de atendimento
-  openingHours  Json?   // {monday: {open: "11:00", close: "23:00", closed: false}, ...}
+  openingHours Json? // {monday: {open: "11:00", close: "23:00", closed: false}, ...}
 
   // Status do restaurante
-  isOnline      Boolean  @default(true) // Restaurante online/offline (aceita pedidos)
+  isOnline Boolean @default(true) // Restaurante online/offline (aceita pedidos)
 
   // IVA
-  vatRate       Float    @default(13)
-  vatType       VatType  @default(INCLUSIVE)
+  vatRate Float   @default(13)
+  vatType VatType @default(INCLUSIVE)
 
   // Impressora
-  printerType   String?  // USB, BLUETOOTH
-  printerName   String?
-  paperSize     String?  // 58mm, 80mm
+  printerType String? // USB, BLUETOOTH
+  printerName String?
+  paperSize   String? // 58mm, 80mm
 
   // Banners do site
-  banners       Json?    // Array de URLs
-  bannerMode    BannerMode @default(STATIC)
+  banners    Json? // Array de URLs
+  bannerMode BannerMode @default(STATIC)
 
   // Popup promocional
-  popupEnabled  Boolean  @default(false)
-  popupConfig   Json?    // {type, imageUrl, text, buttonText, buttonColor, link}
+  popupEnabled Boolean @default(false)
+  popupConfig  Json? // {type, imageUrl, text, buttonText, buttonColor, link}
 
   // Configurações de impressão
-  printSettings Json?    // {layout: [], footerMessage: ''}
+  printSettings Json? // {layout: [], footerMessage: ''}
 
   // Itens adicionais
-  additionalItems         Json?    // Array de itens opcionais no carrinho
-  checkoutAdditionalItems Json?    // Array de itens opcionais no checkout
+  additionalItems         Json? // Array de itens opcionais no carrinho
+  checkoutAdditionalItems Json? // Array de itens opcionais no checkout
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ============================================
@@ -898,9 +898,9 @@ enum Role {
 }
 
 enum ManagerLevel {
-  BASIC           // Apenas aceitar/cancelar/imprimir pedidos
-  INTERMEDIATE    // + Alterar pedidos
-  FULL            // Acesso total exceto financeiro e dados de clientes
+  BASIC // Apenas aceitar/cancelar/imprimir pedidos
+  INTERMEDIATE // + Alterar pedidos
+  FULL // Acesso total exceto financeiro e dados de clientes
 }
 
 enum ProductStatus {
@@ -925,9 +925,9 @@ enum DisplayAt {
 }
 
 enum AssignmentType {
-  SITE_WIDE   // Aplica em todos os produtos
-  CATEGORY    // Aplica em produtos de uma categoria
-  PRODUCT     // Aplica em um produto específico
+  SITE_WIDE // Aplica em todos os produtos
+  CATEGORY // Aplica em produtos de uma categoria
+  PRODUCT // Aplica em um produto específico
 }
 
 enum OrderStatus {
@@ -956,11 +956,11 @@ enum DeliveryType {
 }
 
 enum PromotionType {
-  COUPON          // Cupom de desconto
-  FIRST_PURCHASE  // Primeira compra
-  ORDER_BUMP      // Adicional no checkout
-  UP_SELL         // Upgrade de produto
-  DOWN_SELL       // Alternativa mais barata
+  COUPON // Cupom de desconto
+  FIRST_PURCHASE // Primeira compra
+  ORDER_BUMP // Adicional no checkout
+  UP_SELL // Upgrade de produto
+  DOWN_SELL // Alternativa mais barata
 }
 
 enum DiscountType {
@@ -976,9 +976,9 @@ enum TriggerType {
 }
 
 enum EmailType {
-  TRANSACTIONAL   // Confirmação de pedido
-  MARKETING       // Campanhas
-  AUTOMATION      // Carrinho abandonado, etc.
+  TRANSACTIONAL // Confirmação de pedido
+  MARKETING // Campanhas
+  AUTOMATION // Carrinho abandonado, etc.
 }
 
 enum EmailTrigger {
@@ -1030,8 +1030,8 @@ enum EmailAutomationStatus {
 }
 
 enum WebhookDirection {
-  INBOUND   // Recebe webhooks externos
-  OUTBOUND  // Envia webhooks
+  INBOUND // Recebe webhooks externos
+  OUTBOUND // Envia webhooks
 }
 
 enum WebhookStatus {
@@ -1041,9 +1041,9 @@ enum WebhookStatus {
 }
 
 enum SmartPromotionType {
-  UPSELL      // Upgrade de produto
-  ORDER_BUMP  // Adicional no checkout
-  DOWNSELL    // Alternativa mais barata
+  UPSELL // Upgrade de produto
+  ORDER_BUMP // Adicional no checkout
+  DOWNSELL // Alternativa mais barata
 }
 
 // ============================================
@@ -1051,15 +1051,15 @@ enum SmartPromotionType {
 // ============================================
 
 model CustomMetric {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   name        String
   description String?
-  formula     String   @db.Text
+  formula     String     @db.Text
   type        MetricType @default(FINANCIAL)
-  unit        String   @default("€")
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  unit        String     @default("€")
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 enum MetricType {
@@ -1074,26 +1074,62 @@ enum MetricType {
 // ============================================
 
 model CompanySettings {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Configurações de impressão
-  printerSettings Json?    // Armazena OrderReceiptConfig
+  printerSettings Json? // Armazena OrderReceiptConfig
 
   // Banner principal
-  homeBannerImageUrl  String?
-  homeBannerTitle     String?
-  homeBannerSubtitle  String?
-  homeBannerLinkUrl   String?
-  homeBannerLinkText  String?
-  showHomeBanner      Boolean  @default(true)
+  homeBannerImageUrl String?
+  homeBannerTitle    String?
+  homeBannerSubtitle String?
+  homeBannerLinkUrl  String?
+  homeBannerLinkText String?
+  showHomeBanner     Boolean @default(true)
 
   // Informações da empresa
-  companyName     String?
-  companyAddress  String?
-  companyPhone    String?
-  companyEmail    String?
-  websiteUrl      String?
+  companyName    String?
+  companyAddress String?
+  companyPhone   String?
+  companyEmail   String?
+  websiteUrl     String?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================
+// PWA APP INSTALL TRACKING
+// ============================================
+
+model AppInstallLog {
+  id String @id @default(cuid())
+
+  // Tracking de origem (UTM)
+  utmSource   String? // ex: qr, banner, email
+  utmMedium   String? // ex: android_app, ios_app
+  utmCampaign String? // ex: promo_natal
+
+  // Informações técnicas (anônimas)
+  userAgent  String  @db.Text // Para detectar SO/Browser
+  ipHash     String // Hash SHA-256 do IP (nunca IP real)
+  deviceType String? // android, ios, desktop, unknown
+
+  // Eventos
+  eventType   AppInstallEvent @default(LINK_CLICKED)
+  isConverted Boolean         @default(false) // Se realmente instalou o app
+
+  // Timestamps
+  clickedAt   DateTime  @default(now())
+  installedAt DateTime? // Quando detectou que foi instalado
+
+  @@index([utmSource, utmMedium])
+  @@index([eventType])
+  @@index([clickedAt])
+}
+
+enum AppInstallEvent {
+  LINK_CLICKED // Clicou no link de instalação
+  APP_INSTALLED // Instalou o app (detectado via beforeinstallprompt)
+  APP_OPENED // Abriu o app instalado
 }

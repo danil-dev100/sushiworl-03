@@ -8,20 +8,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Smartphone,
   Download,
   QrCode,
   Copy,
   Check,
   BarChart3,
   Apple,
-  Chrome,
+  Smartphone,
   ExternalLink,
   AlertCircle,
   TrendingUp,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import QRCodeStyling from 'qr-code-styling';
 
 interface AppStats {
   summary: {
@@ -76,7 +74,10 @@ export function AppDownloadPage() {
   };
 
   // Gerar QR Code
-  const generateQRCode = (url: string, elementId: string) => {
+  const generateQRCode = async (url: string, elementId: string) => {
+    // Importar QRCodeStyling dinamicamente apenas no cliente
+    const QRCodeStyling = (await import('qr-code-styling')).default;
+
     const qrCode = new QRCodeStyling({
       width: 300,
       height: 300,
@@ -197,7 +198,7 @@ export function AppDownloadPage() {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-green-100 rounded-lg">
-                  <Chrome className="h-5 w-5 text-green-600" />
+                  <Smartphone className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
                   <CardTitle>Android App</CardTitle>

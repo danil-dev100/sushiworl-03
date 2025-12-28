@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,7 @@ import {
   ExternalLink,
   AlertCircle,
   TrendingUp,
+  ArrowLeft,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,6 +34,7 @@ interface AppStats {
 }
 
 export function AppDownloadPage() {
+  const router = useRouter();
   const [androidLink, setAndroidLink] = useState('');
   const [iosLink, setIOSLink] = useState('');
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
@@ -156,6 +159,17 @@ export function AppDownloadPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
+        <div className="flex items-center gap-3 mb-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/admin/marketing/promocoes')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Button>
+        </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           Download de Apps
         </h1>

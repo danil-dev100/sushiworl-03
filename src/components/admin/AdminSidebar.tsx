@@ -13,7 +13,8 @@ import {
   Webhook,
   Printer,
   Mail,
-  Link2
+  Link2,
+  Download
 } from 'lucide-react';
 import { useOrderPolling } from '@/hooks/useOrderPolling';
 
@@ -62,6 +63,11 @@ const menuItems = [
     label: 'UTM',
     icon: Link2,
     href: '/admin/marketing/utm',
+  },
+  {
+    label: 'Apps',
+    icon: Download,
+    href: '/admin/marketing/apps',
   },
   {
     label: 'Entrega',

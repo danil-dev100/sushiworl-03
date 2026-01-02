@@ -8,23 +8,23 @@ export async function POST(request: NextRequest) {
 
     // Verificar variáveis de ambiente primeiro
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    // Tentar usar Service Role Key, se não houver, usar Anon Key (fallback)
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     console.log('[Upload API] Supabase URL exists:', !!supabaseUrl);
-    console.log('[Upload API] Service Key exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-    console.log('[Upload API] Anon Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-    console.log('[Upload API] Using key type:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SERVICE_ROLE' : 'ANON');
+    console.log('[Upload API] Service Role Key exists:', !!supabaseKey);
+    console.log('[Upload API] All env vars:', Object.keys(process.env).filter(k => k.includes('SUPABASE')));
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl) {
+      return NextResponse.json(
+        { error: 'NEXT_PUBLIC_SUPABASE_URL não configurada' },
+        { status: 500 }
+      );
+    }
+
+    if (!supabaseKey) {
       return NextResponse.json(
         {
-          error: 'Configuração do Supabase incompleta. Verifique as variáveis de ambiente.',
-          debug: {
-            hasUrl: !!supabaseUrl,
-            hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-            hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          }
+          error: 'SUPABASE_SERVICE_ROLE_KEY não configurada. Adicione na Vercel e faça REDEPLOY (Settings → Deployments → última → ... → Redeploy)'
         },
         { status: 500 }
       );

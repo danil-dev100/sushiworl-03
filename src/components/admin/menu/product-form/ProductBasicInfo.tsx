@@ -55,13 +55,24 @@ export function ProductBasicInfo({ form, categories }: ProductBasicInfoProps) {
         body: formData,
       });
 
+      // Tentar ler a resposta como texto primeiro
+      const responseText = await response.text();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao fazer upload');
+        console.error('[Upload Frontend] Erro HTTP:', response.status, responseText);
+
+        // Tentar parsear como JSON
+        try {
+          const error = JSON.parse(responseText);
+          throw new Error(error.error || `Erro ${response.status}: ${responseText.substring(0, 100)}`);
+        } catch (e) {
+          throw new Error(`Erro ${response.status}: ${responseText.substring(0, 100)}`);
+        }
       }
 
-      const { imageUrl } = await response.json();
-      form.setValue('imageUrl', imageUrl);
+      // Parsear resposta bem-sucedida
+      const data = JSON.parse(responseText);
+      form.setValue('imageUrl', data.imageUrl);
       toast.success('Imagem enviada com sucesso');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Erro ao fazer upload');

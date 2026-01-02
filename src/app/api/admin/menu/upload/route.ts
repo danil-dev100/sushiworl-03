@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { supabaseStorage } from '@/lib/supabase-storage';
 
 export async function POST(request: NextRequest) {
   try {
     console.log('[Upload API] Iniciando upload de imagem...');
+
+    // Verificar variáveis de ambiente primeiro
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    console.log('[Upload API] Supabase URL exists:', !!supabaseUrl);
+    console.log('[Upload API] Service Key exists:', !!supabaseKey);
+
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json(
+        { error: 'Configuração do Supabase incompleta. Verifique as variáveis de ambiente.' },
+        { status: 500 }
+      );
+    }
 
     const session = await getServerSession(authOptions);
 
@@ -49,8 +62,17 @@ export async function POST(request: NextRequest) {
 
     console.log('[Upload API] ArrayBuffer criado, tamanho:', bytes.byteLength);
 
+    // Criar cliente Supabase dinamicamente
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+
     // Upload para Supabase Storage
-    const { data, error } = await supabaseStorage.storage
+    const { data, error } = await supabase.storage
       .from('produtos')
       .upload(fileName, bytes, {
         contentType: file.type,
@@ -66,7 +88,7 @@ export async function POST(request: NextRequest) {
     console.log('[Upload API] Upload Supabase OK:', data);
 
     // Obter URL pública
-    const { data: publicUrlData } = supabaseStorage.storage
+    const { data: publicUrlData } = supabase.storage
       .from('produtos')
       .getPublicUrl(fileName);
 

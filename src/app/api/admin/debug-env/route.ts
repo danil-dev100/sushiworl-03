@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+// Forçar novo deploy após reconfigurar env vars na Vercel
 
 export async function GET(request: NextRequest) {
   try {

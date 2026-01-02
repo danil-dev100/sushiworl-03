@@ -11,8 +11,14 @@ export async function POST(request: NextRequest) {
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     console.log('[Upload API] Supabase URL exists:', !!supabaseUrl);
+    console.log('[Upload API] Supabase URL value:', supabaseUrl);
     console.log('[Upload API] Service Role Key exists:', !!supabaseKey);
-    console.log('[Upload API] All env vars:', Object.keys(process.env).filter(k => k.includes('SUPABASE')));
+    console.log('[Upload API] Service Role Key length:', supabaseKey?.length || 0);
+    console.log('[Upload API] All SUPABASE env vars:', Object.keys(process.env).filter(k => k.includes('SUPABASE')));
+    console.log('[Upload API] Exact key check:', {
+      hasKey: 'SUPABASE_SERVICE_ROLE_KEY' in process.env,
+      value: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'EXISTS' : 'MISSING'
+    });
 
     if (!supabaseUrl) {
       return NextResponse.json(

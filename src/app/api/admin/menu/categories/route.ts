@@ -140,11 +140,22 @@ export async function DELETE(request: NextRequest) {
     console.log(`[Categories API] Excluindo categoria "${category}" e todos os seus produtos...`);
 
     // Deletar todos os produtos desta categoria
-    const result = await prisma.product.deleteMany({
+    const productsResult = await prisma.product.deleteMany({
       where: { category },
     });
 
-    console.log(`[Categories API] ${result.count} produto(s) excluído(s) da categoria "${category}"`);
+    console.log(`[Categories API] ${productsResult.count} produto(s) excluído(s) da categoria "${category}"`);
+
+    // Deletar categoria da tabela categories (se existir)
+    try {
+      await prisma.category.delete({
+        where: { name: category },
+      });
+      console.log(`[Categories API] Categoria "${category}" deletada da tabela categories`);
+    } catch (error) {
+      // Categoria pode não existir na tabela (categorias antigas)
+      console.log(`[Categories API] Categoria "${category}" não estava na tabela categories (categoria antiga)`);
+    }
 
     // Revalidar páginas
     revalidatePath('/');
@@ -153,8 +164,8 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      deletedCount: result.count,
-      message: `Categoria "${category}" e ${result.count} produto(s) foram excluídos com sucesso.`,
+      deletedCount: productsResult.count,
+      message: `Categoria "${category}" e ${productsResult.count} produto(s) foram excluídos com sucesso.`,
     });
   } catch (error) {
     console.error('[Categories API] Erro ao excluir categoria:', error);

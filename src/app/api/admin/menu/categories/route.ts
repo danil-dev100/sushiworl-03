@@ -18,15 +18,27 @@ export async function GET() {
       );
     }
 
-    // Buscar categorias únicas dos produtos
+    // Buscar categorias da tabela categories
+    const dbCategories = await prisma.category.findMany({
+      orderBy: { order: 'asc' },
+    });
+
+    // Buscar categorias dos produtos (para incluir as antigas)
     const products = await prisma.product.findMany({
       select: { category: true },
       distinct: ['category'],
     });
 
-    const categories = products.map(p => p.category);
+    const productCategories = products.map(p => p.category);
 
-    return NextResponse.json({ categories });
+    // Combinar ambas (dar prioridade às da tabela)
+    const categoryNames = dbCategories.map(c => c.name);
+    const allCategories = [
+      ...categoryNames,
+      ...productCategories.filter(pc => !categoryNames.includes(pc))
+    ];
+
+    return NextResponse.json({ categories: allCategories });
   } catch (error) {
     console.error('[Categories API] Erro:', error);
     return NextResponse.json(
@@ -60,25 +72,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar se categoria já existe
-    const existingProduct = await prisma.product.findFirst({
-      where: { category: name },
+    // Verificar se categoria já existe na tabela
+    const existingCategory = await prisma.category.findUnique({
+      where: { name },
     });
 
-    if (existingProduct) {
+    if (existingCategory) {
       return NextResponse.json(
         { error: 'Categoria já existe' },
         { status: 400 }
       );
     }
 
-    // Salvar emoji na configuração (pode ser expandido futuramente)
-    // Por enquanto, a categoria é criada quando um produto é adicionado a ela
-    // Retornamos sucesso para que o frontend adicione à lista
+    // Criar categoria na tabela
+    const category = await prisma.category.create({
+      data: {
+        name,
+        emoji: emoji || '🍽️',
+      },
+    });
+
+    console.log(`[Categories API] Categoria "${name}" criada com sucesso`);
+
+    // Revalidar páginas
+    revalidatePath('/');
+    revalidatePath('/cardapio');
+    revalidatePath('/admin/cardapio');
 
     return NextResponse.json({
       success: true,
-      category: { name, emoji },
+      category: { name: category.name, emoji: category.emoji },
     });
   } catch (error) {
     console.error('[Categories API] Erro:', error);

@@ -15,19 +15,15 @@ async function getMenuData() {
   try {
     console.log('[Menu Page] Buscando produtos...');
 
-    const [products, categories] = await Promise.all([
+    const [products, dbCategories, productCategories] = await Promise.all([
       prisma.product.findMany({
         orderBy: { createdAt: 'desc' },
-        // TEMPORÁRIO: Remover productOptions até sincronizar schema
-        // include: {
-        //   productOptions: {
-        //     include: {
-        //       choices: true,
-        //     },
-        //   },
-        // },
       }),
-      // Buscar categorias únicas dos produtos
+      // Buscar todas as categorias da tabela (incluindo vazias) - ADMIN VÊ TODAS
+      prisma.category.findMany({
+        orderBy: { order: 'asc' },
+      }),
+      // Buscar categorias dos produtos (para incluir antigas que não estão na tabela)
       prisma.product.findMany({
         select: { category: true },
         distinct: ['category'],
@@ -35,12 +31,18 @@ async function getMenuData() {
       }),
     ]);
 
-    const uniqueCategories = categories.map((c) => c.category);
+    // Combinar categorias da tabela + categorias antigas dos produtos
+    const dbCategoryNames = dbCategories.map(c => c.name);
+    const oldCategories = productCategories
+      .map(c => c.category)
+      .filter(cat => !dbCategoryNames.includes(cat));
+
+    const allCategories = [...dbCategoryNames, ...oldCategories];
 
     console.log('[Menu Page] Produtos encontrados:', products.length);
-    console.log('[Menu Page] Categorias:', uniqueCategories);
+    console.log('[Menu Page] Categorias (incluindo vazias):', allCategories);
 
-    return { products, categories: uniqueCategories };
+    return { products, categories: allCategories };
   } catch (error) {
     console.error('[Menu] Erro ao carregar dados:', error);
     return { products: [], categories: [] };

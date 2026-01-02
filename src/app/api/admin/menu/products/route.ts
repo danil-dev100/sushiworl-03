@@ -45,6 +45,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'SKU ja existe' }, { status: 400 });
     }
 
+    // Validar imageUrl
+    if (!body.imageUrl || (typeof body.imageUrl === 'string' && body.imageUrl.trim() === '')) {
+      return NextResponse.json(
+        { error: 'Imagem é obrigatória. Faça upload ou insira uma URL.' },
+        { status: 400 }
+      );
+    }
+
     // Validação dos campos de ordem (1, 2 ou 3)
     if (body.featuredOrder !== undefined && body.featuredOrder !== null) {
       if (![1, 2, 3].includes(body.featuredOrder)) {

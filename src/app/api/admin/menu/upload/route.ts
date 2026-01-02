@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { supabaseStorage } from '@/lib/supabase-storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,20 +44,33 @@ export async function POST(request: NextRequest) {
 
     console.log('[Upload API] Nome do arquivo:', fileName);
 
-    // Converter para buffer
+    // Converter para ArrayBuffer
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
 
-    console.log('[Upload API] Buffer criado, tamanho:', buffer.length);
+    console.log('[Upload API] ArrayBuffer criado, tamanho:', bytes.byteLength);
 
-    // Salvar na pasta public/produtos
-    const path = join(process.cwd(), 'public', 'produtos', fileName);
-    console.log('[Upload API] Salvando em:', path);
+    // Upload para Supabase Storage
+    const { data, error } = await supabaseStorage.storage
+      .from('produtos')
+      .upload(fileName, bytes, {
+        contentType: file.type,
+        cacheControl: '3600',
+        upsert: false,
+      });
 
-    await writeFile(path, buffer);
+    if (error) {
+      console.error('[Upload API] Erro Supabase:', error);
+      throw new Error(error.message);
+    }
 
-    // Retornar URL da imagem
-    const imageUrl = `/produtos/${fileName}`;
+    console.log('[Upload API] Upload Supabase OK:', data);
+
+    // Obter URL pública
+    const { data: publicUrlData } = supabaseStorage.storage
+      .from('produtos')
+      .getPublicUrl(fileName);
+
+    const imageUrl = publicUrlData.publicUrl;
 
     console.log('[Upload API] Upload concluído! URL:', imageUrl);
 

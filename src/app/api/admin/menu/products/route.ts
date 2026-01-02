@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
         price: body.price,
         discountPrice: body.discountPrice,
         category: body.category,
-        imageUrl: body.imageUrl || '/images/products/default.jpg',
+        imageUrl: body.imageUrl,
         status: body.status || 'ACTIVE',
         isVisible: body.isVisible ?? true,
         isFeatured: body.isFeatured || false,

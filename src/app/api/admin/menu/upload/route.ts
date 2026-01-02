@@ -8,14 +8,24 @@ export async function POST(request: NextRequest) {
 
     // Verificar variáveis de ambiente primeiro
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    // Tentar usar Service Role Key, se não houver, usar Anon Key (fallback)
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     console.log('[Upload API] Supabase URL exists:', !!supabaseUrl);
-    console.log('[Upload API] Service Key exists:', !!supabaseKey);
+    console.log('[Upload API] Service Key exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    console.log('[Upload API] Anon Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+    console.log('[Upload API] Using key type:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SERVICE_ROLE' : 'ANON');
 
     if (!supabaseUrl || !supabaseKey) {
       return NextResponse.json(
-        { error: 'Configuração do Supabase incompleta. Verifique as variáveis de ambiente.' },
+        {
+          error: 'Configuração do Supabase incompleta. Verifique as variáveis de ambiente.',
+          debug: {
+            hasUrl: !!supabaseUrl,
+            hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+            hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          }
+        },
         { status: 500 }
       );
     }

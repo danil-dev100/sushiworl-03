@@ -100,26 +100,38 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[CompanySettingsForm] 🚀 Salvando configurações...');
+    console.log('[CompanySettingsForm] 📝 formData:', formData);
+    console.log('[CompanySettingsForm] ⏰ openingHours:', formData.openingHours);
     setLoading(true);
 
     try {
+      console.log('[CompanySettingsForm] 📡 Fazendo request para /api/admin/settings');
       const response = await fetch('/api/admin/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
+      console.log('[CompanySettingsForm] 📡 Response status:', response.status);
+
       if (response.ok) {
+        const result = await response.json();
+        console.log('[CompanySettingsForm] ✅ Resposta da API:', result);
+        console.log('[CompanySettingsForm] ⏰ openingHours salvo:', result.openingHours);
         alert('Configurações salvas com sucesso!');
         router.refresh();
       } else {
+        const error = await response.json();
+        console.error('[CompanySettingsForm] ❌ Erro da API:', error);
         alert('Erro ao salvar configurações');
       }
     } catch (error) {
-      console.error('Erro:', error);
+      console.error('[CompanySettingsForm] ❌ Erro:', error);
       alert('Erro ao salvar configurações');
     } finally {
       setLoading(false);
+      console.log('[CompanySettingsForm] ⏹️ Loading finalizado');
     }
   };
 

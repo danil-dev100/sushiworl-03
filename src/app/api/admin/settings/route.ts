@@ -38,9 +38,11 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    console.log('[Settings API] 📡 PUT request recebido');
     const session = await getServerSession(authOptions);
 
     if (!session || !canManageSettings(session.user.role)) {
+      console.log('[Settings API] ❌ Não autorizado');
       return NextResponse.json(
         { error: 'Não autorizado' },
         { status: 401 }
@@ -48,13 +50,20 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('[Settings API] 📦 Dados recebidos:', {
+      companyName: body.companyName,
+      openingHoursKeys: Object.keys(body.openingHours || {}),
+      openingHours: body.openingHours
+    });
 
     // Buscar configurações existentes
     const existingSettings = await prisma.settings.findFirst();
+    console.log('[Settings API] 🔍 Settings existentes encontrados:', !!existingSettings);
 
     let updatedSettings;
 
     if (existingSettings) {
+      console.log('[Settings API] ♻️ Atualizando settings existentes...');
       // Atualizar
       updatedSettings = await prisma.settings.update({
         where: { id: existingSettings.id },
@@ -77,23 +86,29 @@ export async function PUT(request: NextRequest) {
           checkoutAdditionalItems: body.checkoutAdditionalItems,
         },
       });
+      console.log('[Settings API] ✅ Settings atualizados com sucesso');
+      console.log('[Settings API] 📝 openingHours salvo:', updatedSettings.openingHours);
     } else {
+      console.log('[Settings API] ✨ Criando novo settings...');
       // Criar
       updatedSettings = await prisma.settings.create({
         data: body,
       });
+      console.log('[Settings API] ✅ Settings criado com sucesso');
     }
 
     // Revalidar páginas que usam as configurações
+    console.log('[Settings API] 🔄 Revalidando páginas...');
     revalidatePath('/');
     revalidatePath('/cardapio');
     revalidatePath('/carrinho');
     revalidatePath('/checkout');
     revalidatePath('/admin/configuracoes/empresa');
+    console.log('[Settings API] ✅ Páginas revalidadas');
 
     return NextResponse.json(updatedSettings);
   } catch (error) {
-    console.error('Erro ao atualizar configurações:', error);
+    console.error('[Settings API] ❌ Erro ao atualizar configurações:', error);
     return NextResponse.json(
       { error: 'Erro ao atualizar configurações' },
       { status: 500 }

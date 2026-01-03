@@ -212,7 +212,7 @@ export function DeliveryAreasPageContent({
   };
 
   return (
-    <div className="flex flex-col gap-6 h-full overflow-hidden">
+    <div className="flex flex-col gap-6 min-h-screen overflow-hidden">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-4xl font-black text-[#FF6B00]">Áreas de Entrega</h1>
@@ -337,7 +337,7 @@ export function DeliveryAreasPageContent({
 
         {/* Mapa */}
         <div className="lg:col-span-7 overflow-hidden">
-          <div className="h-full min-h-[500px] rounded-xl border border-[#ead9cd] bg-white shadow-sm overflow-hidden">
+          <div className="h-[600px] lg:h-full lg:min-h-[600px] rounded-xl border border-[#ead9cd] bg-white shadow-sm overflow-hidden">
             <DeliveryMap
               areas={areas}
               selectedArea={selectedArea}

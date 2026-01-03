@@ -544,8 +544,8 @@ export default function DeliveryMap({
   }, [restaurantAddress]);
 
   return (
-    <div className="relative h-full w-full">
-      <div ref={mapContainerRef} className="h-full w-full" />
+    <div className="relative h-full w-full" style={{ minHeight: '400px' }}>
+      <div ref={mapContainerRef} className="h-full w-full" style={{ minHeight: '400px' }} />
 
       {/* Instruções durante desenho */}
       {isDrawingMode && !isEditMode && showDrawingInstructions && (

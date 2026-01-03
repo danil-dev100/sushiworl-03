@@ -143,12 +143,19 @@ export function ProductOptionDialog({
   };
 
   const onSubmit = async (data: OptionFormData) => {
+    console.log('[ProductOptionDialog] 🚀 onSubmit chamado');
+    console.log('[ProductOptionDialog] 📝 Data:', data);
+    console.log('[ProductOptionDialog] 🔢 Choices count:', choices.length);
+    console.log('[ProductOptionDialog] 📦 Choices:', choices);
+
     if (choices.length === 0) {
+      console.log('[ProductOptionDialog] ❌ Nenhuma escolha adicionada');
       toast.error('Adicione pelo menos uma escolha');
       return;
     }
 
     setIsSubmitting(true);
+    console.log('[ProductOptionDialog] ⏳ isSubmitting = true');
 
     try {
       const url = option
@@ -156,6 +163,10 @@ export function ProductOptionDialog({
         : `/api/admin/menu/products/${productId}/options`;
 
       const method = option ? 'PUT' : 'POST';
+
+      console.log('[ProductOptionDialog] 🌐 URL:', url);
+      console.log('[ProductOptionDialog] 📤 Method:', method);
+      console.log('[ProductOptionDialog] 📡 Fazendo request...');
 
       const response = await fetch(url, {
         method,
@@ -166,20 +177,31 @@ export function ProductOptionDialog({
         }),
       });
 
+      console.log('[ProductOptionDialog] 📡 Response status:', response.status);
+
       if (!response.ok) {
         const error = await response.json();
+        console.log('[ProductOptionDialog] ❌ Erro da API:', error);
         throw new Error(error.error || 'Erro ao salvar opção');
       }
+
+      const result = await response.json();
+      console.log('[ProductOptionDialog] ✅ Resposta da API:', result);
 
       toast.success(
         option ? 'Opção atualizada com sucesso' : 'Opção criada com sucesso'
       );
+      console.log('[ProductOptionDialog] ✅ Opção salva com sucesso!');
+      console.log('[ProductOptionDialog] 🔄 Chamando onSave()');
       onSave();
+      console.log('[ProductOptionDialog] 🚪 Fechando diálogo');
       onOpenChange(false);
     } catch (error) {
+      console.error('[ProductOptionDialog] ❌ Erro ao salvar:', error);
       toast.error(error instanceof Error ? error.message : 'Erro ao salvar opção');
     } finally {
       setIsSubmitting(false);
+      console.log('[ProductOptionDialog] ⏹️ isSubmitting = false');
     }
   };
 

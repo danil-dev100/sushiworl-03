@@ -479,16 +479,18 @@ export function DeliveryAreasPageContent({
             {/* Mapa para desenhar dentro do dialog */}
             <div className="mt-4">
               <Label className="text-sm font-medium mb-2 block">Desenhar Área no Mapa</Label>
-              <div className="h-64 rounded-lg border border-[#ead9cd] overflow-hidden">
-                <DeliveryMap
-                  areas={areas}
-                  selectedArea={selectedArea}
-                  onPolygonDrawn={setDrawnPolygon}
-                  restaurantAddress={restaurantLocation}
-                  initialDrawingMode={!selectedArea}
-                  initialPolygonColor={editingArea.color}
-                  initialPolygon={selectedArea?.polygon}
-                />
+              <div className="h-[400px] rounded-lg border border-[#ead9cd] overflow-hidden" style={{ minHeight: '400px' }}>
+                {isDialogOpen && (
+                  <DeliveryMap
+                    areas={areas}
+                    selectedArea={selectedArea}
+                    onPolygonDrawn={setDrawnPolygon}
+                    restaurantAddress={restaurantLocation}
+                    initialDrawingMode={!selectedArea}
+                    initialPolygonColor={editingArea.color}
+                    initialPolygon={selectedArea?.polygon}
+                  />
+                )}
               </div>
             </div>
           </div>

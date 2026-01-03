@@ -105,8 +105,18 @@ function checkOpeningHours(openingHours: any): boolean {
     const lunchCloseMin = timeToMinutes(dayConfig.lunchClose);
 
     if (lunchOpenMin !== null && lunchCloseMin !== null) {
-      if (currentMinutes >= lunchOpenMin && currentMinutes < lunchCloseMin) {
-        return true; // Dentro do horário de almoço
+      // Se o horário de fechamento cruza a meia-noite (ex: 23:00 - 02:00)
+      if (lunchCloseMin < lunchOpenMin) {
+        console.log('[checkOpeningHours] 🌙 Almoço cruza meia-noite');
+        if (currentMinutes >= lunchOpenMin || currentMinutes < lunchCloseMin) {
+          console.log('[checkOpeningHours] ✅ Dentro do horário de almoço (após meia-noite)');
+          return true;
+        }
+      } else {
+        if (currentMinutes >= lunchOpenMin && currentMinutes < lunchCloseMin) {
+          console.log('[checkOpeningHours] ✅ Dentro do horário de almoço');
+          return true;
+        }
       }
     }
   }
@@ -117,8 +127,21 @@ function checkOpeningHours(openingHours: any): boolean {
     const dinnerCloseMin = timeToMinutes(dayConfig.dinnerClose);
 
     if (dinnerOpenMin !== null && dinnerCloseMin !== null) {
-      if (currentMinutes >= dinnerOpenMin && currentMinutes < dinnerCloseMin) {
-        return true; // Dentro do horário de jantar
+      // Se o horário de fechamento cruza a meia-noite (ex: 19:00 - 01:00)
+      if (dinnerCloseMin < dinnerOpenMin) {
+        console.log('[checkOpeningHours] 🌙 Jantar cruza meia-noite');
+        console.log('[checkOpeningHours] 📊 dinnerOpen:', dayConfig.dinnerOpen, '=', dinnerOpenMin, 'min');
+        console.log('[checkOpeningHours] 📊 dinnerClose:', dayConfig.dinnerClose, '=', dinnerCloseMin, 'min');
+        console.log('[checkOpeningHours] 📊 currentMinutes:', currentMinutes);
+        if (currentMinutes >= dinnerOpenMin || currentMinutes < dinnerCloseMin) {
+          console.log('[checkOpeningHours] ✅ Dentro do horário de jantar (após meia-noite)');
+          return true;
+        }
+      } else {
+        if (currentMinutes >= dinnerOpenMin && currentMinutes < dinnerCloseMin) {
+          console.log('[checkOpeningHours] ✅ Dentro do horário de jantar');
+          return true;
+        }
       }
     }
   }

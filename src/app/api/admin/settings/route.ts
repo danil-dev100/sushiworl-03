@@ -104,7 +104,9 @@ export async function PUT(request: NextRequest) {
     revalidatePath('/carrinho');
     revalidatePath('/checkout');
     revalidatePath('/admin/configuracoes/empresa');
-    console.log('[Settings API] ✅ Páginas revalidadas');
+    revalidatePath('/api/store/status'); // API de status do restaurante
+    revalidatePath('/api/settings/restaurant-status'); // API de horários
+    console.log('[Settings API] ✅ Páginas e APIs revalidadas');
 
     return NextResponse.json(updatedSettings);
   } catch (error) {

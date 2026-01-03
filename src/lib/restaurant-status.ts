@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 
 /**
  * Verifica se o restaurante está atualmente online e dentro do horário de funcionamento
+ * IMPORTANTE: Sem cache - sempre busca dados atualizados do banco
  */
 export async function isRestaurantOpen(): Promise<{
   isOpen: boolean;
@@ -9,12 +10,14 @@ export async function isRestaurantOpen(): Promise<{
   message?: string;
 }> {
   try {
+    console.log('[Restaurant Status] 🔍 Verificando status do restaurante...');
     const settings = await prisma.settings.findFirst({
       select: {
         isOnline: true,
         openingHours: true
       }
     });
+    console.log('[Restaurant Status] ⏰ openingHours do banco:', settings?.openingHours);
 
     if (!settings) {
       return {
@@ -36,7 +39,9 @@ export async function isRestaurantOpen(): Promise<{
     // Verificar horário de funcionamento
     if (settings.openingHours) {
       const isWithinHours = checkOpeningHours(settings.openingHours);
+      console.log('[Restaurant Status] ⏰ isWithinHours:', isWithinHours);
       if (!isWithinHours) {
+        console.log('[Restaurant Status] ❌ Restaurante fechado - fora do horário');
         return {
           isOpen: false,
           reason: 'closed',
@@ -45,6 +50,7 @@ export async function isRestaurantOpen(): Promise<{
       }
     }
 
+    console.log('[Restaurant Status] ✅ Restaurante aberto');
     return {
       isOpen: true,
       reason: 'open',
@@ -66,6 +72,7 @@ export async function isRestaurantOpen(): Promise<{
  */
 function checkOpeningHours(openingHours: any): boolean {
   if (!openingHours || typeof openingHours !== 'object') {
+    console.log('[checkOpeningHours] ⚠️ Sem horários configurados, considera aberto');
     return true; // Se não há horários configurados, considera aberto
   }
 
@@ -74,19 +81,23 @@ function checkOpeningHours(openingHours: any): boolean {
 
   const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const dayName = dayNames[dayOfWeek];
+  console.log('[checkOpeningHours] 📅 Dia da semana:', dayName, '(', dayOfWeek, ')');
 
   const dayConfig = openingHours[dayName];
+  console.log('[checkOpeningHours] ⚙️ Config do dia:', dayConfig);
 
   if (!dayConfig) {
     return true; // Se não há configuração para o dia, considera aberto
   }
 
   if (dayConfig.closed === true) {
+    console.log('[checkOpeningHours] 🚫 Dia marcado como FECHADO');
     return false; // Explicitamente fechado
   }
 
   // Converter horário atual para minutos desde meia-noite
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  console.log('[checkOpeningHours] 🕐 Horário atual (minutos):', currentMinutes, '=', now.getHours() + ':' + now.getMinutes());
 
   // Verificar período de almoço
   if (dayConfig.lunchOpen && dayConfig.lunchClose) {
@@ -126,6 +137,7 @@ function checkOpeningHours(openingHours: any): boolean {
     }
   }
 
+  console.log('[checkOpeningHours] ❌ Fora de qualquer horário configurado');
   return false; // Fora de qualquer horário configurado
 }
 

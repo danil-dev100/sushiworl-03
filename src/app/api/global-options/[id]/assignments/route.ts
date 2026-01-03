@@ -3,6 +3,45 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+// GET - Listar atribuições de uma opção global
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: globalOptionId } = await params;
+
+    console.log('[Assignment GET] 🔍 Buscando atribuições da opção:', globalOptionId);
+
+    const assignments = await prisma.globalOptionAssignment.findMany({
+      where: {
+        globalOptionId
+      },
+      include: {
+        globalOption: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      },
+      orderBy: {
+        sortOrder: 'asc'
+      }
+    });
+
+    console.log(`[Assignment GET] ✅ ${assignments.length} atribuições encontradas`);
+
+    return NextResponse.json({ success: true, assignments });
+  } catch (error) {
+    console.error('[Assignment GET] ❌ Erro:', error);
+    return NextResponse.json(
+      { success: false, error: 'Erro ao buscar atribuições' },
+      { status: 500 }
+    );
+  }
+}
+
 // POST - Criar atribuição de opção global
 export async function POST(
   req: NextRequest,

@@ -30,19 +30,23 @@ export default function CarrinhoPage() {
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await fetch('/api/admin/settings', {
+        console.log('[Carrinho] 📡 Buscando itens adicionais...');
+        const response = await fetch('/api/cart/additional-items', {
           cache: 'no-store', // Não usar cache
           headers: {
             'Cache-Control': 'no-cache',
           }
         });
 
-        if (response.ok) {
-          const settings = await response.json();
-          const items: CartAdditionalItem[] = settings.additionalItems || [];
+        console.log('[Carrinho] 📡 Response status:', response.status);
 
-          // Filtrar apenas itens ativos
-          const activeItems = items.filter(item => item.isActive);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('[Carrinho] 📦 Data recebido:', data);
+
+          const activeItems: CartAdditionalItem[] = data.items || [];
+          console.log('[Carrinho] ✅ Itens ativos:', activeItems.length);
+
           setAvailableCartItems(activeItems);
 
           // Remover do carrinho itens que não existem mais ou foram desativados
@@ -61,9 +65,11 @@ export default function CarrinhoPage() {
               addAdditionalItem({ name: item.name, price: item.price });
             }
           });
+        } else {
+          console.error('[Carrinho] ❌ Erro na resposta:', response.status);
         }
       } catch (error) {
-        console.error('Erro ao buscar itens do carrinho:', error);
+        console.error('[Carrinho] ❌ Erro ao buscar itens do carrinho:', error);
       }
     };
 

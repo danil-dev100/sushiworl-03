@@ -29,25 +29,37 @@ export function ProductOptions({ productId }: ProductOptionsProps) {
   const [deletingOptionId, setDeletingOptionId] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('[ProductOptions] 🔍 useEffect executado - productId:', productId);
     if (productId) {
+      console.log('[ProductOptions] ✅ productId existe, chamando loadOptions()');
       loadOptions();
+    } else {
+      console.log('[ProductOptions] ❌ productId é undefined/null');
     }
   }, [productId]);
 
   const loadOptions = async () => {
-    if (!productId) return;
+    if (!productId) {
+      console.log('[ProductOptions] ⚠️ loadOptions chamado mas productId é undefined');
+      return;
+    }
 
+    console.log('[ProductOptions] 📡 Fazendo fetch para:', `/api/admin/menu/products/${productId}/options`);
     setIsLoading(true);
     try {
       const response = await fetch(`/api/admin/menu/products/${productId}/options`);
+      console.log('[ProductOptions] 📡 Response status:', response.status);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('[ProductOptions] 📦 Data recebido:', data);
+        console.log('[ProductOptions] ✅ Opções carregadas:', data.options?.length || 0);
         setOptions(data.options || []);
       } else {
-        console.error('Erro na resposta:', response.status);
+        console.error('[ProductOptions] ❌ Erro na resposta:', response.status);
       }
     } catch (error) {
-      console.error('Erro ao carregar opções:', error);
+      console.error('[ProductOptions] ❌ Erro ao carregar opções:', error);
     } finally {
       setIsLoading(false);
     }

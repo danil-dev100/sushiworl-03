@@ -15,6 +15,8 @@ export async function GET() {
       }
     });
 
+    console.log('[Cart Additional Items API] 📊 Settings encontrado:', !!settings);
+
     if (!settings) {
       console.log('[Cart Additional Items API] ⚠️ Settings não encontrado');
       return NextResponse.json({
@@ -23,6 +25,10 @@ export async function GET() {
       });
     }
 
+    console.log('[Cart Additional Items API] 📦 additionalItems raw:', settings.additionalItems);
+    console.log('[Cart Additional Items API] 📊 Tipo:', typeof settings.additionalItems);
+    console.log('[Cart Additional Items API] 📊 É array?', Array.isArray(settings.additionalItems));
+
     const items = settings.additionalItems || [];
 
     // Filtrar apenas itens ativos
@@ -30,6 +36,7 @@ export async function GET() {
       ? items.filter((item: any) => item.isActive === true)
       : [];
 
+    console.log('[Cart Additional Items API] ✅ Total de itens:', Array.isArray(items) ? items.length : 0);
     console.log('[Cart Additional Items API] ✅ Itens ativos:', activeItems.length);
 
     if (activeItems.length > 0) {

@@ -205,6 +205,8 @@ export default function DeliveryMap({
     polygonsRef.current.forEach((polygon) => polygon.remove());
     polygonsRef.current.clear();
 
+    const allPolygons: L.Polygon[] = [];
+
     // Adicionar polígonos das áreas
     areas.forEach((area) => {
       if (!area.polygon || area.polygon.length < 3) return;
@@ -231,7 +233,17 @@ export default function DeliveryMap({
 
       polygon.bindPopup(popupContent);
       polygonsRef.current.set(area.id, polygon);
+      allPolygons.push(polygon);
     });
+
+    // Centralizar mapa em todas as áreas
+    if (allPolygons.length > 0 && mapRef.current) {
+      const group = L.featureGroup(allPolygons);
+      mapRef.current.fitBounds(group.getBounds(), {
+        padding: [50, 50],
+        maxZoom: 15, // Não dar zoom muito perto
+      });
+    }
   }, [areas, selectedArea]);
 
   // Limpar marcadores de desenho

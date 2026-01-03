@@ -5,7 +5,7 @@
  * - Tracking de eventos
  */
 
-const CACHE_NAME = 'sushiworld-v1';
+const CACHE_NAME = 'sushiworld-v2';
 const STATIC_ASSETS = [
   '/',
   '/cardapio',

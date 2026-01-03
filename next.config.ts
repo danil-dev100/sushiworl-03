@@ -77,10 +77,10 @@ const nextConfig: NextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' data: https: blob:",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
+              "img-src 'self' data: https: blob: https://*.tile.openstreetmap.org https://*.tile.opentopomap.org",
               "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://wmuprrgmczfkihqvqrph.supabase.co wss://wmuprrgmczfkihqvqrph.supabase.co https://www.google-analytics.com https://www.facebook.com",
+              "connect-src 'self' https://wmuprrgmczfkihqvqrph.supabase.co wss://wmuprrgmczfkihqvqrph.supabase.co https://www.google-analytics.com https://www.facebook.com https://nominatim.openstreetmap.org",
               "frame-src 'self' https://www.youtube.com https://www.facebook.com",
               "object-src 'none'",
               "base-uri 'self'",

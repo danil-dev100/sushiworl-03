@@ -303,12 +303,6 @@ export async function POST(request: NextRequest) {
         where: {
           isActive: true,
         },
-        select: {
-          id: true,
-          platform: true,
-          type: true,
-          isActive: true,
-        },
       });
 
       // Registrar evento de compra para cada pixel

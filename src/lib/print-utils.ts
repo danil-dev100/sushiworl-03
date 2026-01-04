@@ -8,11 +8,26 @@ export function renderOrderReceipt(
   printerConfig: any,
   paperSize: string
 ): string {
+  // Calcular total de itens adicionais do checkout
+  const checkoutItems = Array.isArray(orderData.checkoutAdditionalItems)
+    ? orderData.checkoutAdditionalItems
+    : [];
+
+  const checkoutItemsTotal = checkoutItems.reduce((sum: number, item: any) =>
+    sum + (item.price || 0), 0
+  );
+
+  console.log('[Print Utils] 📦 Itens adicionais do checkout:', checkoutItems);
+  console.log('[Print Utils] 💰 Total de itens adicionais:', checkoutItemsTotal);
+
   // Processar dados do pedido para o formato esperado
   const order = {
     id: orderData.id,
     orderNumber: orderData.orderNumber.toString(),
-    paymentMethod: orderData.paymentMethod === 'CASH' ? 'Dinheiro' : 'Cartão na entrega',
+    paymentMethod: orderData.paymentMethod === 'CASH' ? 'Dinheiro' :
+                   orderData.paymentMethod === 'CARD' ? 'Cartão na entrega' :
+                   orderData.paymentMethod === 'MULTIBANCO' ? 'Multibanco Na Entrega' :
+                   orderData.paymentMethod,
     asapTime: 60, // Tempo padrão ASAP
     estimatedDriveTime: 13, // Tempo estimado
     trafficInfo: `Pedido realizado em ${new Date(orderData.createdAt).toLocaleString('pt-PT')}`,
@@ -37,9 +52,10 @@ export function renderOrderReceipt(
       notes: '',
       price: item.priceAtTime,
     })),
+    checkoutItems: checkoutItems, // Itens adicionais do checkout
     subtotal: orderData.subtotal,
     deliveryFee: orderData.deliveryFee || 0,
-    bagFee: 0.50,
+    bagFee: checkoutItemsTotal, // Usar total real dos itens adicionais
     total: orderData.total,
   };
 
@@ -279,6 +295,16 @@ function renderSection(sectionId: string, order: any, company: any, fields: any)
       `;
 
     case 'totals':
+      // Renderizar itens adicionais do checkout
+      const checkoutItemsHTML = fields.showBagFee && order.checkoutItems && order.checkoutItems.length > 0
+        ? order.checkoutItems.map((item: any) => `
+            <div class="flex justify-between">
+              <span class="text-gray-600">${item.name}:</span>
+              <span class="font-medium">€ ${(item.price || 0).toFixed(2)}</span>
+            </div>
+          `).join('')
+        : '';
+
       return `
         <div class="px-4 py-3 border-b border-gray-200">
           <div class="space-y-1 text-xs">
@@ -294,12 +320,7 @@ function renderSection(sectionId: string, order: any, company: any, fields: any)
                 <span class="font-medium">€ ${order.deliveryFee.toFixed(2)}</span>
               </div>
             ` : ''}
-            ${fields.showBagFee ? `
-              <div class="flex justify-between">
-                <span class="text-gray-600">Taxa de Saco:</span>
-                <span class="font-medium">€ ${order.bagFee.toFixed(2)}</span>
-              </div>
-            ` : ''}
+            ${checkoutItemsHTML}
             ${fields.showTotal ? `
               <div class="flex justify-between pt-2 border-t border-gray-300">
                 <span class="font-bold text-sm">Total:</span>

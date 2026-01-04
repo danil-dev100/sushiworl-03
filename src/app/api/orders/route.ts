@@ -229,6 +229,9 @@ export async function POST(request: NextRequest) {
 
     const total = Number((itemsSubtotal + actualDeliveryFee + additionalTotal - discountAmount).toFixed(2));
 
+    console.log('[Orders API] 📦 Itens adicionais do checkout:', additionalItems);
+    console.log('[Orders API] 💰 Total de itens adicionais:', additionalTotal);
+
     // Criar pedido
     const order = await prisma.order.create({
       data: {
@@ -246,6 +249,7 @@ export async function POST(request: NextRequest) {
         deliveryFee: actualDeliveryFee,
         deliveryAreaId: deliveryAreaId,
         deliveryDecisionLog: deliveryDecisionLog || Prisma.JsonNull,
+        checkoutAdditionalItems: additionalItems && additionalItems.length > 0 ? additionalItems : Prisma.JsonNull,
         observations: observations || null,
         paymentMethod: paymentMethod || 'CASH',
         status: 'PENDING',

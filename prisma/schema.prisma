@@ -257,6 +257,9 @@ model Order {
   vatAmount Float @default(0)
   total     Float
 
+  // Itens adicionais do checkout (talheres, guardanapos, etc.)
+  checkoutAdditionalItems Json? // [{name: string, price: number, isRequired: boolean}]
+
   // Pagamento
   status        OrderStatus   @default(PENDING)
   paymentMethod PaymentMethod @default(CASH)

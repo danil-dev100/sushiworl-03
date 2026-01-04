@@ -232,38 +232,49 @@ export async function POST(request: NextRequest) {
     console.log('[Orders API] 📦 Itens adicionais do checkout:', additionalItems);
     console.log('[Orders API] 💰 Total de itens adicionais:', additionalTotal);
 
+    // Preparar dados do pedido
+    const orderData: any = {
+      customerName: `${customerName} ${customerSurname || ''}`.trim(),
+      customerEmail,
+      customerPhone,
+      deliveryAddress: {
+        fullAddress: address,
+        nif: nif || null,
+      },
+      subtotal: itemsSubtotal,
+      discount: discountAmount,
+      vatAmount,
+      total,
+      deliveryFee: actualDeliveryFee,
+      deliveryAreaId: deliveryAreaId,
+      deliveryDecisionLog: deliveryDecisionLog || Prisma.JsonNull,
+      observations: observations || null,
+      paymentMethod: paymentMethod || 'CASH',
+      status: 'PENDING',
+      promotionId: validPromotionId,
+      orderItems: {
+        create: items.map((item: { productId: string; name: string; quantity: number; price: number; options?: any }) => ({
+          productId: item.productId,
+          name: item.name,
+          quantity: item.quantity,
+          priceAtTime: item.price,
+          selectedOptions: item.options || Prisma.JsonNull,
+        })),
+      },
+    };
+
+    // Tentar adicionar checkoutAdditionalItems se existir no schema
+    try {
+      if (additionalItems && additionalItems.length > 0) {
+        orderData.checkoutAdditionalItems = additionalItems;
+      }
+    } catch (e) {
+      console.log('[Orders API] ⚠️ Campo checkoutAdditionalItems ainda não existe no schema');
+    }
+
     // Criar pedido
     const order = await prisma.order.create({
-      data: {
-        customerName: `${customerName} ${customerSurname || ''}`.trim(),
-        customerEmail,
-        customerPhone,
-        deliveryAddress: {
-          fullAddress: address,
-          nif: nif || null,
-        },
-        subtotal: itemsSubtotal,
-        discount: discountAmount,
-        vatAmount,
-        total,
-        deliveryFee: actualDeliveryFee,
-        deliveryAreaId: deliveryAreaId,
-        deliveryDecisionLog: deliveryDecisionLog || Prisma.JsonNull,
-        checkoutAdditionalItems: additionalItems && additionalItems.length > 0 ? additionalItems : Prisma.JsonNull,
-        observations: observations || null,
-        paymentMethod: paymentMethod || 'CASH',
-        status: 'PENDING',
-        promotionId: validPromotionId,
-        orderItems: {
-          create: items.map((item: { productId: string; name: string; quantity: number; price: number; options?: any }) => ({
-            productId: item.productId,
-            name: item.name,
-            quantity: item.quantity,
-            priceAtTime: item.price,
-            selectedOptions: item.options || Prisma.JsonNull,
-          })),
-        },
-      },
+      data: orderData,
       include: {
         orderItems: true,
       },

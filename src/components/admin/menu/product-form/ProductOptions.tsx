@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { ProductOptionDialog } from './ProductOptionDialog';
+import { ProductGlobalOptions } from './ProductGlobalOptions';
 
 interface ProductOptionsProps {
   productId?: string;
@@ -116,24 +117,32 @@ export function ProductOptions({ productId }: ProductOptionsProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold">Adicionais & Complementos</h3>
-          <p className="text-xs text-[#a16b45]">
-            Exemplo: coberturas extras, escolha de molhos, etc.
-          </p>
+    <div className="space-y-8">
+      {/* Opções Globais */}
+      <ProductGlobalOptions productId={productId} />
+
+      {/* Separador */}
+      <div className="border-t border-[#ead9cd] dark:border-[#4a3c30]" />
+
+      {/* Opções Específicas do Produto */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold">Opções Específicas do Produto</h3>
+            <p className="text-xs text-[#a16b45]">
+              Exemplo: coberturas extras, escolha de molhos, etc.
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            className="bg-[#FF6B00] hover:bg-[#FF6B00]/90"
+            onClick={handleAddOption}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar Opção
+          </Button>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          className="bg-[#FF6B00] hover:bg-[#FF6B00]/90"
-          onClick={handleAddOption}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Opção
-        </Button>
-      </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center p-6">
@@ -213,13 +222,14 @@ export function ProductOptions({ productId }: ProductOptionsProps) {
         </div>
       )}
 
-      <ProductOptionDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        productId={productId}
-        option={editingOption}
-        onSave={handleSaveOption}
-      />
+        <ProductOptionDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          productId={productId}
+          option={editingOption}
+          onSave={handleSaveOption}
+        />
+      </div>
     </div>
   );
 }

@@ -273,14 +273,20 @@ export default function CheckoutPage() {
   useEffect(() => {
     const fetchCheckoutItems = async () => {
       try {
+        console.log('[Checkout] 📡 Buscando itens adicionais do checkout...');
         // ✅ CORREÇÃO DE SEGURANÇA: Usar rota pública em vez de /api/admin/settings
         const response = await fetch('/api/public/settings');
+        console.log('[Checkout] 📡 Response status:', response.status);
+
         if (response.ok) {
           const settings = await response.json();
+          console.log('[Checkout] 📦 checkoutAdditionalItems:', settings.checkoutAdditionalItems);
+
           const items: CheckoutAdditionalItem[] = settings.checkoutAdditionalItems || [];
 
           // Filtrar apenas itens ativos
           const activeItems = items.filter(item => item.isActive);
+          console.log('[Checkout] ✅ Itens ativos:', activeItems.length);
           setCheckoutItems(activeItems);
 
           // Pré-selecionar itens obrigatórios
@@ -428,9 +434,29 @@ export default function CheckoutPage() {
                             className="rounded-md object-cover"
                           />
                         </div>
-                        <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
-                          {item.quantity}x {item.name}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
+                            {item.quantity}x {item.name}
+                          </span>
+                          {item.selectedOptions && item.selectedOptions.length > 0 && (
+                            <div className="mt-1 space-y-0.5">
+                              {item.selectedOptions.map(opt => (
+                                <div key={opt.optionId} className="text-xs text-[#a16b45]">
+                                  {opt.choices.map((choice: any) => (
+                                    <div key={choice.choiceId}>
+                                      • {choice.choiceName}
+                                      {choice.price > 0 && (
+                                        <span className="text-[#FF6B00] ml-1">
+                                          +€{choice.price.toFixed(2)}
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9] flex-shrink-0">
                         €{(item.price * item.quantity).toFixed(2)}
@@ -724,7 +750,7 @@ export default function CheckoutPage() {
                           type="radio"
                         />
                         <label className="flex-1 text-base font-medium cursor-pointer text-[#333333] dark:text-[#f5f1e9]" htmlFor="payment-mbway">
-                          MBWay
+                          Multibanco Na Entrega
                         </label>
                       </div>
                     </div>
@@ -877,6 +903,24 @@ export default function CheckoutPage() {
                               <span className="font-medium text-[#333333] dark:text-[#f5f1e9]">
                                 {item.quantity}x {item.name}
                               </span>
+                              {item.selectedOptions && item.selectedOptions.length > 0 && (
+                                <div className="mt-1 space-y-0.5">
+                                  {item.selectedOptions.map(opt => (
+                                    <div key={opt.optionId} className="text-xs text-[#a16b45]">
+                                      {opt.choices.map((choice: any, idx: number) => (
+                                        <div key={choice.choiceId}>
+                                          • {choice.choiceName}
+                                          {choice.price > 0 && (
+                                            <span className="text-[#FF6B00] ml-1">
+                                              +€{choice.price.toFixed(2)}
+                                            </span>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
                           <span className="font-medium text-[#333333] dark:text-[#f5f1e9]">

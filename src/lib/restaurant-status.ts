@@ -88,6 +88,7 @@ function checkOpeningHours(openingHours: any): boolean {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
+    weekday: 'long',
     hour12: false
   });
 
@@ -96,19 +97,25 @@ function checkOpeningHours(openingHours: any): boolean {
 
   const portugalHour = parseInt(getPartValue('hour'));
   const portugalMinute = parseInt(getPartValue('minute'));
-  const portugalDay = parseInt(getPartValue('day'));
-  const portugalMonth = parseInt(getPartValue('month'));
-  const portugalYear = parseInt(getPartValue('year'));
+  const portugalWeekday = getPartValue('weekday'); // Sunday, Monday, etc.
 
-  // Criar data específica para Portugal
-  const portugalDate = new Date(portugalYear, portugalMonth - 1, portugalDay, portugalHour, portugalMinute);
-  const dayOfWeek = portugalDate.getDay(); // 0 = domingo, 1 = segunda, etc.
+  // Mapear nome do dia para o formato do banco de dados
+  const weekdayMap: Record<string, string> = {
+    'Sunday': 'sunday',
+    'Monday': 'monday',
+    'Tuesday': 'tuesday',
+    'Wednesday': 'wednesday',
+    'Thursday': 'thursday',
+    'Friday': 'friday',
+    'Saturday': 'saturday'
+  };
 
-  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const dayName = dayNames[dayOfWeek];
-  console.log('[checkOpeningHours] 📅 Dia da semana (Portugal):', dayName, '(', dayOfWeek, ')');
+  const dayName = weekdayMap[portugalWeekday] || 'sunday';
+  const dayOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(dayName);
+
+  console.log('[checkOpeningHours] 📅 Dia da semana (Portugal):', dayName, '(', dayOfWeek, ')', '- Weekday original:', portugalWeekday);
   console.log('[checkOpeningHours] 🌍 Horário UTC:', now.toISOString());
-  console.log('[checkOpeningHours] 🇵🇹 Horário Portugal:', `${portugalYear}-${portugalMonth}-${portugalDay} ${portugalHour}:${portugalMinute}`);
+  console.log('[checkOpeningHours] 🇵🇹 Horário Portugal:', portugalHour + ':' + portugalMinute);
 
   const dayConfig = openingHours[dayName];
   console.log('[checkOpeningHours] ⚙️ Config do dia:', JSON.stringify(dayConfig));

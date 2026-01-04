@@ -26,11 +26,19 @@ export async function GET() {
   const portugalYear = parseInt(getPartValue('year'));
   const portugalWeekday = getPartValue('weekday');
 
-  const portugalDate = new Date(portugalYear, portugalMonth - 1, portugalDay, portugalHour, portugalMinute);
-  const dayOfWeek = portugalDate.getDay();
+  // Mapear nome do dia para o formato do banco de dados
+  const weekdayMap: Record<string, string> = {
+    'Sunday': 'sunday',
+    'Monday': 'monday',
+    'Tuesday': 'tuesday',
+    'Wednesday': 'wednesday',
+    'Thursday': 'thursday',
+    'Friday': 'friday',
+    'Saturday': 'saturday'
+  };
 
-  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const dayName = dayNames[dayOfWeek];
+  const dayName = weekdayMap[portugalWeekday] || 'sunday';
+  const dayOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(dayName);
 
   return NextResponse.json({
     utc: {

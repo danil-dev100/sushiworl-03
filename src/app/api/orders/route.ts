@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Normalizar método de pagamento para corresponder ao ENUM do Prisma
-    const normalizedPaymentMethod = paymentMethod === 'MBWAY' ? 'CARD' : (paymentMethod || 'CASH');
+    // MBWAY e Multibanco Na Entrega = levar maquininha de cartão = CREDIT_CARD
+    const normalizedPaymentMethod = paymentMethod === 'MBWAY' ? 'CREDIT_CARD' : (paymentMethod || 'CASH');
 
     // Validação básica
     if (!customerName || !customerEmail || !customerPhone || !address || !items || items.length === 0) {

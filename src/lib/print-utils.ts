@@ -25,8 +25,7 @@ export function renderOrderReceipt(
     id: orderData.id,
     orderNumber: orderData.orderNumber.toString(),
     paymentMethod: orderData.paymentMethod === 'CASH' ? 'Dinheiro' :
-                   orderData.paymentMethod === 'CARD' ? 'Cartão na entrega' :
-                   orderData.paymentMethod === 'MULTIBANCO' ? 'Multibanco Na Entrega' :
+                   orderData.paymentMethod === 'CREDIT_CARD' ? 'Multibanco Na Entrega' :
                    orderData.paymentMethod,
     asapTime: 60, // Tempo padrão ASAP
     estimatedDriveTime: 13, // Tempo estimado

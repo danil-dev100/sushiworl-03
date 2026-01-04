@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 interface GlobalOptionAssignment {
   id: string;
   globalOptionId: string;
+  assignmentType: 'SITE_WIDE' | 'CATEGORY' | 'PRODUCT';
+  targetId: string | null;
   globalOption: {
     id: string;
     name: string;
@@ -128,46 +130,74 @@ export function ProductGlobalOptions({ productId, categoryId }: ProductGlobalOpt
         </div>
       ) : (
         <div className="space-y-3">
-          {assignments.map((assignment) => (
-            <div
-              key={assignment.id}
-              className="flex items-center justify-between p-4 border border-[#ead9cd] dark:border-[#4a3c30] rounded-lg bg-white dark:bg-[#2a1e14]"
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-[#FF6B00]" />
-                  <h4 className="font-medium text-[#333333] dark:text-[#f5f1e9]">
-                    {assignment.globalOption.name}
-                  </h4>
-                </div>
-                <div className="flex gap-2 mt-2">
-                  <span className="text-xs px-2 py-0.5 bg-[#FF6B00]/10 text-[#FF6B00] rounded">
-                    {assignment.globalOption.type}
-                  </span>
-                  <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 rounded">
-                    {assignment.globalOption.displayAt === 'SITE' ? 'Site (Popup)' : 'Carrinho'}
-                  </span>
-                  <span className="text-xs text-[#a16b45]">
-                    {assignment.globalOption.choices.length} escolhas
-                  </span>
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleDelete(assignment.id, assignment.globalOption.name)}
-                disabled={deletingId === assignment.id}
-                className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+          {assignments.map((assignment) => {
+            const isSiteWide = assignment.assignmentType === 'SITE_WIDE';
+            const isCategory = assignment.assignmentType === 'CATEGORY';
+            const canDelete = !isSiteWide && !isCategory; // Só pode deletar atribuições diretas ao produto
+
+            return (
+              <div
+                key={assignment.id}
+                className={`flex items-center justify-between p-4 border rounded-lg ${
+                  isSiteWide
+                    ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/10'
+                    : isCategory
+                    ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/10'
+                    : 'border-[#ead9cd] dark:border-[#4a3c30] bg-white dark:bg-[#2a1e14]'
+                }`}
               >
-                {deletingId === assignment.id ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-[#FF6B00]" />
+                    <h4 className="font-medium text-[#333333] dark:text-[#f5f1e9]">
+                      {assignment.globalOption.name}
+                    </h4>
+                  </div>
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {isSiteWide && (
+                      <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded font-medium">
+                        🌐 Todo o Site
+                      </span>
+                    )}
+                    {isCategory && (
+                      <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded font-medium">
+                        📁 Categoria
+                      </span>
+                    )}
+                    <span className="text-xs px-2 py-0.5 bg-[#FF6B00]/10 text-[#FF6B00] rounded">
+                      {assignment.globalOption.type}
+                    </span>
+                    <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 rounded">
+                      {assignment.globalOption.displayAt === 'SITE' ? 'Site (Popup)' : 'Carrinho'}
+                    </span>
+                    <span className="text-xs text-[#a16b45]">
+                      {assignment.globalOption.choices.length} escolhas
+                    </span>
+                  </div>
+                </div>
+                {canDelete ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(assignment.id, assignment.globalOption.name)}
+                    disabled={deletingId === assignment.id}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    {deletingId === assignment.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </Button>
                 ) : (
-                  <Trash2 className="h-4 w-4" />
+                  <div className="text-xs text-[#a16b45] px-3">
+                    Herdada
+                  </div>
                 )}
-              </Button>
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
 

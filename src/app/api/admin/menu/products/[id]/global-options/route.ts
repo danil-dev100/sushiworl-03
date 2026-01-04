@@ -22,11 +22,27 @@ export async function GET(
 
     console.log(`[Product Global Options API] 🔍 Buscando atribuições para produto: ${productId}`);
 
-    // Buscar atribuições de opções globais para este produto
+    // Buscar produto para pegar category
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { category: true }
+    });
+
+    if (!product) {
+      return NextResponse.json(
+        { success: false, error: 'Produto não encontrado', assignments: [] },
+        { status: 404 }
+      );
+    }
+
+    // Buscar atribuições de opções globais (SITE_WIDE, CATEGORY e PRODUCT)
     const assignments = await prisma.globalOptionAssignment.findMany({
       where: {
-        assignmentType: 'PRODUCT',
-        targetId: productId
+        OR: [
+          { assignmentType: 'SITE_WIDE', targetId: null },
+          { assignmentType: 'CATEGORY', targetId: product.category },
+          { assignmentType: 'PRODUCT', targetId: productId }
+        ]
       },
       include: {
         globalOption: {
@@ -41,7 +57,10 @@ export async function GET(
       orderBy: { sortOrder: 'asc' }
     });
 
-    console.log(`[Product Global Options API] ✅ ${assignments.length} atribuições encontradas`);
+    console.log(`[Product Global Options API] ✅ ${assignments.length} atribuições encontradas:`);
+    console.log(`   - SITE_WIDE: ${assignments.filter(a => a.assignmentType === 'SITE_WIDE').length}`);
+    console.log(`   - CATEGORY: ${assignments.filter(a => a.assignmentType === 'CATEGORY').length}`);
+    console.log(`   - PRODUCT: ${assignments.filter(a => a.assignmentType === 'PRODUCT').length}`);
 
     // Filtrar apenas atribuições com opções globais ativas
     const activeAssignments = assignments.filter(a =>

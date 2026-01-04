@@ -136,11 +136,29 @@ export default function CarrinhoPage() {
                             €{item.price.toFixed(2)}
                           </p>
                           {item.selectedOptions && item.selectedOptions.length > 0 && (
-                            <div className="text-xs text-[#a16b45] mt-1">
+                            <div className="mt-2 space-y-1">
                               {item.selectedOptions.map(opt => (
-                                <span key={opt.optionId}>
-                                  {opt.choices.map(c => c.choiceName).join(', ')}
-                                </span>
+                                <div key={opt.optionId} className="text-xs">
+                                  <p className="font-semibold text-[#333333] dark:text-[#f5f1e9]">
+                                    {opt.optionName}:
+                                  </p>
+                                  <div className="ml-2 space-y-0.5">
+                                    {opt.choices.map((choice: any) => (
+                                      <div key={choice.choiceId} className="flex items-center gap-2 text-[#a16b45]">
+                                        <span>• {choice.choiceName}</span>
+                                        {choice.price > 0 ? (
+                                          <span className="text-[#FF6B00] font-medium">
+                                            +€{choice.price.toFixed(2)}
+                                          </span>
+                                        ) : (
+                                          <span className="text-green-600 dark:text-green-400 font-medium">
+                                            Grátis
+                                          </span>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
                               ))}
                             </div>
                           )}

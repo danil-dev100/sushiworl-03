@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Loader2, Clock } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/security';
 import { useCart } from '@/contexts/CartContext';
-import { SimpleProductOptionsDialog } from './SimpleProductOptionsDialog';
+import { ProductOptionsDialog } from './ProductOptionsDialog';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/trackEvent';
 
@@ -248,39 +248,32 @@ export default function ProductCard({
     }
   };
 
-  const handleAddWithOptions = (withOptions: boolean) => {
-    console.log('[ProductCard] 🛒 handleAddWithOptions chamado, withOptions:', withOptions);
+  const handleAddWithOptions = (selectedOptions: any[], quantity: number) => {
+    console.log('[ProductCard] 🛒 handleAddWithOptions chamado');
+    console.log('[ProductCard] 📋 Opções selecionadas:', selectedOptions);
+    console.log('[ProductCard] 📊 Quantidade:', quantity);
 
-    let finalPrice = priceNumber;
-    let selectedOptions: any[] = [];
+    // Calcular preço total com opções
+    let totalOptionsPrice = 0;
+    selectedOptions.forEach(opt => {
+      opt.choices.forEach((choice: any) => {
+        totalOptionsPrice += choice.price || 0;
+      });
+    });
 
-    if (withOptions && productOptions.length > 0) {
-      const option = productOptions[0];
-      const totalOptionPrice = option.isPaid ? option.basePrice + (option.choices[0]?.price || 0) : 0;
-      finalPrice += totalOptionPrice;
+    const finalPrice = (priceNumber + totalOptionsPrice) * quantity;
 
-      selectedOptions = [{
-        optionId: option.id,
-        optionName: option.name,
-        choices: [{
-          choiceId: option.choices[0]?.id || '',
-          choiceName: option.choices[0]?.name || option.name,
-          price: totalOptionPrice,
-        }],
-      }];
-
-      console.log('[ProductCard] ✅ Com opção:', option.name, `(+€${totalOptionPrice.toFixed(2)})`);
-    } else {
-      console.log('[ProductCard] ⚪ Sem opção');
-    }
+    console.log('[ProductCard] 💰 Preço base:', priceNumber);
+    console.log('[ProductCard] 💰 Preço opções:', totalOptionsPrice);
+    console.log('[ProductCard] 💰 Preço final:', finalPrice);
 
     addItem({
       productId,
-      name: withOptions ? `${name} (${productOptions[0]?.name})` : name,
-      price: finalPrice,
-      quantity: 1,
+      name,
+      price: priceNumber + totalOptionsPrice,
+      quantity,
       image: imageUrl,
-      selectedOptions: withOptions ? selectedOptions : undefined,
+      selectedOptions: selectedOptions.length > 0 ? selectedOptions : undefined,
     });
 
     // Track add_to_cart event
@@ -289,14 +282,15 @@ export default function ProductCard({
       currency: 'EUR',
       items: [{
         id: productId,
-        name: withOptions ? `${name} (${productOptions[0]?.name})` : name,
-        price: finalPrice,
-        quantity: 1,
+        name,
+        price: priceNumber + totalOptionsPrice,
+        quantity,
       }],
     }).catch(err => console.error('[ProductCard] Erro ao disparar tracking:', err));
 
     toast.success(`${name} adicionado ao carrinho!`);
     console.log('[ProductCard] ✅ Item adicionado ao carrinho com sucesso');
+    setIsDialogOpen(false);
   };
 
   const isAvailable = !outOfStock;
@@ -357,14 +351,16 @@ export default function ProductCard({
         )}
       </button>
 
-      {/* Dialog de Opções Simples */}
-      <SimpleProductOptionsDialog
+      {/* Dialog de Opções Completo */}
+      <ProductOptionsDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         product={{
           id: productId,
           name,
+          description,
           price: priceNumber,
+          imageUrl,
         }}
         options={productOptions}
         onAddToCart={handleAddWithOptions}

@@ -400,7 +400,7 @@ export default function CheckoutPage() {
         // ✅ CORREÇÃO DE SEGURANÇA: Passar orderId na URL (não sessionStorage)
         // Redirecionar para página de obrigado com orderId validado
         console.log('[Checkout] 🔄 Redirecionando para /obrigado?orderId=', result.order.id);
-        router.push(`/obrigado?orderId=${result.order.id}`);
+        window.location.href = `/obrigado?orderId=${result.order.id}`;
       } else {
         const errorData = await response.json();
         console.error('[Checkout] ❌ Erro ao criar pedido:', errorData);

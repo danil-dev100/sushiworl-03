@@ -387,16 +387,23 @@ export default function CheckoutPage() {
         body: JSON.stringify(orderData),
       });
 
+      console.log('[Checkout] 📡 Response status:', response.status);
+      console.log('[Checkout] 📡 Response ok:', response.ok);
+
       if (response.ok) {
         const result = await response.json();
+        console.log('[Checkout] ✅ Pedido criado com sucesso:', result);
 
         // Limpar carrinho
         clearCart();
 
         // ✅ CORREÇÃO DE SEGURANÇA: Passar orderId na URL (não sessionStorage)
         // Redirecionar para página de obrigado com orderId validado
+        console.log('[Checkout] 🔄 Redirecionando para /obrigado?orderId=', result.order.id);
         router.push(`/obrigado?orderId=${result.order.id}`);
       } else {
+        const errorData = await response.json();
+        console.error('[Checkout] ❌ Erro ao criar pedido:', errorData);
         setShowErrorModal(true);
       }
     } catch (error) {

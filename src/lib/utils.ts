@@ -171,12 +171,44 @@ export function delay(ms: number): Promise<void> {
 export function isOpenNow(openingHours: any): boolean {
   if (!openingHours) return true;
 
+  // Usar timezone de Portugal (Europe/Lisbon)
   const now = new Date();
-  const dayOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
-  const currentTime = now.getHours() * 60 + now.getMinutes();
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Lisbon',
+    hour: '2-digit',
+    minute: '2-digit',
+    weekday: 'long',
+    hour12: false
+  });
+
+  const parts = formatter.formatToParts(now);
+  const getPartValue = (type: string) => parts.find(p => p.type === type)?.value || '0';
+
+  const portugalHour = parseInt(getPartValue('hour'));
+  const portugalMinute = parseInt(getPartValue('minute'));
+  const portugalWeekday = getPartValue('weekday');
+
+  const weekdayMap: Record<string, string> = {
+    'Sunday': 'sunday',
+    'Monday': 'monday',
+    'Tuesday': 'tuesday',
+    'Wednesday': 'wednesday',
+    'Thursday': 'thursday',
+    'Friday': 'friday',
+    'Saturday': 'saturday'
+  };
+
+  const dayOfWeek = weekdayMap[portugalWeekday] || 'sunday';
+  const currentTime = portugalHour * 60 + portugalMinute;
+
+  console.log('[isOpenNow] 🕐 Portugal:', portugalHour + ':' + portugalMinute, '| Dia:', dayOfWeek);
 
   const todayHours = openingHours[dayOfWeek];
-  if (!todayHours || todayHours.closed) return false;
+  console.log('[isOpenNow] ⚙️ Config do dia:', JSON.stringify(todayHours));
+  if (!todayHours || todayHours.closed) {
+    console.log('[isOpenNow] ❌ Fechado -', !todayHours ? 'sem config' : 'marcado como fechado');
+    return false;
+  }
 
   // Verificar período de almoço
   if (todayHours.lunchOpen && todayHours.lunchClose) {
@@ -185,8 +217,17 @@ export function isOpenNow(openingHours: any): boolean {
     const lunchOpenTime = lunchOpenHour * 60 + lunchOpenMinute;
     const lunchCloseTime = lunchCloseHour * 60 + lunchCloseMinute;
 
-    if (currentTime >= lunchOpenTime && currentTime <= lunchCloseTime) {
-      return true;
+    // Se o horário de fechamento cruza a meia-noite
+    if (lunchCloseTime < lunchOpenTime) {
+      if (currentTime >= lunchOpenTime || currentTime < lunchCloseTime) {
+        console.log('[isOpenNow] ✅ Aberto - almoço (cruza meia-noite)');
+        return true;
+      }
+    } else {
+      if (currentTime >= lunchOpenTime && currentTime < lunchCloseTime) {
+        console.log('[isOpenNow] ✅ Aberto - almoço');
+        return true;
+      }
     }
   }
 
@@ -197,8 +238,17 @@ export function isOpenNow(openingHours: any): boolean {
     const dinnerOpenTime = dinnerOpenHour * 60 + dinnerOpenMinute;
     const dinnerCloseTime = dinnerCloseHour * 60 + dinnerCloseMinute;
 
-    if (currentTime >= dinnerOpenTime && currentTime <= dinnerCloseTime) {
-      return true;
+    // Se o horário de fechamento cruza a meia-noite
+    if (dinnerCloseTime < dinnerOpenTime) {
+      if (currentTime >= dinnerOpenTime || currentTime < dinnerCloseTime) {
+        console.log('[isOpenNow] ✅ Aberto - jantar (cruza meia-noite)');
+        return true;
+      }
+    } else {
+      if (currentTime >= dinnerOpenTime && currentTime < dinnerCloseTime) {
+        console.log('[isOpenNow] ✅ Aberto - jantar');
+        return true;
+      }
     }
   }
 

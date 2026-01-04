@@ -78,19 +78,43 @@ function checkOpeningHours(openingHours: any): boolean {
 
   // Usar timezone de Portugal (Europe/Lisbon)
   const now = new Date();
-  const portugalTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Lisbon' }));
-  const dayOfWeek = portugalTime.getDay(); // 0 = domingo, 1 = segunda, etc.
+
+  // Obter data/hora em Portugal usando Intl.DateTimeFormat (mais confiável)
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Lisbon',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+
+  const parts = formatter.formatToParts(now);
+  const getPartValue = (type: string) => parts.find(p => p.type === type)?.value || '0';
+
+  const portugalHour = parseInt(getPartValue('hour'));
+  const portugalMinute = parseInt(getPartValue('minute'));
+  const portugalDay = parseInt(getPartValue('day'));
+  const portugalMonth = parseInt(getPartValue('month'));
+  const portugalYear = parseInt(getPartValue('year'));
+
+  // Criar data específica para Portugal
+  const portugalDate = new Date(portugalYear, portugalMonth - 1, portugalDay, portugalHour, portugalMinute);
+  const dayOfWeek = portugalDate.getDay(); // 0 = domingo, 1 = segunda, etc.
 
   const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const dayName = dayNames[dayOfWeek];
   console.log('[checkOpeningHours] 📅 Dia da semana (Portugal):', dayName, '(', dayOfWeek, ')');
   console.log('[checkOpeningHours] 🌍 Horário UTC:', now.toISOString());
-  console.log('[checkOpeningHours] 🇵🇹 Horário Portugal:', portugalTime.toISOString());
+  console.log('[checkOpeningHours] 🇵🇹 Horário Portugal:', `${portugalYear}-${portugalMonth}-${portugalDay} ${portugalHour}:${portugalMinute}`);
 
   const dayConfig = openingHours[dayName];
-  console.log('[checkOpeningHours] ⚙️ Config do dia:', dayConfig);
+  console.log('[checkOpeningHours] ⚙️ Config do dia:', JSON.stringify(dayConfig));
 
   if (!dayConfig) {
+    console.log('[checkOpeningHours] ⚠️ Sem config para', dayName, '- considera aberto');
     return true; // Se não há configuração para o dia, considera aberto
   }
 
@@ -100,8 +124,8 @@ function checkOpeningHours(openingHours: any): boolean {
   }
 
   // Converter horário atual para minutos desde meia-noite (horário de Portugal)
-  const currentMinutes = portugalTime.getHours() * 60 + portugalTime.getMinutes();
-  console.log('[checkOpeningHours] 🕐 Horário atual Portugal (minutos):', currentMinutes, '=', portugalTime.getHours() + ':' + portugalTime.getMinutes());
+  const currentMinutes = portugalHour * 60 + portugalMinute;
+  console.log('[checkOpeningHours] 🕐 Horário atual Portugal (minutos):', currentMinutes, '=', portugalHour + ':' + portugalMinute);
 
   // Verificar período de almoço
   if (dayConfig.lunchOpen && dayConfig.lunchClose) {

@@ -297,34 +297,46 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar pixels ativos para disparar eventos
-    const integrations = await prisma.integration.findMany({
-      where: {
-        isActive: true,
-      },
-    });
-
-    // Registrar evento de compra para cada pixel
-    const pixelEvents = integrations.map(async (integration) => {
-      await prisma.trackingEvent.create({
-        data: {
-          integrationId: integration.id,
-          eventType: 'Purchase',
-          eventData: {
-            orderId: order.id,
-            value: total,
-            currency: 'EUR',
-            items: items.map((item: { name: string; quantity: number; price: number }) => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price,
-            })),
-          },
-          pageUrl: '/checkout',
+    let integrations: any[] = [];
+    try {
+      integrations = await prisma.integration.findMany({
+        where: {
+          isActive: true,
+        },
+        select: {
+          id: true,
+          platform: true,
+          type: true,
+          isActive: true,
         },
       });
-    });
 
-    await Promise.all(pixelEvents);
+      // Registrar evento de compra para cada pixel
+      const pixelEvents = integrations.map(async (integration) => {
+        await prisma.trackingEvent.create({
+          data: {
+            integrationId: integration.id,
+            eventType: 'Purchase',
+            eventData: {
+              orderId: order.id,
+              value: total,
+              currency: 'EUR',
+              items: items.map((item: { name: string; quantity: number; price: number }) => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+              })),
+            },
+            pageUrl: '/checkout',
+          },
+        });
+      });
+
+      await Promise.all(pixelEvents);
+    } catch (integrationError) {
+      console.error('[Orders API] ⚠️ Erro ao processar integrações (não crítico):', integrationError);
+      // Não falhar a criação do pedido se houver erro com integrações
+    }
 
     // Emitir evento de novo pedido via WebSocket
     emitNewOrderEvent({

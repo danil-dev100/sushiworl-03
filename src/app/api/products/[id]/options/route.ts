@@ -17,7 +17,13 @@ export async function GET(
     // 1. Buscar produto para pegar categoryId
     const product = await prisma.product.findUnique({
       where: { id: productId },
-      select: { id: true, category: true }
+      select: { id: true, category: true, name: true }
+    });
+
+    console.log(`[Public Options API] 📦 Produto encontrado:`, {
+      id: product?.id,
+      name: product?.name,
+      category: product?.category
     });
 
     if (!product) {
@@ -46,6 +52,11 @@ export async function GET(
     console.log(`[Public Options API] 📦 Opções do produto: ${productOptions.length}`);
 
     // 3. Buscar opções globais aplicadas
+    console.log(`[Public Options API] 🔍 Buscando atribuições globais para:`);
+    console.log(`   - SITE_WIDE (targetId: null)`);
+    console.log(`   - CATEGORY (targetId: ${product.category})`);
+    console.log(`   - PRODUCT (targetId: ${productId})`);
+
     const globalAssignments = await prisma.globalOptionAssignment.findMany({
       where: {
         OR: [
@@ -64,6 +75,11 @@ export async function GET(
         }
       },
       orderBy: { sortOrder: 'asc' }
+    });
+
+    console.log(`[Public Options API] 📊 Total de atribuições encontradas: ${globalAssignments.length}`);
+    globalAssignments.forEach((a, idx) => {
+      console.log(`   ${idx + 1}. ${a.globalOption?.name || 'NULL'} (${a.assignmentType}, targetId: ${a.targetId || 'null'})`);
     });
 
     // 4. Converter opções globais para formato compatível (filtrar ativos em memória)

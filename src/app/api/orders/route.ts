@@ -26,9 +26,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Normalizar método de pagamento para corresponder ao ENUM do Prisma
-    // MBWAY é tratado como CARD no banco de dados
     const normalizedPaymentMethod = paymentMethod === 'MBWAY' ? 'CARD' : (paymentMethod || 'CASH');
-    console.log('[Orders API] 💳 Método de pagamento recebido:', paymentMethod, '→ normalizado:', normalizedPaymentMethod);
 
     // Validação básica
     if (!customerName || !customerEmail || !customerPhone || !address || !items || items.length === 0) {

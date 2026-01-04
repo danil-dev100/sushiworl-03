@@ -476,9 +476,14 @@ export async function POST(request: NextRequest) {
     }, { status: 201 });
 
   } catch (error) {
-    console.error('[Orders API] Erro ao criar pedido:', error);
+    console.error('[Orders API] ❌ Erro ao criar pedido:', error);
+    console.error('[Orders API] ❌ Stack:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('[Orders API] ❌ Message:', error instanceof Error ? error.message : String(error));
     return NextResponse.json(
-      { error: 'Erro ao criar pedido.' },
+      {
+        error: 'Erro ao criar pedido.',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     );
   }

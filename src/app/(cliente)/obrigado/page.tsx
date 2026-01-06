@@ -23,6 +23,9 @@ export default async function ObrigadoPage({
   let order;
   try {
     console.log('[Obrigado Page] 📡 Buscando pedido no banco:', orderId);
+    console.log('[Obrigado Page] 🔍 Tipo do orderId:', typeof orderId);
+    console.log('[Obrigado Page] 🔍 Length do orderId:', orderId?.length);
+
     order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
@@ -36,15 +39,25 @@ export default async function ObrigadoPage({
         },
       },
     });
+
     console.log('[Obrigado Page] ✅ Pedido encontrado:', !!order);
+    console.log('[Obrigado Page] 📦 Pedido completo:', order ? 'SIM' : 'NAO');
+    if (order) {
+      console.log('[Obrigado Page] 📦 OrderID do banco:', order.id);
+      console.log('[Obrigado Page] 📦 Total de itens:', order.orderItems?.length);
+    }
   } catch (error) {
-    console.error('[Obrigado Page] ❌ Erro ao buscar pedido:', error);
+    console.error('[Obrigado Page] ❌ ERRO CRÍTICO ao buscar pedido:', error);
+    console.error('[Obrigado Page] ❌ Tipo do erro:', error instanceof Error ? error.constructor.name : typeof error);
+    console.error('[Obrigado Page] ❌ Mensagem:', error instanceof Error ? error.message : String(error));
+    console.error('[Obrigado Page] ❌ Stack:', error instanceof Error ? error.stack : 'N/A');
     redirect('/');
   }
 
   // 3. Se pedido não existe, redirecionar
   if (!order) {
-    console.warn('[Obrigado Page] ❌ Pedido não encontrado:', orderId);
+    console.warn('[Obrigado Page] ❌ Pedido não encontrado no banco:', orderId);
+    console.warn('[Obrigado Page] ❌ Redirecionando para home...');
     redirect('/');
   }
 

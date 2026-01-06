@@ -333,6 +333,12 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Evitar envios duplicados
+    if (isSubmitting) {
+      console.log('[Checkout] ⚠️ Já está processando, ignorando clique duplicado');
+      return;
+    }
+
     // Verificar se o endereço foi validado
     if (!deliveryValidation || !deliveryValidation.isValid) {
       toast.error('Por favor, valide seu endereço de entrega antes de finalizar o pedido');

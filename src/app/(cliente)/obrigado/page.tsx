@@ -7,10 +7,11 @@ import { ObrigadoClient } from './ObrigadoClient';
 export default async function ObrigadoPage({
   searchParams,
 }: {
-  searchParams: { orderId?: string };
+  searchParams: Promise<{ orderId?: string }>;
 }) {
-  // 1. Validar se orderId foi fornecido
-  const orderId = searchParams.orderId;
+  // 1. Await searchParams (Next.js 15+ requirement)
+  const params = await searchParams;
+  const orderId = params.orderId;
 
   console.log('[Obrigado Page] 🔍 OrderID recebido:', orderId);
 

@@ -12,29 +12,39 @@ export default async function ObrigadoPage({
   // 1. Validar se orderId foi fornecido
   const orderId = searchParams.orderId;
 
+  console.log('[Obrigado Page] 🔍 OrderID recebido:', orderId);
+
   if (!orderId) {
-    console.warn('[Obrigado] Tentativa de acesso sem orderId');
+    console.warn('[Obrigado] ❌ Tentativa de acesso sem orderId');
     redirect('/');
   }
 
   // 2. Buscar pedido NO SERVIDOR (dados validados)
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: {
-      orderItems: {
-        select: {
-          id: true,
-          name: true,
-          quantity: true,
-          priceAtTime: true,
+  let order;
+  try {
+    console.log('[Obrigado Page] 📡 Buscando pedido no banco:', orderId);
+    order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        orderItems: {
+          select: {
+            id: true,
+            name: true,
+            quantity: true,
+            priceAtTime: true,
+          },
         },
       },
-    },
-  });
+    });
+    console.log('[Obrigado Page] ✅ Pedido encontrado:', !!order);
+  } catch (error) {
+    console.error('[Obrigado Page] ❌ Erro ao buscar pedido:', error);
+    redirect('/');
+  }
 
   // 3. Se pedido não existe, redirecionar
   if (!order) {
-    console.warn('[Obrigado] Pedido não encontrado:', orderId);
+    console.warn('[Obrigado Page] ❌ Pedido não encontrado:', orderId);
     redirect('/');
   }
 

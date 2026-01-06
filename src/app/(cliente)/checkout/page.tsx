@@ -399,8 +399,16 @@ export default function CheckoutPage() {
 
         // ✅ CORREÇÃO DE SEGURANÇA: Passar orderId na URL (não sessionStorage)
         // Redirecionar para página de obrigado com orderId validado
-        console.log('[Checkout] 🔄 Redirecionando para /obrigado?orderId=', result.order.id);
-        window.location.href = `/obrigado?orderId=${result.order.id}`;
+        const redirectUrl = `/obrigado?orderId=${result.order.id}`;
+        console.log('[Checkout] 🔄 Redirecionando para:', redirectUrl);
+        console.log('[Checkout] 📊 OrderID:', result.order.id);
+        console.log('[Checkout] 📊 Aguardando 2 segundos para você ver os logs...');
+
+        // Aguardar 2 segundos para garantir que os logs são visíveis
+        setTimeout(() => {
+          console.log('[Checkout] ➡️ Redirecionando agora para:', redirectUrl);
+          window.location.href = redirectUrl;
+        }, 2000);
       } else {
         const errorData = await response.json();
         console.error('[Checkout] ❌ Erro ao criar pedido:', errorData);

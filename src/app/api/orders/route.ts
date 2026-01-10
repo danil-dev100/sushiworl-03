@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { emitNewOrderEvent } from '@/lib/socket-emitter';
 import { triggersService } from '@/lib/triggers-service';
 import { isRestaurantOpen } from '@/lib/restaurant-status';
+import { validateScheduleDateTime } from '@/lib/scheduling';
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,6 +24,9 @@ export async function POST(request: NextRequest) {
       additionalItems,
       couponCode,
       promotionId,
+      isScheduled,
+      scheduledDate,
+      scheduledTime,
     } = body;
 
     // Normalizar método de pagamento para corresponder ao ENUM do Prisma
@@ -37,16 +41,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar se o restaurante está aberto
-    const restaurantStatus = await isRestaurantOpen();
-    if (!restaurantStatus.isOpen) {
-      return NextResponse.json(
-        {
-          error: restaurantStatus.message || 'Restaurante fechado no momento',
-          reason: restaurantStatus.reason,
-        },
-        { status: 400 }
-      );
+    // Validar agendamento se for um pedido agendado
+    let scheduledForDateTime: Date | null = null;
+
+    if (isScheduled) {
+      // Validar que scheduledDate e scheduledTime foram fornecidos
+      if (!scheduledDate || !scheduledTime) {
+        return NextResponse.json(
+          { error: 'Para pedidos agendados, scheduledDate e scheduledTime são obrigatórios' },
+          { status: 400 }
+        );
+      }
+
+      // Validar formato e disponibilidade da data/hora
+      const validation = await validateScheduleDateTime(scheduledDate, scheduledTime);
+      if (!validation.isValid) {
+        return NextResponse.json(
+          { error: validation.reason || 'Data/hora de agendamento inválida' },
+          { status: 400 }
+        );
+      }
+
+      // Construir data/hora completa
+      const [year, month, day] = scheduledDate.split('-').map(Number);
+      const [hour, minute] = scheduledTime.split(':').map(Number);
+      scheduledForDateTime = new Date(year, month - 1, day, hour, minute);
+
+      console.log('[Orders API] ✅ Pedido agendado para:', scheduledForDateTime.toISOString());
+    } else {
+      // Verificar se o restaurante está aberto APENAS para pedidos imediatos
+      const restaurantStatus = await isRestaurantOpen();
+      if (!restaurantStatus.isOpen) {
+        return NextResponse.json(
+          {
+            error: restaurantStatus.message || 'Restaurante fechado no momento',
+            reason: restaurantStatus.reason,
+            canSchedule: true, // Indica que pode agendar
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Validar área de entrega com prioridade e logs
@@ -256,6 +290,8 @@ export async function POST(request: NextRequest) {
       paymentMethod: normalizedPaymentMethod,
       status: 'PENDING',
       promotionId: validPromotionId,
+      isScheduled: isScheduled || false,
+      scheduledFor: scheduledForDateTime,
       orderItems: {
         create: items.map((item: { productId: string; name: string; quantity: number; price: number; options?: any }) => ({
           productId: item.productId,

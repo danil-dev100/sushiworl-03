@@ -43,6 +43,8 @@ type Order = {
     name: string | null;
   } | null;
   orderItems: OrderItem[];
+  isScheduled?: boolean;
+  scheduledFor?: Date | null;
 };
 
 interface PageProps {
@@ -71,6 +73,9 @@ async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
     where.status = 'DELIVERED';
   } else if (status === 'cancelled') {
     where.status = 'CANCELLED';
+  } else if (status === 'scheduled') {
+    // Filtrar apenas pedidos agendados
+    where.isScheduled = true;
   }
   // Se status for 'all' ou 'today' ou undefined, não aplicar filtro de status
 
@@ -178,6 +183,14 @@ async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
     where: countWhere,
   });
 
+  // Contar pedidos agendados
+  const scheduledCount = await prisma.order.count({
+    where: {
+      ...countWhere,
+      isScheduled: true,
+    },
+  });
+
   const counts = {
     all: orders.length,
     pending: statusCounts.find((s) => s.status === 'PENDING')?._count || 0,
@@ -186,6 +199,7 @@ async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
     delivering: statusCounts.find((s) => s.status === 'DELIVERING')?._count || 0,
     delivered: statusCounts.find((s) => s.status === 'DELIVERED')?._count || 0,
     cancelled: statusCounts.find((s) => s.status === 'CANCELLED')?._count || 0,
+    scheduled: scheduledCount,
   };
 
   return { orders, counts };

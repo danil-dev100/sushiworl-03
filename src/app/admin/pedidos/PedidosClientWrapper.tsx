@@ -38,6 +38,8 @@ type Order = {
     name: string | null;
   } | null;
   orderItems: OrderItem[];
+  isScheduled?: boolean;
+  scheduledFor?: string | Date | null;
 };
 
 type OrdersData = {
@@ -50,6 +52,7 @@ type OrdersData = {
     delivering: number;
     delivered: number;
     cancelled: number;
+    scheduled: number;
   };
 };
 
@@ -92,6 +95,8 @@ export function PedidosClientWrapper({
       filteredOrders = allOrders.filter(o => o.status === 'PENDING');
     } else if (currentStatus === 'confirmed') {
       filteredOrders = allOrders.filter(o => o.status === 'CONFIRMED');
+    } else if (currentStatus === 'scheduled') {
+      filteredOrders = allOrders.filter(o => o.isScheduled === true);
     } else if (currentStatus === 'all') {
       filteredOrders = allOrders; // Todos
     } else {

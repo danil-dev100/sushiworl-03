@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/trackEvent';
+import { ScheduleOrderModal } from '@/components/cliente/ScheduleOrderModal';
 
 interface CheckoutAdditionalItem {
   id: string;
@@ -24,6 +25,11 @@ export default function CheckoutPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Agendamento
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState<string>('');
+  const [scheduledTime, setScheduledTime] = useState<string>('');
 
   // Itens adicionais do checkout
   const [checkoutItems, setCheckoutItems] = useState<CheckoutAdditionalItem[]>([]);
@@ -330,6 +336,21 @@ export default function CheckoutPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleSchedule = (date: string, time: string) => {
+    setScheduledDate(date);
+    setScheduledTime(time);
+    setShowScheduleModal(false);
+
+    // Reenviar o pedido com os dados de agendamento
+    toast.success(`Pedido agendado para ${date} às ${time}`);
+
+    // Disparar handleSubmit novamente
+    const form = document.querySelector('form');
+    if (form) {
+      form.requestSubmit();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -363,7 +384,7 @@ export default function CheckoutPage() {
         ...selectedCheckoutItemsData,
       ];
 
-      const orderData = {
+      const orderData: any = {
         customerName: formData.nome,
         customerSurname: formData.sobrenome,
         customerEmail: formData.email,
@@ -386,6 +407,13 @@ export default function CheckoutPage() {
         promotionId: appliedCoupon?.id || null,
         additionalItems: allAdditionalItems,
       };
+
+      // Adicionar dados de agendamento se aplicável
+      if (scheduledDate && scheduledTime) {
+        orderData.isScheduled = true;
+        orderData.scheduledDate = scheduledDate;
+        orderData.scheduledTime = scheduledTime;
+      }
 
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -416,7 +444,13 @@ export default function CheckoutPage() {
       } else {
         const errorData = await response.json();
         console.error('[Checkout] ❌ Erro ao criar pedido:', errorData);
-        setShowErrorModal(true);
+
+        // Se o erro for porque o restaurante está fechado, mostrar modal de agendamento
+        if (errorData.canSchedule && (errorData.reason === 'closed' || errorData.reason === 'offline')) {
+          setShowScheduleModal(true);
+        } else {
+          setShowErrorModal(true);
+        }
       }
     } catch (error) {
       console.error('Erro ao enviar pedido:', error);
@@ -1030,6 +1064,13 @@ export default function CheckoutPage() {
           </div>
         </div>
       )}
+
+      {/* Modal de Agendamento */}
+      <ScheduleOrderModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        onSchedule={handleSchedule}
+      />
 
       {/* Modal de Erro */}
       {showErrorModal && (

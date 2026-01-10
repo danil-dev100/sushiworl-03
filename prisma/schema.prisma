@@ -280,6 +280,10 @@ model Order {
   // Pedidos de teste (criados no painel admin para demonstração)
   isTest Boolean @default(false)
 
+  // Agendamento de pedidos
+  isScheduled  Boolean   @default(false) // Indica se é um pedido agendado
+  scheduledFor DateTime? // Data/hora agendada para o pedido
+
   // Controle
   acceptedAt  DateTime?
   cancelledAt DateTime?
@@ -298,6 +302,9 @@ model Order {
   @@index([orderNumber])
   @@index([status])
   @@index([createdAt])
+  @@index([scheduledFor])
+  @@index([isScheduled])
+  @@index([isScheduled, status, scheduledFor])
 }
 
 model OrderItem {

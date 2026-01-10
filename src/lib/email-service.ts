@@ -47,7 +47,7 @@ export class EmailService {
         fromEmail: smtpSettings.defaultFromEmail,
       };
 
-      // Criar transporter
+      // Criar transporter com timeouts aumentados para Vercel
       this.transporter = nodemailer.createTransport({
         host: this.config.smtpServer,
         port: this.config.smtpPort,
@@ -59,10 +59,19 @@ export class EmailService {
         tls: {
           rejectUnauthorized: false, // Para desenvolvimento
         },
+        // Timeouts aumentados para ambiente serverless
+        connectionTimeout: 30000, // 30 segundos
+        greetingTimeout: 30000, // 30 segundos
+        socketTimeout: 60000, // 60 segundos
       });
 
-      // Verificar conexão
-      await this.transporter.verify();
+      // Verificar conexão (com timeout)
+      const verifyPromise = this.transporter.verify();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout ao verificar conexão SMTP')), 25000)
+      );
+
+      await Promise.race([verifyPromise, timeoutPromise]);
 
     } catch (error) {
       console.error('Erro ao inicializar serviço de email:', error);

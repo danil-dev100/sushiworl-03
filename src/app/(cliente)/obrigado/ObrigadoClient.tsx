@@ -79,6 +79,7 @@ interface ObrigadoClientProps {
 export function ObrigadoClient({ order }: ObrigadoClientProps) {
   const [currentStatus, setCurrentStatus] = useState<OrderStatus>(order.status);
   const [purchaseTracked, setPurchaseTracked] = useState(false);
+  const [isLoading, setIsLoading] = useState(order.status === 'PENDING');
 
   useEffect(() => {
     // DISPARAR EVENTO DE PURCHASE (apenas uma vez) - AGORA COM DADOS VALIDADOS!
@@ -117,7 +118,13 @@ export function ObrigadoClient({ order }: ObrigadoClientProps) {
         const data = await response.json();
 
         if (data.success && data.order) {
-          setCurrentStatus(data.order.status);
+          const newStatus = data.order.status;
+          setCurrentStatus(newStatus);
+
+          // Parar loading quando status mudar de PENDING
+          if (newStatus !== 'PENDING') {
+            setIsLoading(false);
+          }
         }
       } catch (error) {
         console.error('Erro ao buscar status:', error);
@@ -127,10 +134,10 @@ export function ObrigadoClient({ order }: ObrigadoClientProps) {
     // Buscar imediatamente
     fetchStatus();
 
-    // Polling a cada 5 segundos (apenas se não estiver entregue ou cancelado)
+    // Polling a cada 3 segundos (apenas se não estiver entregue ou cancelado)
     let interval: NodeJS.Timeout | null = null;
     if (currentStatus !== 'DELIVERED' && currentStatus !== 'CANCELLED') {
-      interval = setInterval(fetchStatus, 5000);
+      interval = setInterval(fetchStatus, 3000);
     }
 
     return () => {
@@ -145,6 +152,94 @@ export function ObrigadoClient({ order }: ObrigadoClientProps) {
 
   const StatusIcon = statusConfig[currentStatus].icon;
 
+  // Tela de loading para pedidos PENDING
+  if (isLoading && currentStatus === 'PENDING') {
+    return (
+      <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">
+        <main className="flex flex-1 justify-center py-10 px-4 sm:px-6 md:px-8">
+          <div className="flex flex-col w-full max-w-2xl flex-1 items-center justify-center">
+            <div className="w-full bg-white dark:bg-[#3a2a1d] rounded-xl shadow-lg p-10 text-center flex flex-col gap-8 items-center">
+              {/* Spinner de Loading */}
+              <div className="relative">
+                <div className="animate-spin rounded-full h-24 w-24 border-8 border-[#FF6B00]/20 border-t-[#FF6B00]"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Clock className="w-10 h-10 text-[#FF6B00] animate-pulse" />
+                </div>
+              </div>
+
+              {/* Mensagem */}
+              <div className="flex flex-col gap-4">
+                <h1 className="text-[#333333] dark:text-[#f5f1e9] text-3xl sm:text-4xl font-bold">
+                  Processando seu pedido...
+                </h1>
+                <p className="text-[#a16b45] dark:text-[#a1a1aa] text-lg max-w-md">
+                  Aguarde enquanto estamos processando o seu pedido. Isso pode levar alguns instantes.
+                </p>
+                <p className="text-sm text-[#a16b45]/60 dark:text-[#a1a1aa]/60">
+                  Pedido #{order.orderNumber}
+                </p>
+              </div>
+
+              {/* Indicador de atualização */}
+              <div className="flex items-center gap-2 text-sm text-[#a16b45]/80 dark:text-[#a1a1aa]/80">
+                <div className="w-2 h-2 bg-[#FF6B00] rounded-full animate-pulse"></div>
+                <span>Atualizando automaticamente a cada 3 segundos</span>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Tela de pedido cancelado
+  if (currentStatus === 'CANCELLED') {
+    return (
+      <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">
+        <main className="flex flex-1 justify-center py-10 px-4 sm:px-6 md:px-8">
+          <div className="flex flex-col w-full max-w-2xl flex-1 items-center justify-center">
+            <div className="w-full bg-white dark:bg-[#3a2a1d] rounded-xl shadow-lg p-10 text-center flex flex-col gap-8 items-center">
+              {/* Ícone de Erro */}
+              <div className="flex items-center justify-center w-24 h-24 bg-red-50 dark:bg-red-900/20 rounded-full">
+                <XCircle className="w-16 h-16 text-red-600 dark:text-red-400" />
+              </div>
+
+              {/* Mensagem */}
+              <div className="flex flex-col gap-4">
+                <h1 className="text-[#333333] dark:text-[#f5f1e9] text-3xl sm:text-4xl font-bold">
+                  Pedido Não Processado
+                </h1>
+                <p className="text-[#a16b45] dark:text-[#a1a1aa] text-lg max-w-md">
+                  Desculpe, devido à alta demanda não conseguimos processar o seu pedido no momento.
+                </p>
+                <p className="text-sm text-[#a16b45]/60 dark:text-[#a1a1aa]/60">
+                  Pedido #{order.orderNumber}
+                </p>
+              </div>
+
+              {/* Botões */}
+              <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+                <Link
+                  href="/cardapio"
+                  className="flex-1 flex items-center justify-center rounded-lg h-12 px-6 bg-[#FF6B00] text-white text-base font-bold hover:opacity-90 transition-opacity"
+                >
+                  Tentar Novamente
+                </Link>
+                <Link
+                  href="/"
+                  className="flex-1 flex items-center justify-center rounded-lg h-12 px-6 bg-[#FF6B00]/20 text-[#FF6B00] text-base font-bold hover:bg-[#FF6B00]/30 transition-colors"
+                >
+                  Página Inicial
+                </Link>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Tela normal (pedido confirmado/em andamento)
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">
       <main className="flex flex-1 justify-center py-10 px-4 sm:px-6 md:px-8">

@@ -81,6 +81,7 @@ export class EmailService {
       }
 
       // Headers anti-spam e melhores práticas
+      // IMPORTANTE: Não definir Content-Type manualmente, deixar nodemailer gerenciar
       const defaultHeaders = {
         'X-Mailer': 'SushiWorld Email Service',
         'X-Priority': '3', // Normal priority
@@ -89,18 +90,12 @@ export class EmailService {
         'List-Unsubscribe': `<mailto:${this.config.fromEmail}?subject=unsubscribe>`,
         'Precedence': 'bulk',
         'Return-Path': this.config.fromEmail,
-        'Message-ID': `<${Date.now()}@${this.config.smtpServer}>`,
-        'Date': new Date().toUTCString(),
-        'MIME-Version': '1.0',
-        'Content-Type': 'multipart/alternative; boundary="boundary123"',
         // Anti-spam headers
         'X-Spam-Score': '0',
         'X-Spam-Status': 'No',
         'X-Spam-Flag': 'NO',
-        'Authentication-Results': `dkim=pass; spf=pass; dmarc=pass`,
         // Custom headers
         'X-Auto-Response-Suppress': 'All',
-        'Auto-Submitted': 'auto-generated',
       };
 
       // Mesclar headers personalizados

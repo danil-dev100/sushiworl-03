@@ -74,6 +74,7 @@ import {
   Info,
   Loader2,
   Palette,
+  Pencil,
   Percent,
   Plus,
   Search,
@@ -575,7 +576,7 @@ export function PromotionsPageContent({
         </div>
 
         <div className="mt-6">
-          <ActiveCouponsDisplay promotions={promotions} />
+          <ActiveCouponsDisplay promotions={promotions} onEdit={handleOpenEdit} />
         </div>
       </section>
 
@@ -2051,9 +2052,10 @@ function transformFormPayload(values: PromotionFormValues, promotionId?: string)
 
 type ActiveCouponsDisplayProps = {
   promotions: PromotionWithRelations[];
+  onEdit: (promotion: PromotionWithRelations) => void;
 };
 
-function ActiveCouponsDisplay({ promotions }: ActiveCouponsDisplayProps) {
+function ActiveCouponsDisplay({ promotions, onEdit }: ActiveCouponsDisplayProps) {
   const now = new Date();
 
   const activeCoupons = useMemo(() => {
@@ -2119,8 +2121,19 @@ function ActiveCouponsDisplay({ promotions }: ActiveCouponsDisplayProps) {
                     : `€${coupon.discountValue.toFixed(2)} OFF`}
                 </p>
               </div>
-              <div className="flex items-center justify-center rounded-full bg-white p-2 shadow-sm">
-                <Percent className="h-4 w-4 text-[#FF6B00]" />
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-[#a16b45] hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]"
+                  onClick={() => onEdit(coupon)}
+                  title="Editar promoção"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center justify-center rounded-full bg-white p-2 shadow-sm">
+                  <Percent className="h-4 w-4 text-[#FF6B00]" />
+                </div>
               </div>
             </div>
 
@@ -2136,6 +2149,7 @@ function ActiveCouponsDisplay({ promotions }: ActiveCouponsDisplayProps) {
                   await navigator.clipboard.writeText(coupon.code!);
                   toast.success('Código copiado!');
                 }}
+                title="Copiar código"
               >
                 <ClipboardCopy className="h-3 w-3" />
               </Button>

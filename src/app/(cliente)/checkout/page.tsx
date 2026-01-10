@@ -444,11 +444,15 @@ export default function CheckoutPage() {
       } else {
         const errorData = await response.json();
         console.error('[Checkout] ❌ Erro ao criar pedido:', errorData);
+        console.log('[Checkout] 🔍 canSchedule:', errorData.canSchedule);
+        console.log('[Checkout] 🔍 reason:', errorData.reason);
 
         // Se o erro for porque o restaurante está fechado, mostrar modal de agendamento
         if (errorData.canSchedule && (errorData.reason === 'closed' || errorData.reason === 'offline')) {
+          console.log('[Checkout] 📅 Abrindo modal de agendamento');
           setShowScheduleModal(true);
         } else {
+          console.log('[Checkout] ❌ Mostrando modal de erro');
           setShowErrorModal(true);
         }
       }

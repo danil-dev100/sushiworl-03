@@ -556,15 +556,18 @@ export class FlowExecutionService {
           // Tempo estimado (pode ser configurado futuramente)
           content = content.replace(/\{\{tempo_estimado\}\}/g, '30-45 minutos');
 
-          // Nome da loja e WhatsApp (buscar das configurações)
+          // Nome da loja e telefone (buscar das configurações)
           try {
             const settings = await prisma.settings.findFirst();
-            const whatsapp = settings?.whatsappNumber || '+351 XXX XXX XXX';
-            content = content.replace(/\{\{nome_da_loja\}\}/g, 'SushiWorld');
-            content = content.replace(/\{\{whatsapp_loja\}\}/g, whatsapp);
+            const companyName = settings?.companyName || 'SushiWorld';
+            const phone = settings?.phone || 'Entre em contato conosco';
+            content = content.replace(/\{\{nome_da_loja\}\}/g, companyName);
+            content = content.replace(/\{\{whatsapp_loja\}\}/g, phone);
+            content = content.replace(/\{\{telefone_loja\}\}/g, phone);
           } catch (err) {
             content = content.replace(/\{\{nome_da_loja\}\}/g, 'SushiWorld');
-            content = content.replace(/\{\{whatsapp_loja\}\}/g, '+351 XXX XXX XXX');
+            content = content.replace(/\{\{whatsapp_loja\}\}/g, 'Entre em contato conosco');
+            content = content.replace(/\{\{telefone_loja\}\}/g, 'Entre em contato conosco');
           }
         }
       } catch (error) {

@@ -197,11 +197,19 @@ export class FlowExecutionService {
 
         // Se é um nó final, parar
         if (currentNode.type === 'action' && currentNode.data?.actionType === 'end_flow') {
+          console.log('🏁 Nó final alcançado, encerrando fluxo');
           break;
         }
 
         // Encontrar próximo nó
+        const prevNodeId = currentNodeId;
         currentNodeId = this.findNextNode(currentNodeId, edges, nextNodeId);
+
+        console.log(`🔗 Próximo nó após ${prevNodeId}: ${currentNodeId || 'NENHUM'}`);
+
+        if (!currentNodeId) {
+          console.log('⚠️ Nenhum próximo nó encontrado, finalizando execução');
+        }
 
       } catch (error) {
         console.error(`❌ Erro ao executar nó ${currentNodeId}:`, error);

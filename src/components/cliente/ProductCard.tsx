@@ -61,15 +61,9 @@ export default function ProductCard({
     });
     console.log('═══════════════════════════════════════');
 
-    // Verificar se a loja está aberta
-    if (storeStatus && !storeStatus.isOpen) {
-      console.log('[ProductCard] ❌ Loja fechada');
-      toast.error(storeStatus.message || 'Lamentamos mas não estamos abertos agora.', {
-        duration: 5000,
-        icon: <Clock className="h-5 w-5" />,
-      });
-      return;
-    }
+    // ✅ REMOVIDA VALIDAÇÃO DE LOJA FECHADA
+    // Agora permitimos adicionar ao carrinho mesmo com restaurante fechado
+    // O agendamento será oferecido no checkout
 
     setIsLoadingOptions(true);
 

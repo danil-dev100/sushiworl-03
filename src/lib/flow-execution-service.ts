@@ -279,12 +279,13 @@ export class FlowExecutionService {
       htmlContent = template.htmlContent;
 
       // Substituir variáveis
-      htmlContent = this.replaceTemplateVariables(htmlContent, context);
+      htmlContent = await this.replaceTemplateVariables(htmlContent, context);
     }
 
     if (customContent) {
       // Use custom content directly (it's already HTML from the builder)
-      htmlContent = htmlContent ? htmlContent + '\n\n' + customContent : customContent;
+      let processedContent = await this.replaceTemplateVariables(customContent, context);
+      htmlContent = htmlContent ? htmlContent + '\n\n' + processedContent : processedContent;
     }
 
     console.log(`📧 Enviando email para ${context.email} - Assunto: ${subject}`);
@@ -491,12 +492,79 @@ export class FlowExecutionService {
     return nextNodeId;
   }
 
-  private replaceTemplateVariables(content: string, context: FlowExecutionContext): string {
+  private async replaceTemplateVariables(content: string, context: FlowExecutionContext): Promise<string> {
     // Substituir variáveis básicas
     content = content.replace(/\{\{email\}\}/g, context.email);
     content = content.replace(/\{\{user_id\}\}/g, context.userId || '');
 
-    // Adicionar mais variáveis conforme necessário
+    // Se tem dados do pedido no contexto, substituir variáveis do pedido
+    if (context.orderId) {
+      try {
+        const order = await prisma.order.findUnique({
+          where: { id: context.orderId },
+          include: {
+            orderItems: true,
+          },
+        });
+
+        if (order) {
+          // Dados do cliente
+          content = content.replace(/\{\{customerName\}\}/g, order.customerName || '');
+          content = content.replace(/\{\{nome_cliente\}\}/g, order.customerName || '');
+
+          // Dados do pedido
+          content = content.replace(/\{\{orderNumber\}\}/g, order.orderNumber?.toString() || '');
+          content = content.replace(/\{\{numero_pedido\}\}/g, order.orderNumber?.toString() || '');
+          content = content.replace(/\{\{pedido_id\}\}/g, order.id || '');
+
+          // Valores
+          content = content.replace(/\{\{valor_total\}\}/g, `€${order.total.toFixed(2)}`);
+          content = content.replace(/\{\{subtotal\}\}/g, `€${order.subtotal.toFixed(2)}`);
+          content = content.replace(/\{\{deliveryFee\}\}/g, `€${order.deliveryFee.toFixed(2)}`);
+
+          // Datas
+          const dataFormatada = new Date(order.createdAt).toLocaleDateString('pt-PT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+          content = content.replace(/\{\{data_pedido\}\}/g, dataFormatada);
+
+          // Pagamento
+          const paymentMethodMap: Record<string, string> = {
+            'CASH': 'Dinheiro',
+            'CREDIT_CARD': 'Cartão de Crédito',
+            'MBWAY': 'MB WAY',
+            'MULTIBANCO': 'Multibanco',
+          };
+          content = content.replace(/\{\{forma_pagamento\}\}/g, paymentMethodMap[order.paymentMethod] || order.paymentMethod);
+
+          // Endereço
+          const address = typeof order.deliveryAddress === 'object' && order.deliveryAddress !== null
+            ? (order.deliveryAddress as any).fullAddress || JSON.stringify(order.deliveryAddress)
+            : String(order.deliveryAddress || '');
+          content = content.replace(/\{\{endereco_entrega\}\}/g, address);
+
+          // Lista de produtos
+          const listaProdutos = order.orderItems
+            .map(item => `• ${item.quantity}x ${item.name} - €${item.priceAtTime.toFixed(2)}`)
+            .join('\n');
+          content = content.replace(/\{\{lista_produtos\}\}/g, listaProdutos);
+
+          // Tempo estimado (pode ser configurado futuramente)
+          content = content.replace(/\{\{tempo_estimado\}\}/g, '30-45 minutos');
+
+          // Nome da loja (buscar das configurações)
+          content = content.replace(/\{\{nome_da_loja\}\}/g, 'SushiWorld');
+          content = content.replace(/\{\{whatsapp_loja\}\}/g, '+351 XXX XXX XXX'); // Configurar depois
+        }
+      } catch (error) {
+        console.error('Erro ao buscar dados do pedido para variáveis:', error);
+      }
+    }
+
     return content;
   }
 

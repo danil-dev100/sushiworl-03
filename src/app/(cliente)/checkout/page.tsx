@@ -408,15 +408,9 @@ export default function CheckoutPage() {
         const redirectUrl = `/obrigado?orderId=${result.order.id}`;
         console.log('[Checkout] 🔄 Redirecionando para:', redirectUrl);
         console.log('[Checkout] 📊 OrderID:', result.order.id);
-        console.log('[Checkout] 📊 Aguardando 10 segundos para você ver os logs...');
-        console.log('[Checkout] 📊 COPIE ESTE LINK AGORA: ' + window.location.origin + redirectUrl);
 
-        // Aguardar 10 segundos para você ter tempo de copiar os logs
-        setTimeout(() => {
-          console.log('[Checkout] ➡️ Redirecionando agora para:', redirectUrl);
-          console.log('[Checkout] ➡️ Executando window.location.href...');
-          window.location.href = redirectUrl;
-        }, 10000);
+        // Redirecionar imediatamente
+        window.location.href = redirectUrl;
       } else {
         const errorData = await response.json();
         console.error('[Checkout] ❌ Erro ao criar pedido:', errorData);

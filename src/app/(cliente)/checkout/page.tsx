@@ -400,17 +400,19 @@ export default function CheckoutPage() {
         const result = await response.json();
         console.log('[Checkout] ✅ Pedido criado com sucesso:', result);
 
-        // Limpar carrinho
-        clearCart();
-
         // ✅ CORREÇÃO DE SEGURANÇA: Passar orderId na URL (não sessionStorage)
         // Redirecionar para página de obrigado com orderId validado
         const redirectUrl = `/obrigado?orderId=${result.order.id}`;
         console.log('[Checkout] 🔄 Redirecionando para:', redirectUrl);
         console.log('[Checkout] 📊 OrderID:', result.order.id);
 
-        // Redirecionar imediatamente
+        // Redirecionar imediatamente (ANTES de limpar o carrinho)
         window.location.href = redirectUrl;
+
+        // Limpar carrinho DEPOIS do redirect (para não mostrar "carrinho vazio" durante navegação)
+        setTimeout(() => {
+          clearCart();
+        }, 100);
       } else {
         const errorData = await response.json();
         console.error('[Checkout] ❌ Erro ao criar pedido:', errorData);
@@ -632,9 +634,10 @@ export default function CheckoutPage() {
                       </label>
                       <label className="flex flex-col">
                         <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
-                          Código Postal <span className="text-sm font-normal text-[#333333]/70 dark:text-[#f5f1e9]/70">(Opcional)</span>
+                          Código Postal*
                         </p>
                         <input
+                          required
                           name="codigoPostal"
                           value={formData.codigoPostal}
                           onChange={handleInputChange}

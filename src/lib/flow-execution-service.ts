@@ -227,6 +227,7 @@ export class FlowExecutionService {
         return this.executeEmailNode(node, context);
 
       case 'delay':
+      case 'wait': // Support both 'delay' and 'wait' node types
         return this.executeDelayNode(node, context);
 
       case 'condition':
@@ -248,7 +249,8 @@ export class FlowExecutionService {
   private async executeEmailNode(node: any, context: FlowExecutionContext): Promise<string | null> {
     const templateId = node.data?.templateId;
     const subject = node.data?.subject;
-    const customContent = node.data?.customContent;
+    // Support both 'content' and 'customContent' field names
+    const customContent = node.data?.content || node.data?.customContent;
 
     if (!templateId && !customContent) {
       throw new Error('Nó de email precisa de template ou conteúdo personalizado');
@@ -273,8 +275,11 @@ export class FlowExecutionService {
     }
 
     if (customContent) {
-      htmlContent += `\n\n${customContent}`;
+      // Use custom content directly (it's already HTML from the builder)
+      htmlContent = htmlContent ? htmlContent + '\n\n' + customContent : customContent;
     }
+
+    console.log(`📧 Enviando email para ${context.email} - Assunto: ${subject}`);
 
     // Enviar email
     const result = await emailService.sendEmail({
@@ -291,12 +296,15 @@ export class FlowExecutionService {
       throw new Error(result.error || 'Erro ao enviar email');
     }
 
+    console.log(`✅ Email enviado com sucesso para ${context.email}`);
+
     return null;
   }
 
   private async executeDelayNode(node: any, context: FlowExecutionContext): Promise<string | null> {
-    const delayValue = node.data?.delayValue || 60;
-    const delayType = node.data?.delayType || 'minutes';
+    // Support both old (delayValue/delayType) and new (duration/unit) formats
+    const delayValue = node.data?.duration || node.data?.delayValue || 60;
+    const delayType = node.data?.unit || node.data?.delayType || 'minutes';
 
     let delayMs: number;
 
@@ -313,6 +321,8 @@ export class FlowExecutionService {
       default:
         delayMs = delayValue * 60 * 1000;
     }
+
+    console.log(`⏰ Aguardando ${delayValue} ${delayType}...`);
 
     // Aguardar delay
     await new Promise(resolve => setTimeout(resolve, delayMs));

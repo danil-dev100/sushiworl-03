@@ -564,6 +564,22 @@ export function PromotionsPageContent({
       </section>
 
       <section className="rounded-xl border border-[#ead9cd] bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-2 border-b border-[#ead9cd] pb-6">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-[#333333]">Cupons Ativos no Site</h2>
+            <InfoHint text="Cupons que estão ativos e disponíveis para os clientes usarem no checkout. Apenas cupons com código, ativos e dentro da vigência aparecem aqui." />
+          </div>
+          <p className="text-sm text-[#a16b45]">
+            Todos os cupons vigentes que os clientes podem usar no momento.
+          </p>
+        </div>
+
+        <div className="mt-6">
+          <ActiveCouponsDisplay promotions={promotions} />
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-[#ead9cd] bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 border-b border-[#ead9cd] pb-6 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -2031,5 +2047,127 @@ function transformFormPayload(values: PromotionFormValues, promotionId?: string)
     validUntil: values.validUntil ?? null,
     promotionItems: values.promotionItems ?? [],
   };
+}
+
+type ActiveCouponsDisplayProps = {
+  promotions: PromotionWithRelations[];
+};
+
+function ActiveCouponsDisplay({ promotions }: ActiveCouponsDisplayProps) {
+  const now = new Date();
+
+  const activeCoupons = useMemo(() => {
+    return promotions.filter((promotion) => {
+      // Deve ter código
+      if (!promotion.code) return false;
+
+      // Deve estar ativo
+      if (!promotion.isActive) return false;
+
+      // Verificar vigência
+      if (promotion.validFrom) {
+        const validFromDate = promotion.validFrom instanceof Date ? promotion.validFrom : new Date(promotion.validFrom);
+        if (validFromDate > now) return false;
+      }
+
+      if (promotion.validUntil) {
+        const validUntilDate = promotion.validUntil instanceof Date ? promotion.validUntil : new Date(promotion.validUntil);
+        if (validUntilDate < now) return false;
+      }
+
+      // Verificar limite de uso
+      if (promotion.usageLimit && promotion.usageCount >= promotion.usageLimit) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [promotions, now]);
+
+  if (activeCoupons.length === 0) {
+    return (
+      <div className="rounded-lg border-2 border-dashed border-[#ead9cd] bg-[#f5f1e9] p-8 text-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="rounded-full bg-[#FF6B00]/10 p-3">
+            <Gift className="h-6 w-6 text-[#FF6B00]" />
+          </div>
+          <p className="text-sm font-semibold text-[#333333]">
+            Nenhum cupom ativo no momento
+          </p>
+          <p className="text-xs text-[#a16b45]">
+            Crie cupons com código e ative-os para aparecerem aqui
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {activeCoupons.map((coupon) => (
+        <div
+          key={coupon.id}
+          className="relative overflow-hidden rounded-lg border-2 border-[#FF6B00]/20 bg-gradient-to-br from-[#FF6B00]/5 to-[#FF6B00]/10 p-5 transition-all hover:border-[#FF6B00]/40 hover:shadow-md"
+        >
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-[#333333]">{coupon.name}</h3>
+                <p className="mt-1 text-xs text-[#a16b45]">
+                  {coupon.discountType === 'PERCENTAGE'
+                    ? `${coupon.discountValue}% OFF`
+                    : `€${coupon.discountValue.toFixed(2)} OFF`}
+                </p>
+              </div>
+              <div className="flex items-center justify-center rounded-full bg-white p-2 shadow-sm">
+                <Percent className="h-4 w-4 text-[#FF6B00]" />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Badge className="bg-[#FF6B00] font-mono text-sm font-bold text-white">
+                {coupon.code}
+              </Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-[#a16b45] hover:bg-[#FF6B00]/10 hover:text-[#FF6B00]"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(coupon.code!);
+                  toast.success('Código copiado!');
+                }}
+              >
+                <ClipboardCopy className="h-3 w-3" />
+              </Button>
+            </div>
+
+            {coupon.minOrderValue && (
+              <p className="text-xs text-[#a16b45]">
+                Pedido mínimo: €{coupon.minOrderValue.toFixed(2)}
+              </p>
+            )}
+
+            {coupon.isFirstPurchaseOnly && (
+              <Badge className="w-fit bg-emerald-100 text-xs text-emerald-700">
+                Primeira compra
+              </Badge>
+            )}
+
+            {coupon.usageLimit && (
+              <div className="text-xs text-[#a16b45]">
+                Usos: {coupon.usageCount} / {coupon.usageLimit}
+              </div>
+            )}
+
+            {(coupon.validFrom || coupon.validUntil) && (
+              <div className="mt-2 border-t border-[#FF6B00]/20 pt-2 text-xs text-[#a16b45]">
+                {formatValidity(coupon.validFrom, coupon.validUntil)}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 

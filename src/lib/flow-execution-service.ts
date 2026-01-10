@@ -556,9 +556,16 @@ export class FlowExecutionService {
           // Tempo estimado (pode ser configurado futuramente)
           content = content.replace(/\{\{tempo_estimado\}\}/g, '30-45 minutos');
 
-          // Nome da loja (buscar das configurações)
-          content = content.replace(/\{\{nome_da_loja\}\}/g, 'SushiWorld');
-          content = content.replace(/\{\{whatsapp_loja\}\}/g, '+351 XXX XXX XXX'); // Configurar depois
+          // Nome da loja e WhatsApp (buscar das configurações)
+          try {
+            const settings = await prisma.settings.findFirst();
+            const whatsapp = settings?.whatsappNumber || '+351 XXX XXX XXX';
+            content = content.replace(/\{\{nome_da_loja\}\}/g, 'SushiWorld');
+            content = content.replace(/\{\{whatsapp_loja\}\}/g, whatsapp);
+          } catch (err) {
+            content = content.replace(/\{\{nome_da_loja\}\}/g, 'SushiWorld');
+            content = content.replace(/\{\{whatsapp_loja\}\}/g, '+351 XXX XXX XXX');
+          }
         }
       } catch (error) {
         console.error('Erro ao buscar dados do pedido para variáveis:', error);

@@ -1,8 +1,20 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions, canManageMarketing } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 export async function GET() {
   try {
+    // ✅ SEGURANÇA: Verificar autenticação (informações sensíveis sobre emails)
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user || !canManageMarketing(session.user.role, session.user.managerLevel ?? null)) {
+      return NextResponse.json(
+        { error: 'Não autorizado. Apenas administradores podem visualizar status de emails.' },
+        { status: 401 }
+      );
+    }
+
     // 1. Verificar configuração SMTP
     const smtpSettings = await prisma.smtpSettings.findFirst({
       orderBy: { createdAt: 'desc' }

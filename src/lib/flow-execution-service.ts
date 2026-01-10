@@ -460,20 +460,35 @@ export class FlowExecutionService {
   }
 
   private findNextNode(currentNodeId: string, edges: any[], conditionResult?: string | null): string | null {
-    const outgoingEdges = edges.filter((edge: any) => edge.source === currentNodeId);
+    console.log(`🔍 [findNextNode] Buscando próximo nó após: ${currentNodeId}`);
+    console.log(`🔍 [findNextNode] Total de edges no fluxo: ${edges.length}`);
+    console.log(`🔍 [findNextNode] Edges:`, JSON.stringify(edges, null, 2));
 
-    if (outgoingEdges.length === 0) return null;
+    const outgoingEdges = edges.filter((edge: any) => edge.source === currentNodeId);
+    console.log(`🔍 [findNextNode] Edges saindo de ${currentNodeId}: ${outgoingEdges.length}`);
+    console.log(`🔍 [findNextNode] Outgoing edges:`, JSON.stringify(outgoingEdges, null, 2));
+
+    if (outgoingEdges.length === 0) {
+      console.log(`⚠️ [findNextNode] Nenhuma edge encontrada saindo de ${currentNodeId}`);
+      return null;
+    }
 
     // Se tem resultado de condição, usar edge apropriada
     if (conditionResult !== undefined && conditionResult !== null) {
+      console.log(`🔍 [findNextNode] Usando condição: ${conditionResult}`);
       const conditionEdge = outgoingEdges.find((edge: any) =>
         edge.sourceHandle === conditionResult || edge.label === conditionResult
       );
-      if (conditionEdge) return conditionEdge.target;
+      if (conditionEdge) {
+        console.log(`✅ [findNextNode] Edge condicional encontrada: ${currentNodeId} -> ${conditionEdge.target}`);
+        return conditionEdge.target;
+      }
     }
 
     // Caso contrário, usar primeira edge
-    return outgoingEdges[0].target;
+    const nextNodeId = outgoingEdges[0].target;
+    console.log(`✅ [findNextNode] Próximo nó: ${currentNodeId} -> ${nextNodeId}`);
+    return nextNodeId;
   }
 
   private replaceTemplateVariables(content: string, context: FlowExecutionContext): string {

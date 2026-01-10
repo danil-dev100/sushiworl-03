@@ -288,7 +288,7 @@ export async function POST(request: NextRequest) {
       deliveryDecisionLog: deliveryDecisionLog || Prisma.JsonNull,
       observations: observations || null,
       paymentMethod: normalizedPaymentMethod,
-      status: 'PENDING',
+      status: isScheduled ? 'CONFIRMED' : 'PENDING', // Pedidos agendados já ficam confirmados
       promotionId: validPromotionId,
       isScheduled: isScheduled || false,
       scheduledFor: scheduledForDateTime,

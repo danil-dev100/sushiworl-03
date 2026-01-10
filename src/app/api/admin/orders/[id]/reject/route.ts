@@ -74,8 +74,10 @@ export async function POST(
 
     // Enviar email de pedido cancelado
     try {
-      const cancelledTemplate = await prisma.emailTemplate.findUnique({
-        where: { name: 'Pedido Cancelado' }
+      // Escolher template baseado se é pedido agendado ou não
+      const templateName = order.isScheduled ? 'Agendamento Cancelado' : 'Pedido Cancelado';
+      const cancelledTemplate = await prisma.emailTemplate.findFirst({
+        where: { name: templateName }
       });
 
       if (cancelledTemplate && order.customerEmail) {
@@ -97,6 +99,26 @@ export async function POST(
           emailHtml = emailHtml.replace(/\{\{customerName\}\}/g, fullOrder.customerName || '');
           emailHtml = emailHtml.replace(/\{\{orderNumber\}\}/g, fullOrder.orderNumber?.toString() || '');
           emailHtml = emailHtml.replace(/\{\{valor_total\}\}/g, `€${fullOrder.total.toFixed(2)}`);
+          emailHtml = emailHtml.replace(/\{\{orderTotal\}\}/g, fullOrder.total.toFixed(2));
+
+          // Se for pedido agendado, adicionar data/hora agendada
+          if (fullOrder.isScheduled && fullOrder.scheduledFor) {
+            const scheduledDateTime = new Date(fullOrder.scheduledFor);
+            const scheduledDate = scheduledDateTime.toLocaleDateString('pt-PT', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+            });
+            const scheduledTime = scheduledDateTime.toLocaleTimeString('pt-PT', {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+            emailHtml = emailHtml.replace(/\{\{scheduledDate\}\}/g, scheduledDate);
+            emailHtml = emailHtml.replace(/\{\{scheduledTime\}\}/g, scheduledTime);
+          }
+
+          // Motivo do cancelamento
+          emailHtml = emailHtml.replace(/\{\{cancellationReason\}\}/g, rejectionReason || 'Não especificado');
 
           const dataFormatada = new Date(fullOrder.createdAt).toLocaleDateString('pt-PT', {
             day: '2-digit',
@@ -111,6 +133,7 @@ export async function POST(
             .map(item => `• ${item.quantity}x ${item.name} - €${item.priceAtTime.toFixed(2)}`)
             .join('\n');
           emailHtml = emailHtml.replace(/\{\{lista_produtos\}\}/g, listaProdutos);
+          emailHtml = emailHtml.replace(/\{\{orderItems\}\}/g, listaProdutos);
 
           // Buscar configurações
           const settings = await prisma.settings.findFirst();

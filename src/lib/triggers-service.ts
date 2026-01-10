@@ -129,7 +129,12 @@ export class TriggersService {
 
       if (!order) return;
 
-      await flowExecutionService.triggerEvent('order_created', {
+      // Se for pedido agendado, dispara evento específico
+      const eventType = order.isScheduled ? 'order_scheduled' : 'order_created';
+
+      console.log(`[Triggers Service] Disparando evento: ${eventType} para pedido #${order.orderNumber}`);
+
+      await flowExecutionService.triggerEvent(eventType, {
         userId: order.userId || undefined,
         email: order.customerEmail,
         orderId: order.id,
@@ -138,6 +143,8 @@ export class TriggersService {
           total: order.total,
           itemsCount: order.orderItems.length,
           customerName: order.customerName,
+          isScheduled: order.isScheduled,
+          scheduledFor: order.scheduledFor,
         }
       });
 

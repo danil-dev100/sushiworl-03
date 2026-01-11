@@ -2,33 +2,19 @@
 
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Sparkles, Eye, Flame, MoreHorizontal, Salad, Wine, Fish, Square, Waves, IceCream, Plus } from 'lucide-react';
 
 interface Category {
   id: string;
-  label: string;
-  icon: React.ReactNode;
+  name: string;
   emoji: string;
 }
 
-const categories: Category[] = [
-  { id: 'destaques', label: 'DESTAQUES', icon: <Sparkles className="w-5 h-5" />, emoji: '⭐' },
-  { id: 'combinados', label: 'COMBINADOS', icon: <Eye className="w-5 h-5" />, emoji: '🍣' },
-  { id: 'hots', label: 'HOTS', icon: <Flame className="w-5 h-5" />, emoji: '🔥' },
-  { id: 'entradas', label: 'ENTRADAS', icon: <MoreHorizontal className="w-5 h-5" />, emoji: '🍤' },
-  { id: 'poke-bowl', label: 'POKÉ BOWL', icon: <Salad className="w-5 h-5" />, emoji: '🥗' },
-  { id: 'gunkan', label: 'GUNKAN', icon: <Wine className="w-5 h-5" />, emoji: '🍥' },
-  { id: 'sashimi', label: 'SASHIMI', icon: <Fish className="w-5 h-5" />, emoji: '🐟' },
-  { id: 'nigiri', label: 'NIGIRI', icon: <Square className="w-5 h-5" />, emoji: '🍙' },
-  { id: 'makis', label: 'MAKIS', icon: <Waves className="w-5 h-5" />, emoji: '🥢' },
-  { id: 'temaki', label: 'TEMAKI', icon: <IceCream className="w-5 h-5" />, emoji: '🍦' },
-];
-
 interface SidebarMenuProps {
+  categories: Category[];
   activeSection?: string;
 }
 
-export default function SidebarMenu({ activeSection = 'destaques' }: SidebarMenuProps) {
+export default function SidebarMenu({ categories, activeSection = 'destaques' }: SidebarMenuProps) {
   const pathname = usePathname();
   const router = useRouter();
   const isCardapioPage = pathname === '/cardapio';
@@ -74,24 +60,12 @@ export default function SidebarMenu({ activeSection = 'destaques' }: SidebarMenu
                 {category.emoji}
               </span>
               <p className={`text-sm font-medium ${isActive ? 'text-[#FF6B00] font-bold' : 'text-[#333333] dark:text-[#f5f1e9]'}`}>
-                {category.label}
+                {category.name.toUpperCase()}
               </p>
             </button>
           );
         })}
-        
-        {/* Extras */}
-        <button
-          onClick={() => handleClick('extras')}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#FF6B00]/10 dark:hover:bg-[#FF6B00]/20 transition-all duration-200 mt-2 border-t border-[#e5e0d8] dark:border-[#3a2c20] pt-4"
-        >
-          <Plus className="w-5 h-5 text-[#333333] dark:text-[#f5f1e9]" />
-          <p className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
-            EXTRAS
-          </p>
-        </button>
       </div>
     </aside>
   );
 }
-

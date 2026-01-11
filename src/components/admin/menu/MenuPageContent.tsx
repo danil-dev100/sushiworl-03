@@ -60,14 +60,44 @@ export function MenuPageContent({ initialProducts, categories }: MenuPageContent
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  // Filtrar produtos
+  // Filtrar produtos com busca melhorada
   const filteredProducts = products.filter((product) => {
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    const matchesSearch =
-      searchQuery === '' ||
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    
+    if (!matchesCategory) return false;
+    
+    if (searchQuery === '') return true;
+    
+    const term = searchQuery.toLowerCase();
+    
+    // Criar scores para priorizar resultados
+    let score = 0;
+    const categoryMatch = product.category.toLowerCase().includes(term);
+    const nameMatch = product.name.toLowerCase().includes(term);
+    const skuMatch = product.sku.toLowerCase().includes(term);
+    const nameStartsWith = product.name.toLowerCase().startsWith(term);
+    const skuStartsWith = product.sku.toLowerCase().startsWith(term);
+    const categoryStartsWith = product.category.toLowerCase().startsWith(term);
+    
+    // Priorizar resultados que começam com o termo
+    if (categoryStartsWith) score += 100;
+    if (nameStartsWith) score += 50;
+    if (skuStartsWith) score += 30;
+    
+    // Depois os que contêm o termo
+    if (categoryMatch) score += 20;
+    if (nameMatch) score += 10;
+    if (skuMatch) score += 5;
+    
+    // Adicionar score ao produto para ordenação
+    (product as any)._searchScore = score;
+    
+    return categoryMatch || nameMatch || skuMatch;
+  }).sort((a, b) => {
+    // Ordenar por score (maior primeiro)
+    const scoreA = (a as any)._searchScore || 0;
+    const scoreB = (b as any)._searchScore || 0;
+    return scoreB - scoreA;
   });
 
   const handleAddProduct = () => {
@@ -156,13 +186,13 @@ export function MenuPageContent({ initialProducts, categories }: MenuPageContent
               <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#a16b45]" />
               <Input
                 type="text"
-                placeholder="Buscar por nome ou SKU..."
+                placeholder="Buscar por categoria, nome ou SKU..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10"
               />
               <div className="hidden sm:block">
-                <TooltipHelper text="Busque produtos rapidamente por nome ou código SKU" />
+                <TooltipHelper text="Busque produtos por categoria, nome ou código SKU. Resultados são priorizados por relevância." />
               </div>
             </div>
           </div>
@@ -187,4 +217,3 @@ export function MenuPageContent({ initialProducts, categories }: MenuPageContent
     </div>
   );
 }
-

@@ -4,6 +4,13 @@ import React, { useState, useMemo, useEffect } from 'react';
 import SidebarMenu from '@/components/cliente/SidebarMenu';
 import ProductSection from '@/components/cliente/ProductSection';
 import { MenuSearch } from '@/components/cliente/MenuSearch';
+import { Loader2 } from 'lucide-react';
+
+interface Category {
+  id: string;
+  name: string;
+  emoji: string;
+}
 
 interface CardapioContentProps {
   produtosPorCategoria: Record<string, any[]>;
@@ -11,41 +18,87 @@ interface CardapioContentProps {
 
 export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Buscar categorias
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await fetch('/api/categories');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.categories) {
+            // Adicionar "Destaques" no início se houver produtos em destaque
+            const allCategories = [...data.categories];
+            if (produtosPorCategoria['destaques'] && produtosPorCategoria['destaques'].length > 0) {
+              // Remover Destaques se já existir
+              const filteredCats = allCategories.filter(c => c.name !== 'Destaques');
+              // Adicionar no início
+              setCategories([
+                { id: 'destaques', name: 'Destaques', emoji: '⭐' },
+                ...filteredCats
+              ]);
+            } else {
+              setCategories(allCategories);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar categorias:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCategories();
+  }, [produtosPorCategoria]);
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return produtosPorCategoria;
 
     const term = searchTerm.toLowerCase();
     const filtered: Record<string, any[]> = {};
+    const scoredProducts: Array<{ category: string; product: any; score: number }> = [];
 
+    // Primeiro passo: coletar produtos com scores
     Object.entries(produtosPorCategoria).forEach(([category, products]) => {
-      const matchingProducts = products.filter(
-        (product) =>
-          product.name.toLowerCase().includes(term) ||
-          product.description?.toLowerCase().includes(term) ||
-          product.category?.toLowerCase().includes(term)
-      );
+      products.forEach((product) => {
+        let score = 0;
+        const categoryMatch = product.category?.toLowerCase().includes(term);
+        const nameMatch = product.name.toLowerCase().includes(term);
+        const descriptionMatch = product.description?.toLowerCase().includes(term);
+        const categoryStartsWith = product.category?.toLowerCase().startsWith(term);
+        const nameStartsWith = product.name.toLowerCase().startsWith(term);
 
-      if (matchingProducts.length > 0) {
-        filtered[category] = matchingProducts;
+        // Priorizar resultados que começam com o termo
+        if (categoryStartsWith) score += 100;
+        if (nameStartsWith) score += 50;
+
+        // Depois os que contêm o termo
+        if (categoryMatch) score += 20;
+        if (nameMatch) score += 10;
+        if (descriptionMatch) score += 5;
+
+        if (score > 0) {
+          scoredProducts.push({ category, product, score });
+        }
+      });
+    });
+
+    // Ordenar por score
+    scoredProducts.sort((a, b) => b.score - a.score);
+
+    // Agrupar por categoria mantendo a ordem de relevância
+    scoredProducts.forEach(({ category, product }) => {
+      if (!filtered[category]) {
+        filtered[category] = [];
       }
+      filtered[category].push(product);
     });
 
     return filtered;
   }, [produtosPorCategoria, searchTerm]);
-
-  const categories = [
-    { id: 'destaques', name: 'DESTAQUES', emoji: '⭐' },
-    { id: 'combinados', name: 'COMBINADOS', emoji: '🍣' },
-    { id: 'hots', name: 'HOTS', emoji: '🔥' },
-    { id: 'entradas', name: 'ENTRADAS', emoji: '🍤' },
-    { id: 'poke-bowl', name: 'POKÉ BOWL', emoji: '🥗' },
-    { id: 'gunkan', name: 'GUNKAN', emoji: '🍥' },
-    { id: 'sashimi', name: 'SASHIMI', emoji: '🐟' },
-    { id: 'nigiri', name: 'NIGIRI', emoji: '🍙' },
-    { id: 'makis', name: 'MAKIS', emoji: '🥢' },
-    { id: 'temaki', name: 'TEMAKI', emoji: '🍦' },
-  ];
 
   // Scroll para seção ao carregar se houver hash na URL
   useEffect(() => {
@@ -66,12 +119,49 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
     }
   }, []);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f5f1e9] dark:bg-[#23170f]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#FF6B00]" />
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
-        <SidebarMenu activeSection="destaques" />
+        <SidebarMenu categories={categories} activeSection="destaques" />
 
         <main className="flex-1 py-8">
+          {/* Menu Mobile - Carrossel de Categorias */}
+          <div className="lg:hidden mb-6 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2 pb-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    const element = document.getElementById(cat.id);
+                    if (element) {
+                      const headerOffset = 80;
+                      const elementPosition = element.getBoundingClientRect().top;
+                      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                      window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                      });
+                    }
+                  }}
+                  className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-[#3a2c20] border-2 border-[#FF6B00]/20 hover:border-[#FF6B00] hover:bg-[#FF6B00]/10 transition-all"
+                >
+                  <span className="text-lg">{cat.emoji}</span>
+                  <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9] whitespace-nowrap">
+                    {cat.name.toUpperCase()}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <MenuSearch onSearch={setSearchTerm} />
 
           {searchTerm && Object.keys(filteredProducts).length === 0 ? (
@@ -93,7 +183,7 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
                 return (
                   <section key={cat.id} id={cat.id} className={cat.id === 'destaques' ? '' : 'mt-12'}>
                     <h2 className="text-[#FF6B00] text-3xl font-bold tracking-tight pb-6">
-                      {cat.emoji} {cat.name}
+                      {cat.emoji} {cat.name.toUpperCase()}
                     </h2>
                     <ProductSection products={products} />
                   </section>
@@ -106,4 +196,3 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
     </div>
   );
 }
-

@@ -114,9 +114,14 @@ async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
   }
   // Se status for 'all' ou outro status específico (pending, confirmed, etc) sem data, não aplicar filtro de data
 
+  // Ordenar por scheduledFor se estiver filtrando pedidos agendados, senão por createdAt
+  const orderBy = status === 'scheduled'
+    ? { scheduledFor: 'asc' as const }
+    : { createdAt: 'desc' as const };
+
   const ordersFromDb = await prisma.order.findMany({
     where,
-    orderBy: { createdAt: 'desc' },
+    orderBy,
     take: 50,
     include: {
       orderItems: {
@@ -155,6 +160,8 @@ async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
     observations: order.observations,
     deliveryAddress: order.deliveryAddress ? (order.deliveryAddress as Record<string, unknown>) : null,
     deliveryArea: order.deliveryArea,
+    isScheduled: order.isScheduled,
+    scheduledFor: order.scheduledFor,
     orderItems: order.orderItems.map(item => ({
       id: item.id,
       name: item.name,

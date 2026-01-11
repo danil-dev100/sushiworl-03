@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { OrdersTable } from '@/components/admin/orders/OrdersTable';
+import { ScheduledOrdersTable } from '@/components/admin/orders/ScheduledOrdersTable';
 import { OrdersFilters } from '@/components/admin/orders/OrdersFilters';
 import { TestOrderDialog } from '@/components/admin/orders/TestOrderDialog';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -128,6 +129,8 @@ export function OrdersPageContent({
         return 'Entregues';
       case 'cancelled':
         return 'Cancelados';
+      case 'scheduled':
+        return 'Agendados';
       case 'today':
         return 'Hoje';
       case 'all':
@@ -216,10 +219,18 @@ export function OrdersPageContent({
       </div>
 
       {/* Renderizar tabela com key única para forçar re-render quando orders mudar */}
-      <OrdersTable
-        key={`orders-${ordersToDisplay.length}-${ordersToDisplay[0]?.id || 'empty'}`}
-        orders={ordersToDisplay}
-      />
+      {/* Se estiver visualizando pedidos agendados, usar tabela especializada */}
+      {searchParams.get('status') === 'scheduled' ? (
+        <ScheduledOrdersTable
+          key={`scheduled-orders-${ordersToDisplay.length}-${ordersToDisplay[0]?.id || 'empty'}`}
+          orders={ordersToDisplay}
+        />
+      ) : (
+        <OrdersTable
+          key={`orders-${ordersToDisplay.length}-${ordersToDisplay[0]?.id || 'empty'}`}
+          orders={ordersToDisplay}
+        />
+      )}
     </div>
   );
 }

@@ -53,6 +53,8 @@ type Order = {
     name: string | null;
   } | null;
   orderItems: OrderItem[];
+  isScheduled?: boolean;
+  scheduledFor?: string | Date | null;
 };
 
 type OrdersTableProps = {

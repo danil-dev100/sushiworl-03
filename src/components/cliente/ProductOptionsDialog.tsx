@@ -57,15 +57,19 @@ export function ProductOptionsDialog({
   const [quantity, setQuantity] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Inicializar opções padrão
+  // Inicializar opções padrão (apenas opções obrigatórias e NÃO pagas)
   useEffect(() => {
     if (open) {
       const defaults: Record<string, string[]> = {};
       options.forEach((option) => {
-        const defaultChoices = option.choices.filter((c) => c.isDefault);
-        if (defaultChoices.length > 0) {
-          defaults[option.id] = defaultChoices.map((c) => c.id);
+        // Só pré-selecionar se for opção REQUIRED e NÃO paga
+        if (option.type === 'REQUIRED' && !option.isPaid) {
+          const defaultChoices = option.choices.filter((c) => c.isDefault);
+          if (defaultChoices.length > 0) {
+            defaults[option.id] = defaultChoices.map((c) => c.id);
+          }
         }
+        // Opções OPTIONAL ou pagas começam desmarcadas
       });
       setSelectedOptions(defaults);
       setQuantity(1);

@@ -91,6 +91,22 @@ export default function CheckoutPage() {
 
   const troco = valorEntregue ? parseFloat(valorEntregue) - total : 0;
 
+  // Calcular preço total de um item (produto + opções selecionadas)
+  const calculateItemTotalPrice = (item: typeof items[0]) => {
+    let itemTotal = item.price;
+
+    // Adicionar preço das opções selecionadas
+    if (item.selectedOptions) {
+      item.selectedOptions.forEach((option) => {
+        option.choices.forEach((choice) => {
+          itemTotal += choice.price;
+        });
+      });
+    }
+
+    return itemTotal;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -516,7 +532,7 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                       <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9] flex-shrink-0">
-                        €{(item.price * item.quantity).toFixed(2)}
+                        €{(calculateItemTotalPrice(item) * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}
@@ -1009,7 +1025,7 @@ export default function CheckoutPage() {
                             </div>
                           </div>
                           <span className="font-medium text-[#333333] dark:text-[#f5f1e9]">
-                            €{(item.price * item.quantity).toFixed(2)}
+                            €{(calculateItemTotalPrice(item) * item.quantity).toFixed(2)}
                           </span>
                         </div>
                       ))}

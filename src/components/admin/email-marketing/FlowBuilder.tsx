@@ -122,10 +122,45 @@ function FlowBuilderInner({
   // Conectar nós
   const onConnect = useCallback(
     (params: Connection) => {
-      setEdges((eds) => addEdge({ ...params, ...defaultEdgeOptions }, eds));
+      const newEdge = { ...params, ...defaultEdgeOptions };
+      setEdges((eds) => addEdge(newEdge, eds));
       toast.success('Conexão criada');
+
+      // Salvar automaticamente o fluxo após criar conexão
+      setTimeout(async () => {
+        try {
+          const updatedEdges = [...edges, newEdge];
+
+          const flowData = {
+            name: flowName.trim() || 'Novo Fluxo',
+            description: flowDescription.trim(),
+            flow: {
+              nodes,
+              edges: updatedEdges,
+            },
+            isActive,
+            isDraft: false,
+          };
+
+          if (flowId !== 'new') {
+            const response = await fetch(`/api/email-marketing/flows/${flowId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(flowData),
+            });
+
+            if (!response.ok) {
+              throw new Error('Erro ao salvar conexão');
+            }
+
+            console.log('[FlowBuilder] Conexão salva automaticamente');
+          }
+        } catch (error) {
+          console.error('[FlowBuilder] Erro ao salvar conexão:', error);
+        }
+      }, 500);
     },
-    [setEdges]
+    [setEdges, edges, nodes, flowId, flowName, flowDescription, isActive]
   );
 
   // Salvar fluxo
@@ -230,12 +265,47 @@ function FlowBuilderInner({
       setEdges((eds) => [...eds, newEdge]);
       toast.success('Nós conectados!');
       setConnectionStart(null);
+
+      // Salvar automaticamente após criar conexão via Shift+Click
+      setTimeout(async () => {
+        try {
+          const updatedEdges = [...edges, newEdge];
+
+          const flowData = {
+            name: flowName.trim() || 'Novo Fluxo',
+            description: flowDescription.trim(),
+            flow: {
+              nodes,
+              edges: updatedEdges,
+            },
+            isActive,
+            isDraft: false,
+          };
+
+          if (flowId !== 'new') {
+            const response = await fetch(`/api/email-marketing/flows/${flowId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(flowData),
+            });
+
+            if (!response.ok) {
+              throw new Error('Erro ao salvar conexão');
+            }
+
+            console.log('[FlowBuilder] Conexão Shift+Click salva automaticamente');
+          }
+        } catch (error) {
+          console.error('[FlowBuilder] Erro ao salvar conexão:', error);
+        }
+      }, 500);
     }
-  }, [connectionStart, setEdges, defaultEdgeOptions]);
+  }, [connectionStart, setEdges, defaultEdgeOptions, edges, nodes, flowId, flowName, flowDescription, isActive]);
 
   // Atualizar nó
   const handleUpdateNode = useCallback(
-    (nodeId: string, data: any) => {
+    async (nodeId: string, data: any) => {
+      // Atualizar o nó localmente
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === nodeId) {
@@ -245,8 +315,49 @@ function FlowBuilderInner({
         })
       );
       toast.success('Nó atualizado');
+
+      // Salvar automaticamente o fluxo completo (incluindo conexões) após 500ms
+      // O timeout permite que o estado seja atualizado antes de salvar
+      setTimeout(async () => {
+        try {
+          const updatedNodes = nodes.map((node) => {
+            if (node.id === nodeId) {
+              return { ...node, data: { ...node.data, ...data } };
+            }
+            return node;
+          });
+
+          const flowData = {
+            name: flowName.trim() || 'Novo Fluxo',
+            description: flowDescription.trim(),
+            flow: {
+              nodes: updatedNodes,
+              edges,
+            },
+            isActive,
+            isDraft: false,
+          };
+
+          if (flowId !== 'new') {
+            const response = await fetch(`/api/email-marketing/flows/${flowId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(flowData),
+            });
+
+            if (!response.ok) {
+              throw new Error('Erro ao salvar automaticamente');
+            }
+
+            console.log('[FlowBuilder] Fluxo salvo automaticamente após atualizar nó');
+          }
+        } catch (error) {
+          console.error('[FlowBuilder] Erro ao salvar automaticamente:', error);
+          // Não exibir erro para o usuário, pois é um salvamento automático
+        }
+      }, 500);
     },
-    [setNodes]
+    [setNodes, nodes, edges, flowId, flowName, flowDescription, isActive]
   );
 
   // Adicionar nó

@@ -37,6 +37,7 @@ export default function NodeConfigPanel({
   const handleSave = () => {
     onUpdate(selectedNode.id, config);
     toast.success('Configuração salva!');
+    onClose(); // Fechar o modal automaticamente após salvar
   };
 
   const handleAddTag = () => {
@@ -69,6 +70,7 @@ export default function NodeConfigPanel({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="order_created">Novo Pedido</SelectItem>
+            <SelectItem value="order_scheduled">Pedido Agendado</SelectItem>
             <SelectItem value="cart_abandoned">Carrinho Abandonado</SelectItem>
             <SelectItem value="user_registered">Novo Cadastro</SelectItem>
             <SelectItem value="order_delivered">Pedido Entregue</SelectItem>

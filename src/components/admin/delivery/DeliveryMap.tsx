@@ -73,6 +73,7 @@ export default function DeliveryMap({
   const [radiusCircle, setRadiusCircle] = useState<L.Circle | null>(null);
   const [radiusCenter, setRadiusCenter] = useState<L.LatLng | null>(null);
   const [currentRadius, setCurrentRadius] = useState<number>(1); // in km
+  const [isDrawingRadius, setIsDrawingRadius] = useState<boolean>(false); // Track mouse button state
 
   // Sincronizar com props externas
   useEffect(() => {
@@ -490,7 +491,7 @@ export default function DeliveryMap({
       setShowDrawingInstructions(false);
     }
 
-    // RADIUS MODE: Handle radius drawing
+    // RADIUS MODE: Handle radius drawing with click only to set center
     if (drawMode === 'RADIUS') {
       if (!radiusCenter) {
         // First click: set center
@@ -505,17 +506,8 @@ export default function DeliveryMap({
           weight: 3,
         }).addTo(map);
         drawingMarkersRef.current.push(marker);
-      } else {
-        // Second click: finalize radius
-        const distance = radiusCenter.distanceTo(e.latlng) / 1000; // Convert to km
-        setCurrentRadius(distance);
-
-        // Notify parent and finish drawing
-        if (onRadiusDrawn) {
-          onRadiusDrawn([radiusCenter.lat, radiusCenter.lng], distance);
-        }
-        finishDrawing();
       }
+      // Don't finalize on second click - use mouseup instead
       return;
     }
 
@@ -564,11 +556,34 @@ export default function DeliveryMap({
       }
     };
 
+    const handleMouseDown = (e: L.LeafletMouseEvent) => {
+      if (!isDrawingMode || isEditMode || drawMode !== 'RADIUS' || !radiusCenter) return;
+
+      // Start drawing radius
+      setIsDrawingRadius(true);
+    };
+
+    const handleMouseUp = (e: L.LeafletMouseEvent) => {
+      if (!isDrawingMode || isEditMode || drawMode !== 'RADIUS' || !radiusCenter) return;
+
+      if (isDrawingRadius) {
+        // Finalize radius
+        setIsDrawingRadius(false);
+
+        // Notify parent and finish drawing
+        const distance = radiusCenter.distanceTo(e.latlng) / 1000; // Convert to km
+        if (onRadiusDrawn) {
+          onRadiusDrawn([radiusCenter.lat, radiusCenter.lng], distance);
+        }
+        finishDrawing();
+      }
+    };
+
     const handleMouseMove = (e: L.LeafletMouseEvent) => {
       if (!isDrawingMode || !mapContainer) return;
 
-      // RADIUS MODE: Update radius as mouse moves after center is set
-      if (drawMode === 'RADIUS' && radiusCenter) {
+      // RADIUS MODE: Update radius only when mouse button is pressed
+      if (drawMode === 'RADIUS' && radiusCenter && isDrawingRadius) {
         handleRadiusDrawing(e);
         return;
       }
@@ -609,18 +624,22 @@ export default function DeliveryMap({
     };
 
     map.on('click', handleMapClick);
+    map.on('mousedown', handleMouseDown);
+    map.on('mouseup', handleMouseUp);
     map.on('mousemove', handleMouseMove);
     document.addEventListener('keydown', handleKeyPress);
 
     return () => {
       map.off('click', handleMapClick);
+      map.off('mousedown', handleMouseDown);
+      map.off('mouseup', handleMouseUp);
       map.off('mousemove', handleMouseMove);
       document.removeEventListener('keydown', handleKeyPress);
       if (mapContainer) {
         mapContainer.style.cursor = '';
       }
     };
-  }, [isDrawingMode, isEditMode, drawingPoints, tempPolygonColor, onPolygonDrawn, drawMode, radiusCenter, radiusCircle, onRadiusDrawn]);
+  }, [isDrawingMode, isEditMode, drawingPoints, tempPolygonColor, onPolygonDrawn, drawMode, radiusCenter, radiusCircle, onRadiusDrawn, isDrawingRadius]);
 
   // Modo de edição - tornar marcadores draggable
   useEffect(() => {
@@ -746,7 +765,7 @@ export default function DeliveryMap({
                 <p className="text-sm font-medium text-[#333333] mb-1">
                   {!radiusCenter
                     ? 'Clique no mapa para definir o centro da área circular'
-                    : 'Clique novamente ou mova o mouse para definir o raio'}
+                    : 'Mantenha o botão do mouse pressionado e arraste para definir o raio'}
                 </p>
                 {radiusCenter && (
                   <p className="text-xs text-[#a16b45] mb-2">

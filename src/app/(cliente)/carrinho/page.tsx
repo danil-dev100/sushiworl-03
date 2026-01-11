@@ -22,7 +22,10 @@ export default function CarrinhoPage() {
   const taxaIVA = 13; // Taxa de IVA em percentual (13% conforme especificado)
 
   const subtotal = totalPrice;
-  const taxaEntrega = 5.00;
+
+  // Taxa de entrega será calculada no checkout baseado no endereço
+  // No carrinho, não cobramos taxa ainda
+  const taxaEntrega = 0.00;
 
   const total = subtotal + taxaEntrega;
 

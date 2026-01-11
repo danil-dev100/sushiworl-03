@@ -7,6 +7,7 @@ export interface FlowExecutionContext {
   orderId?: string;
   cartId?: string;
   eventData?: Record<string, any>;
+  triggeredEvent?: string; // Nome do evento que disparou o fluxo
 }
 
 export class FlowExecutionService {
@@ -67,8 +68,8 @@ export class FlowExecutionService {
           continue;
         }
 
-        // Executar fluxo em background
-        this.executeFlow(flow, context).catch(error => {
+        // Executar fluxo em background, passando o eventType no contexto
+        this.executeFlow(flow, { ...context, triggeredEvent: eventType }).catch(error => {
           console.error(`❌ Erro ao executar fluxo ${flow.id}:`, error);
         });
       }
@@ -86,22 +87,33 @@ export class FlowExecutionService {
     this.executingFlows.add(executionId);
 
     try {
-      console.log(`🚀 Iniciando execução do fluxo ${flow.id} para ${context.email}`);
+      console.log(`🚀 Iniciando execução do fluxo ${flow.id} (${flow.name}) para ${context.email}`);
 
       const nodes = flow.flow?.nodes || [];
       const edges = flow.flow?.edges || [];
 
+      console.log(`📋 Fluxo tem ${nodes.length} nós e ${edges.length} conexões`);
+
       // Encontrar nó inicial (trigger)
       const triggerNode = nodes.find((node: any) => node.type === 'trigger');
       if (!triggerNode) {
+        console.log('❌ Fluxo não tem nó de trigger');
         throw new Error('Fluxo não tem nó de trigger');
       }
+
+      console.log('🎯 Trigger node encontrado:', {
+        id: triggerNode.id,
+        event: triggerNode.data?.event,
+        eventType: triggerNode.data?.eventType,
+      });
 
       // Verificar se trigger corresponde ao evento
       if (!(await this.checkTriggerMatch(triggerNode, context))) {
         console.log('⏭️ Trigger não corresponde ao evento');
         return;
       }
+
+      console.log('✅ Trigger corresponde! Executando fluxo...');
 
       // Executar fluxo começando do trigger
       await this.executeNodePath(flow.id, triggerNode.id, nodes, edges, context);
@@ -123,10 +135,19 @@ export class FlowExecutionService {
    * Verifica se o trigger corresponde ao contexto do evento
    */
   private async checkTriggerMatch(triggerNode: any, context: FlowExecutionContext): Promise<boolean> {
-    const eventType = triggerNode.data?.eventType;
+    // Suporta tanto 'event' quanto 'eventType' para retrocompatibilidade
+    const triggerEventType = triggerNode.data?.eventType || triggerNode.data?.event;
     const isFirstOrder = triggerNode.data?.isFirstOrder; // Nova propriedade
 
-    switch (eventType) {
+    console.log(`🔍 Verificando trigger match: trigger=${triggerEventType}, disparado=${context.triggeredEvent}`);
+
+    // Verificar se o evento disparado corresponde ao evento do trigger
+    if (triggerEventType !== context.triggeredEvent) {
+      console.log(`❌ Evento não corresponde: ${triggerEventType} !== ${context.triggeredEvent}`);
+      return false;
+    }
+
+    switch (triggerEventType) {
       case 'order_created':
       case 'order_scheduled': // Também validar para pedidos agendados
         if (!context.orderId) return false;

@@ -235,6 +235,7 @@ export function ScheduleOrderModal({
           {/* Botões de ação */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#ead9cd] dark:border-[#5a4a3e]">
             <Button
+              type="button"
               onClick={handleSchedule}
               disabled={!selectedDate || !selectedTime || isLoading}
               className="flex-1 h-12 bg-[#FF6B00] hover:bg-[#ff8533] text-white font-bold text-base rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
@@ -242,6 +243,7 @@ export function ScheduleOrderModal({
               Confirmar Agendamento
             </Button>
             <Button
+              type="button"
               onClick={onClose}
               variant="outline"
               className="flex-1 h-12 border-2 border-[#ead9cd] dark:border-[#5a4a3e] hover:bg-[#f5f1e9] dark:hover:bg-[#3a2a1d] text-[#333333] dark:text-[#f5f1e9] font-semibold text-base rounded-xl"

@@ -84,7 +84,12 @@ export function getAvailableTimesForDay(
   // Processar período de jantar
   if (daySchedule.dinnerOpen && daySchedule.dinnerClose) {
     const dinnerStart = timeToMinutes(daySchedule.dinnerOpen);
-    const dinnerEnd = timeToMinutes(daySchedule.dinnerClose);
+    let dinnerEnd = timeToMinutes(daySchedule.dinnerClose);
+
+    // Se dinnerClose é 00:00 (meia-noite), tratar como 24:00 (1440 minutos)
+    if (dinnerEnd === 0) {
+      dinnerEnd = 1440; // 24:00 em minutos
+    }
 
     console.log('[Scheduling] Jantar:', { dinnerStart, dinnerEnd, dinnerOpen: daySchedule.dinnerOpen, dinnerClose: daySchedule.dinnerClose });
 
@@ -308,7 +313,12 @@ export async function validateScheduleDateTime(
     // Verificar jantar
     if (daySchedule.dinnerOpen && daySchedule.dinnerClose) {
       const dinnerStart = timeToMinutes(daySchedule.dinnerOpen);
-      const dinnerEnd = timeToMinutes(daySchedule.dinnerClose);
+      let dinnerEnd = timeToMinutes(daySchedule.dinnerClose);
+
+      // Se dinnerClose é 00:00 (meia-noite), tratar como 24:00 (1440 minutos)
+      if (dinnerEnd === 0) {
+        dinnerEnd = 1440;
+      }
 
       if (dinnerStart !== null && dinnerEnd !== null) {
         if (scheduledMinutes >= dinnerStart && scheduledMinutes < dinnerEnd) {

@@ -605,10 +605,21 @@ export function DeliveryAreasPageContent({
                     areas={areas}
                     selectedArea={selectedArea}
                     onPolygonDrawn={setDrawnPolygon}
+                    onRadiusDrawn={(center, radiusKm) => {
+                      setEditingArea({
+                        ...editingArea,
+                        centerLat: center[0],
+                        centerLng: center[1],
+                        radiusKm: radiusKm,
+                      });
+                    }}
+                    drawMode={editingArea.drawMode || 'POLYGON'}
                     restaurantAddress={restaurantLocation}
                     initialDrawingMode={!selectedArea}
                     initialPolygonColor={editingArea.color}
                     initialPolygon={selectedArea?.polygon}
+                    initialRadius={editingArea.radiusKm || null}
+                    initialCenter={editingArea.centerLat && editingArea.centerLng ? [editingArea.centerLat, editingArea.centerLng] : null}
                   />
                 )}
               </div>

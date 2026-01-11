@@ -41,6 +41,8 @@ type DeliveryMapProps = {
   initialPolygon?: number[][];
   drawMode?: string; // 'POLYGON' or 'RADIUS'
   onRadiusDrawn?: (center: [number, number], radiusKm: number) => void;
+  initialRadius?: number | null; // Raio inicial em km
+  initialCenter?: [number, number] | null; // Centro inicial [lat, lng]
 };
 
 export default function DeliveryMap({
@@ -54,6 +56,8 @@ export default function DeliveryMap({
   initialPolygon,
   drawMode = 'POLYGON',
   onRadiusDrawn,
+  initialRadius,
+  initialCenter,
 }: DeliveryMapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -133,6 +137,48 @@ export default function DeliveryMap({
     // Centralizar mapa no polígono
     map.fitBounds(polygon.getBounds(), { padding: [50, 50] });
   }, [initialPolygon]);
+
+  // Carregar círculo inicial se fornecido (para modo RADIUS)
+  useEffect(() => {
+    if (!mapRef.current || drawMode !== 'RADIUS' || !initialCenter || !initialRadius) return;
+
+    const map = mapRef.current;
+    const center = L.latLng(initialCenter[0], initialCenter[1]);
+
+    // Definir centro e raio
+    setRadiusCenter(center);
+    setCurrentRadius(initialRadius);
+
+    // Criar marcador de centro
+    clearDrawingMarkers();
+    const centerMarker = L.circleMarker(center, {
+      radius: 8,
+      color: initialPolygonColor,
+      fillColor: '#FFFFFF',
+      fillOpacity: 1,
+      weight: 3,
+    }).addTo(map);
+    drawingMarkersRef.current.push(centerMarker);
+
+    // Criar círculo
+    if (radiusCircle) {
+      radiusCircle.remove();
+    }
+
+    const circle = L.circle(center, {
+      radius: initialRadius * 1000, // Convert km to meters
+      color: initialPolygonColor,
+      fillColor: initialPolygonColor,
+      fillOpacity: 0.3,
+      weight: 2,
+    }).addTo(map);
+
+    setRadiusCircle(circle);
+    drawingLayerRef.current = circle;
+
+    // Centralizar mapa no círculo
+    map.fitBounds(circle.getBounds(), { padding: [50, 50] });
+  }, [initialCenter, initialRadius, drawMode]);
 
   // Forçar redimensionamento do mapa quando o container muda
   useEffect(() => {

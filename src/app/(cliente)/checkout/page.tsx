@@ -865,6 +865,33 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
+                  {/* Botão de Agendamento Opcional */}
+                  <div className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowScheduleModal(true)}
+                      className="w-full flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 px-6 py-4 transition-all shadow-md hover:shadow-lg"
+                    >
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <div className="text-left">
+                        <p className="text-white font-bold text-base">
+                          {scheduledDate && scheduledTime ? '📅 Agendado' : 'Agendar Pedido'}
+                        </p>
+                        {scheduledDate && scheduledTime ? (
+                          <p className="text-white/90 text-sm">
+                            {new Date(scheduledDate).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long' })} às {scheduledTime}
+                          </p>
+                        ) : (
+                          <p className="text-white/90 text-sm">
+                            Escolha data e horário (opcional)
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                  </div>
+
                   {/* Detalhes do Pedido */}
                   <div className="flex flex-col">
                     <h2 className="px-4 pb-3 pt-5 text-[22px] font-bold leading-tight tracking-[-0.015em] text-[#333333] dark:text-[#f5f1e9]">
@@ -1074,6 +1101,7 @@ export default function CheckoutPage() {
         isOpen={showScheduleModal}
         onClose={() => setShowScheduleModal(false)}
         onSchedule={handleSchedule}
+        isRestaurantOpen={true}
       />
 
       {/* Modal de Erro */}

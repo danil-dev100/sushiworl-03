@@ -25,6 +25,7 @@ type OpeningHours = {
 
 /**
  * Converte string de horário (HH:MM) para minutos desde meia-noite
+ * Suporta horários até 24:00 (meia-noite do dia seguinte)
  */
 function timeToMinutes(timeString: string): number | null {
   const parts = timeString.split(':');
@@ -34,7 +35,10 @@ function timeToMinutes(timeString: string): number | null {
   const minutes = parseInt(parts[1], 10);
 
   if (isNaN(hours) || isNaN(minutes)) return null;
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  // Permitir 00:00 (meia-noite) e até 24:00
+  if (hours < 0 || hours > 24 || minutes < 0 || minutes > 59) return null;
+  // 24:00 é tratado como final do dia (1440 minutos)
+  if (hours === 24 && minutes > 0) return null;
 
   return hours * 60 + minutes;
 }
@@ -61,10 +65,14 @@ export function getAvailableTimesForDay(
   const times: string[] = [];
   const interval = 30; // Intervalos de 30 minutos
 
+  console.log('[Scheduling] Processando horários:', daySchedule);
+
   // Processar período de almoço
   if (daySchedule.lunchOpen && daySchedule.lunchClose) {
     const lunchStart = timeToMinutes(daySchedule.lunchOpen);
     const lunchEnd = timeToMinutes(daySchedule.lunchClose);
+
+    console.log('[Scheduling] Almoço:', { lunchStart, lunchEnd, lunchOpen: daySchedule.lunchOpen, lunchClose: daySchedule.lunchClose });
 
     if (lunchStart !== null && lunchEnd !== null) {
       for (let min = lunchStart; min < lunchEnd; min += interval) {
@@ -78,6 +86,8 @@ export function getAvailableTimesForDay(
     const dinnerStart = timeToMinutes(daySchedule.dinnerOpen);
     const dinnerEnd = timeToMinutes(daySchedule.dinnerClose);
 
+    console.log('[Scheduling] Jantar:', { dinnerStart, dinnerEnd, dinnerOpen: daySchedule.dinnerOpen, dinnerClose: daySchedule.dinnerClose });
+
     if (dinnerStart !== null && dinnerEnd !== null) {
       for (let min = dinnerStart; min < dinnerEnd; min += interval) {
         times.push(minutesToTime(min));
@@ -90,12 +100,16 @@ export function getAvailableTimesForDay(
     const openMin = timeToMinutes(daySchedule.open);
     const closeMin = timeToMinutes(daySchedule.close);
 
+    console.log('[Scheduling] Formato antigo:', { openMin, closeMin, open: daySchedule.open, close: daySchedule.close });
+
     if (openMin !== null && closeMin !== null) {
       for (let min = openMin; min < closeMin; min += interval) {
         times.push(minutesToTime(min));
       }
     }
   }
+
+  console.log('[Scheduling] Total de horários gerados:', times.length, times);
 
   return times;
 }

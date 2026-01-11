@@ -15,13 +15,15 @@ interface ScheduleOrderModalProps {
   onClose: () => void;
   onSchedule: (date: string, time: string) => void;
   onContinueImmediately?: () => void;
+  isRestaurantOpen?: boolean; // Nova prop para indicar se está aberto
 }
 
 export function ScheduleOrderModal({
   isOpen,
   onClose,
   onSchedule,
-  onContinueImmediately
+  onContinueImmediately,
+  isRestaurantOpen = false
 }: ScheduleOrderModalProps) {
   const [availableDates, setAvailableDates] = useState<AvailableDate[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -97,12 +99,18 @@ export function ScheduleOrderModal({
 
           <div className="flex items-center gap-3 text-white">
             <div className="p-3 bg-white/20 rounded-xl">
-              <AlertCircle className="h-8 w-8" />
+              {isRestaurantOpen ? (
+                <Calendar className="h-8 w-8" />
+              ) : (
+                <AlertCircle className="h-8 w-8" />
+              )}
             </div>
             <div>
-              <h2 className="text-2xl font-bold">Estamos Encerrados</h2>
+              <h2 className="text-2xl font-bold">
+                {isRestaurantOpen ? 'Agendar Pedido' : 'Estamos Encerrados'}
+              </h2>
               <p className="text-white/90 text-sm mt-1">
-                Mas ainda pode fazer seu pedido!
+                {isRestaurantOpen ? 'Escolha data e horário' : 'Mas ainda pode fazer seu pedido!'}
               </p>
             </div>
           </div>
@@ -118,11 +126,14 @@ export function ScheduleOrderModal({
               </div>
               <div className="flex-1 space-y-3">
                 <h3 className="text-lg font-bold text-[#333333] dark:text-[#f5f1e9]">
-                  Não perca essa oportunidade!
+                  {isRestaurantOpen ? 'Planeje seu pedido!' : 'Não perca essa oportunidade!'}
                 </h3>
                 <p className="text-[#666666] dark:text-[#a1a1aa] leading-relaxed">
-                  Agende seu pedido para quando estivermos abertos e <strong>garanta seu sushi fresquinho</strong> na hora que você escolher.
-                  É rápido, fácil e você não precisa se preocupar em pedir na hora certa!
+                  {isRestaurantOpen ? (
+                    <>Agende seu pedido para o dia e horário que preferir e <strong>garanta seu sushi fresquinho</strong> sem se preocupar! Perfeito para almoços, jantares ou eventos especiais.</>
+                  ) : (
+                    <>Agende seu pedido para quando estivermos abertos e <strong>garanta seu sushi fresquinho</strong> na hora que você escolher. É rápido, fácil e você não precisa se preocupar em pedir na hora certa!</>
+                  )}
                 </p>
                 <div className="flex flex-wrap gap-2 pt-2">
                   <div className="flex items-center gap-2 bg-white dark:bg-[#23170f] px-3 py-1.5 rounded-lg">

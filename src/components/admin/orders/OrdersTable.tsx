@@ -134,6 +134,47 @@ function formatAddress(address?: Record<string, unknown> | null) {
   return parts || 'Endereço não informado';
 }
 
+function formatSelectedOptions(options?: Record<string, unknown> | null): string | null {
+  if (!options || Object.keys(options).length === 0) {
+    return null;
+  }
+
+  try {
+    // Se for um array de choices
+    if (Array.isArray(options.choices)) {
+      return options.choices
+        .map((choice: any) => choice.choiceName || choice.name)
+        .filter(Boolean)
+        .join(', ');
+    }
+
+    // Se for um objeto com price e choiceId
+    if (options.price !== undefined && options.choiceId) {
+      return `${options.choiceName || ''} (+${formatCurrency(Number(options.price))})`;
+    }
+
+    // Tentar extrair informações úteis do objeto
+    const entries = Object.entries(options);
+    const formatted = entries
+      .filter(([key]) => !key.startsWith('_') && key !== 'price' && key !== 'choiceId')
+      .map(([key, value]) => {
+        if (typeof value === 'object' && value !== null) {
+          const obj = value as Record<string, any>;
+          if (obj.choiceName) return obj.choiceName;
+          if (obj.name) return obj.name;
+        }
+        return value;
+      })
+      .filter(Boolean)
+      .join(', ');
+
+    return formatted || null;
+  } catch (error) {
+    console.error('Erro ao formatar opções:', error);
+    return null;
+  }
+}
+
 export function OrdersTable({ orders }: OrdersTableProps) {
   const router = useRouter();
   const [localOrders, setLocalOrders] = useState(orders);
@@ -441,23 +482,26 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                   Itens
                 </p>
                 <ul className="space-y-2">
-                  {order.orderItems.map((item) => (
-                    <li key={item.id} className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium text-[#333333] dark:text-[#f5f1e9]">
-                          {item.quantity}x {item.name || item.product?.name}
-                        </p>
-                        {item.selectedOptions && (
-                          <p className="text-xs text-[#a16b45]">
-                            Opções: {JSON.stringify(item.selectedOptions)}
+                  {order.orderItems.map((item) => {
+                    const formattedOptions = formatSelectedOptions(item.selectedOptions);
+                    return (
+                      <li key={item.id} className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <p className="font-medium text-[#333333] dark:text-[#f5f1e9]">
+                            {item.quantity}x {item.name || item.product?.name}
                           </p>
-                        )}
-                      </div>
-                      <p className="text-sm text-[#333333] dark:text-[#f5f1e9]">
-                        {formatCurrency(item.priceAtTime * item.quantity)}
-                      </p>
-                    </li>
-                  ))}
+                          {formattedOptions && (
+                            <p className="text-xs text-[#a16b45] mt-1">
+                              <span className="font-semibold">Opções:</span> {formattedOptions}
+                            </p>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9] whitespace-nowrap">
+                          {formatCurrency(item.priceAtTime * item.quantity)}
+                        </p>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
 

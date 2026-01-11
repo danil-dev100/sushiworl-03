@@ -459,6 +459,52 @@ function FlowBuilderInner({
     setSelectedNodes(params.nodes.map((node: Node) => node.id));
   }, []);
 
+  // Duplo clique na edge para desconectar
+  const onEdgeDoubleClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
+    const confirmDelete = window.confirm(
+      'Deseja desconectar estes nós?'
+    );
+
+    if (confirmDelete) {
+      setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+      toast.success('Conexão removida');
+
+      // Salvar automaticamente após remover conexão
+      setTimeout(async () => {
+        try {
+          const updatedEdges = edges.filter((e) => e.id !== edge.id);
+
+          const flowData = {
+            name: flowName.trim() || 'Novo Fluxo',
+            description: flowDescription.trim(),
+            flow: {
+              nodes,
+              edges: updatedEdges,
+            },
+            isActive,
+            isDraft: false,
+          };
+
+          if (flowId !== 'new') {
+            const response = await fetch(`/api/email-marketing/flows/${flowId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(flowData),
+            });
+
+            if (!response.ok) {
+              throw new Error('Erro ao salvar após remover conexão');
+            }
+
+            console.log('[FlowBuilder] Conexão removida e salva automaticamente');
+          }
+        } catch (error) {
+          console.error('[FlowBuilder] Erro ao salvar após remover conexão:', error);
+        }
+      }, 500);
+    }
+  }, [setEdges, edges, nodes, flowId, flowName, flowDescription, isActive]);
+
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
@@ -518,6 +564,7 @@ function FlowBuilderInner({
             onConnect={onConnect}
             onNodeClick={onNodeClick}
             onSelectionChange={onSelectionChange}
+            onEdgeDoubleClick={onEdgeDoubleClick}
             nodeTypes={nodeTypes}
             defaultEdgeOptions={defaultEdgeOptions}
             fitView

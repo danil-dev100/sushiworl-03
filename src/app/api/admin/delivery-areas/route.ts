@@ -44,13 +44,27 @@ export async function POST(request: NextRequest) {
       deliveryType,
       deliveryFee,
       minOrderValue,
+      pricePerKm,
+      drawMode,
+      centerLat,
+      centerLng,
+      radiusKm,
       priority,
       isActive,
     } = body;
 
-    if (!name || !polygon || polygon.length < 3) {
+    // For polygon mode
+    if (drawMode !== 'RADIUS' && (!polygon || polygon.length < 3)) {
       return NextResponse.json(
         { error: 'Dados inválidos. Nome e polígono (mín. 3 pontos) são obrigatórios.' },
+        { status: 400 }
+      );
+    }
+
+    // For radius mode
+    if (drawMode === 'RADIUS' && (!centerLat || !centerLng || !radiusKm)) {
+      return NextResponse.json(
+        { error: 'Dados inválidos. Centro e raio são obrigatórios para modo circular.' },
         { status: 400 }
       );
     }
@@ -69,6 +83,11 @@ export async function POST(request: NextRequest) {
         deliveryType: deliveryType || 'PAID',
         deliveryFee: deliveryFee || 0,
         minOrderValue: minOrderValue || null,
+        pricePerKm: pricePerKm || 0,
+        drawMode: drawMode || 'POLYGON',
+        centerLat: centerLat || null,
+        centerLng: centerLng || null,
+        radiusKm: radiusKm || null,
         priority: priority !== undefined ? priority : 0,
         isActive: isActive !== undefined ? isActive : true,
         sortOrder: (maxOrder?.sortOrder || 0) + 1,

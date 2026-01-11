@@ -18,11 +18,16 @@ type DeliveryArea = {
   name: string;
   polygon: number[][];
   color: string;
-  deliveryType: 'FREE' | 'PAID';
+  deliveryType: 'FREE' | 'PAID' | 'DISTANCE';
   deliveryFee: number;
   minOrderValue: number | null;
   isActive: boolean;
   sortOrder: number;
+  drawMode?: string; // 'POLYGON' or 'RADIUS'
+  centerLat?: number | null;
+  centerLng?: number | null;
+  radiusKm?: number | null;
+  pricePerKm?: number;
 };
 
 type DeliveryMapProps = {
@@ -34,6 +39,8 @@ type DeliveryMapProps = {
   initialDrawingMode?: boolean;
   initialPolygonColor?: string;
   initialPolygon?: number[][];
+  drawMode?: string; // 'POLYGON' or 'RADIUS'
+  onRadiusDrawn?: (center: [number, number], radiusKm: number) => void;
 };
 
 export default function DeliveryMap({
@@ -45,11 +52,13 @@ export default function DeliveryMap({
   initialDrawingMode = false,
   initialPolygonColor = '#FF6B00',
   initialPolygon,
+  drawMode = 'POLYGON',
+  onRadiusDrawn,
 }: DeliveryMapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const polygonsRef = useRef<Map<string, L.Polygon>>(new Map());
-  const drawingLayerRef = useRef<L.Polygon | null>(null);
+  const polygonsRef = useRef<Map<string, L.Polygon | L.Circle>>(new Map());
+  const drawingLayerRef = useRef<L.Polygon | L.Circle | null>(null);
   const drawingMarkersRef = useRef<L.CircleMarker[]>([]);
   const drawControlRef = useRef<L.Control | null>(null);
   const [isDrawingMode, setIsDrawingMode] = useState(initialDrawingMode);
@@ -57,6 +66,9 @@ export default function DeliveryMap({
   const [isEditMode, setIsEditMode] = useState(false);
   const [tempPolygonColor, setTempPolygonColor] = useState(initialPolygonColor);
   const [showDrawingInstructions, setShowDrawingInstructions] = useState(true);
+  const [radiusCircle, setRadiusCircle] = useState<L.Circle | null>(null);
+  const [radiusCenter, setRadiusCenter] = useState<L.LatLng | null>(null);
+  const [currentRadius, setCurrentRadius] = useState<number>(1); // in km
 
   // Sincronizar com props externas
   useEffect(() => {
@@ -201,44 +213,80 @@ export default function DeliveryMap({
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Limpar polígonos anteriores
-    polygonsRef.current.forEach((polygon) => polygon.remove());
+    // Limpar polígonos e círculos anteriores
+    polygonsRef.current.forEach((shape) => shape.remove());
     polygonsRef.current.clear();
 
-    const allPolygons: L.Polygon[] = [];
+    const allShapes: (L.Polygon | L.Circle)[] = [];
 
-    // Adicionar polígonos das áreas
+    // Adicionar polígonos e círculos das áreas
     areas.forEach((area) => {
-      if (!area.polygon || area.polygon.length < 3) return;
+      let shape: L.Polygon | L.Circle | null = null;
 
-      const latLngs: [number, number][] = area.polygon.map((point) => [
-        point[0],
-        point[1],
-      ]);
+      // Renderizar baseado no drawMode
+      if (area.drawMode === 'RADIUS' && area.centerLat && area.centerLng && area.radiusKm) {
+        // Renderizar círculo
+        shape = L.circle([area.centerLat, area.centerLng], {
+          radius: area.radiusKm * 1000, // Convert km to meters
+          color: area.color,
+          fillColor: area.color,
+          fillOpacity: selectedArea?.id === area.id ? 0.4 : 0.15,
+          weight: selectedArea?.id === area.id ? 3 : 2,
+          dashArray: '5, 5', // Dashed line for circles
+        }).addTo(mapRef.current!);
 
-      const polygon = L.polygon(latLngs, {
-        color: area.color,
-        fillColor: area.color,
-        fillOpacity: selectedArea?.id === area.id ? 0.5 : 0.2,
-        weight: selectedArea?.id === area.id ? 3 : 2,
-      }).addTo(mapRef.current!);
+        // Add center marker for radius areas
+        L.circleMarker([area.centerLat, area.centerLng], {
+          radius: 5,
+          color: area.color,
+          fillColor: '#FFFFFF',
+          fillOpacity: 1,
+          weight: 2,
+        }).addTo(mapRef.current!);
+      } else if (area.polygon && area.polygon.length >= 3) {
+        // Renderizar polígono
+        const latLngs: [number, number][] = area.polygon.map((point) => [
+          point[0],
+          point[1],
+        ]);
 
-      const popupContent = `
-        <div style="font-family: Inter, sans-serif;">
-          <strong style="color: #FF6B00;">${area.name}</strong><br/>
-          <span>${area.deliveryType === 'FREE' ? 'Grátis' : `€${area.deliveryFee.toFixed(2)}`}</span>
-          ${area.minOrderValue ? `<br/><span style="font-size: 0.875rem;">Mín: €${area.minOrderValue.toFixed(2)}</span>` : ''}
-        </div>
-      `;
+        shape = L.polygon(latLngs, {
+          color: area.color,
+          fillColor: area.color,
+          fillOpacity: selectedArea?.id === area.id ? 0.5 : 0.2,
+          weight: selectedArea?.id === area.id ? 3 : 2,
+        }).addTo(mapRef.current!);
+      }
 
-      polygon.bindPopup(popupContent);
-      polygonsRef.current.set(area.id, polygon);
-      allPolygons.push(polygon);
+      if (shape) {
+        // Create popup content based on delivery type
+        let deliveryInfo = '';
+        if (area.deliveryType === 'FREE') {
+          deliveryInfo = 'Grátis';
+        } else if (area.deliveryType === 'DISTANCE' && area.pricePerKm) {
+          deliveryInfo = `€${area.pricePerKm.toFixed(2)}/km`;
+        } else {
+          deliveryInfo = `€${area.deliveryFee.toFixed(2)}`;
+        }
+
+        const popupContent = `
+          <div style="font-family: Inter, sans-serif;">
+            <strong style="color: #FF6B00;">${area.name}</strong><br/>
+            <span>${deliveryInfo}</span>
+            ${area.drawMode === 'RADIUS' && area.radiusKm ? `<br/><span style="font-size: 0.875rem;">Raio: ${area.radiusKm.toFixed(2)} km</span>` : ''}
+            ${area.minOrderValue ? `<br/><span style="font-size: 0.875rem;">Mín: €${area.minOrderValue.toFixed(2)}</span>` : ''}
+          </div>
+        `;
+
+        shape.bindPopup(popupContent);
+        polygonsRef.current.set(area.id, shape);
+        allShapes.push(shape);
+      }
     });
 
     // Centralizar mapa em todas as áreas
-    if (allPolygons.length > 0 && mapRef.current) {
-      const group = L.featureGroup(allPolygons);
+    if (allShapes.length > 0 && mapRef.current) {
+      const group = L.featureGroup(allShapes);
       mapRef.current.fitBounds(group.getBounds(), {
         padding: [50, 50],
         maxZoom: 15, // Não dar zoom muito perto
@@ -266,6 +314,14 @@ export default function DeliveryMap({
         drawingLayerRef.current.remove();
         drawingLayerRef.current = null;
       }
+
+      // Clear radius-related states
+      if (radiusCircle) {
+        radiusCircle.remove();
+        setRadiusCircle(null);
+      }
+      setRadiusCenter(null);
+      setCurrentRadius(1);
 
       setIsEditMode(false);
     }
@@ -334,6 +390,34 @@ export default function DeliveryMap({
     }
   };
 
+  // Handle radius drawing
+  const handleRadiusDrawing = (e: L.LeafletMouseEvent) => {
+    if (!mapRef.current || !radiusCenter) return;
+
+    // Calculate distance from center to cursor position
+    const distance = radiusCenter.distanceTo(e.latlng) / 1000; // Convert to km
+    setCurrentRadius(distance);
+
+    // Update or create circle
+    if (radiusCircle) {
+      radiusCircle.setRadius(distance * 1000); // Leaflet uses meters
+    } else {
+      const circle = L.circle(radiusCenter, {
+        radius: distance * 1000,
+        color: tempPolygonColor,
+        fillColor: tempPolygonColor,
+        fillOpacity: 0.3,
+        weight: 2,
+      }).addTo(mapRef.current);
+      setRadiusCircle(circle);
+    }
+
+    // Notify parent component
+    if (onRadiusDrawn) {
+      onRadiusDrawn([radiusCenter.lat, radiusCenter.lng], distance);
+    }
+  };
+
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -360,6 +444,36 @@ export default function DeliveryMap({
       setShowDrawingInstructions(false);
     }
 
+    // RADIUS MODE: Handle radius drawing
+    if (drawMode === 'RADIUS') {
+      if (!radiusCenter) {
+        // First click: set center
+        setRadiusCenter(e.latlng);
+
+        // Add center marker
+        const marker = L.circleMarker(e.latlng, {
+          radius: 8,
+          color: tempPolygonColor,
+          fillColor: '#FFFFFF',
+          fillOpacity: 1,
+          weight: 3,
+        }).addTo(map);
+        drawingMarkersRef.current.push(marker);
+      } else {
+        // Second click: finalize radius
+        const distance = radiusCenter.distanceTo(e.latlng) / 1000; // Convert to km
+        setCurrentRadius(distance);
+
+        // Notify parent and finish drawing
+        if (onRadiusDrawn) {
+          onRadiusDrawn([radiusCenter.lat, radiusCenter.lng], distance);
+        }
+        finishDrawing();
+      }
+      return;
+    }
+
+    // POLYGON MODE: Handle polygon drawing
     const newPoints = [...drawingPoints, e.latlng];
     setDrawingPoints(newPoints);
 
@@ -405,9 +519,17 @@ export default function DeliveryMap({
     };
 
     const handleMouseMove = (e: L.LeafletMouseEvent) => {
-      if (!isDrawingMode || drawingPoints.length === 0 || !mapContainer) return;
+      if (!isDrawingMode || !mapContainer) return;
 
-      // Mostrar cursor pointer quando próximo do primeiro ponto
+      // RADIUS MODE: Update radius as mouse moves after center is set
+      if (drawMode === 'RADIUS' && radiusCenter) {
+        handleRadiusDrawing(e);
+        return;
+      }
+
+      // POLYGON MODE: Show cursor pointer when near first point
+      if (drawingPoints.length === 0) return;
+
       if (drawingPoints.length >= 3) {
         const firstPoint = drawingPoints[0];
         const distance = e.latlng.distanceTo(firstPoint);
@@ -427,9 +549,16 @@ export default function DeliveryMap({
           toggleDrawingMode(); // Isso já limpa tudo
         }
       }
-      // ENTER finaliza o desenho e entra em modo de edição
-      if (e.key === 'Enter' && isDrawingMode && drawingPoints.length >= 3) {
-        finishDrawing();
+      // ENTER finaliza o desenho
+      if (e.key === 'Enter' && isDrawingMode) {
+        // For radius mode: must have center and circle
+        if (drawMode === 'RADIUS' && radiusCenter && radiusCircle) {
+          finishDrawing();
+        }
+        // For polygon mode: must have at least 3 points
+        else if (drawMode === 'POLYGON' && drawingPoints.length >= 3) {
+          finishDrawing();
+        }
       }
     };
 
@@ -445,7 +574,7 @@ export default function DeliveryMap({
         mapContainer.style.cursor = '';
       }
     };
-  }, [isDrawingMode, isEditMode, drawingPoints, tempPolygonColor, onPolygonDrawn]);
+  }, [isDrawingMode, isEditMode, drawingPoints, tempPolygonColor, onPolygonDrawn, drawMode, radiusCenter, radiusCircle, onRadiusDrawn]);
 
   // Modo de edição - tornar marcadores draggable
   useEffect(() => {
@@ -566,19 +695,39 @@ export default function DeliveryMap({
             <p className="text-lg font-bold text-[#FF6B00] mb-2">
               🎯 Modo de Desenho Ativo
             </p>
-            <p className="text-sm font-medium text-[#333333] mb-1">
-              Clique no mapa para adicionar pontos da área
-            </p>
-            <p className="text-xs text-[#a16b45] mb-2">
-              Pontos atuais: <span className="font-bold">{drawingPoints.length}</span>
-            </p>
+            {drawMode === 'RADIUS' ? (
+              <>
+                <p className="text-sm font-medium text-[#333333] mb-1">
+                  {!radiusCenter
+                    ? 'Clique no mapa para definir o centro da área circular'
+                    : 'Clique novamente ou mova o mouse para definir o raio'}
+                </p>
+                {radiusCenter && (
+                  <p className="text-xs text-[#a16b45] mb-2">
+                    Raio atual: <span className="font-bold">{currentRadius.toFixed(2)} km</span>
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-[#333333] mb-1">
+                  Clique no mapa para adicionar pontos da área
+                </p>
+                <p className="text-xs text-[#a16b45] mb-2">
+                  Pontos atuais: <span className="font-bold">{drawingPoints.length}</span>
+                </p>
+              </>
+            )}
             <div className="flex gap-4 justify-center text-xs">
               <span className="flex items-center gap-1">
                 <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">ESC</kbd> Cancelar
               </span>
               <span className="flex items-center gap-1">
                 <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">ENTER</kbd> Finalizar
-                {drawingPoints.length >= 3 ? <span className="text-green-600 font-bold">✓</span> : <span className="text-orange-600">(mín. {3 - drawingPoints.length})</span>}
+                {drawMode === 'RADIUS'
+                  ? (radiusCenter && radiusCircle ? <span className="text-green-600 font-bold">✓</span> : <span className="text-orange-600">(defina raio)</span>)
+                  : (drawingPoints.length >= 3 ? <span className="text-green-600 font-bold">✓</span> : <span className="text-orange-600">(mín. {3 - drawingPoints.length})</span>)
+                }
               </span>
             </div>
           </div>

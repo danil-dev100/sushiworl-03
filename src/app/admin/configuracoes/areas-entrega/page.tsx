@@ -14,9 +14,14 @@ type DeliveryAreaWithPolygon = {
   name: string;
   polygon: number[][];
   color: string;
-  deliveryType: 'FREE' | 'PAID';
+  deliveryType: 'FREE' | 'PAID' | 'DISTANCE';
   deliveryFee: number;
   minOrderValue: number | null;
+  pricePerKm: number;
+  drawMode: string;
+  centerLat: number | null;
+  centerLng: number | null;
+  radiusKm: number | null;
   priority: number;
   isActive: boolean;
   sortOrder: number;
@@ -42,9 +47,14 @@ export default async function AreasEntregaPage() {
     name: area.name,
     polygon: area.polygon as number[][],
     color: area.color,
-    deliveryType: area.deliveryType as 'FREE' | 'PAID',
+    deliveryType: area.deliveryType as 'FREE' | 'PAID' | 'DISTANCE',
     deliveryFee: area.deliveryFee,
     minOrderValue: area.minOrderValue,
+    pricePerKm: area.pricePerKm,
+    drawMode: area.drawMode,
+    centerLat: area.centerLat,
+    centerLng: area.centerLng,
+    radiusKm: area.radiusKm,
     priority: area.priority,
     isActive: area.isActive,
     sortOrder: area.sortOrder,

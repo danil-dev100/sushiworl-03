@@ -45,12 +45,17 @@ type DeliveryArea = {
   name: string;
   polygon: number[][];
   color: string;
-  deliveryType: 'FREE' | 'PAID';
+  deliveryType: 'FREE' | 'PAID' | 'DISTANCE';
   deliveryFee: number;
   minOrderValue: number | null;
   priority: number;
   isActive: boolean;
   sortOrder: number;
+  pricePerKm: number;
+  drawMode: string;
+  centerLat: number | null;
+  centerLng: number | null;
+  radiusKm: number | null;
 };
 
 type DeliveryAreasPageContentProps = {
@@ -86,6 +91,11 @@ export function DeliveryAreasPageContent({
       minOrderValue: null,
       color: getRandomColor(),
       isActive: true,
+      drawMode: 'POLYGON',
+      pricePerKm: 0,
+      centerLat: null,
+      centerLng: null,
+      radiusKm: null,
     });
     setDrawnPolygon(null);
     setSelectedArea(null);
@@ -131,8 +141,20 @@ export function DeliveryAreasPageContent({
       return;
     }
 
-    if (!drawnPolygon || drawnPolygon.length < 3) {
-      toast.error('Desenhe a área no mapa (mínimo 3 pontos)');
+    if (editingArea.drawMode === 'RADIUS') {
+      if (!editingArea.centerLat || !editingArea.centerLng || !editingArea.radiusKm) {
+        toast.error('Para modo raio, defina o centro e o raio no mapa');
+        return;
+      }
+    } else {
+      if (!drawnPolygon || drawnPolygon.length < 3) {
+        toast.error('Desenhe a área no mapa (mínimo 3 pontos)');
+        return;
+      }
+    }
+
+    if (editingArea.deliveryType === 'DISTANCE' && (!editingArea.pricePerKm || editingArea.pricePerKm <= 0)) {
+      toast.error('Para entrega por distância, defina o preço por km maior que zero');
       return;
     }
 
@@ -293,6 +315,10 @@ export function DeliveryAreasPageContent({
                               <span className="font-semibold text-green-600">
                                 Grátis
                               </span>
+                            ) : area.deliveryType === 'DISTANCE' ? (
+                              <span className="font-semibold text-[#FF6B00]">
+                                €{area.pricePerKm.toFixed(2)}/km
+                              </span>
                             ) : (
                               <span className="font-semibold text-[#FF6B00]">
                                 €{area.deliveryFee.toFixed(2)}
@@ -304,6 +330,15 @@ export function DeliveryAreasPageContent({
                               Mín: €{area.minOrderValue.toFixed(2)}
                             </p>
                           )}
+                          <div className="flex gap-1 mt-1">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              area.drawMode === 'RADIUS'
+                                ? 'bg-purple-100 text-purple-700'
+                                : 'bg-blue-100 text-blue-700'
+                            }`}>
+                              {area.drawMode === 'RADIUS' ? 'Raio' : 'Polígono'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -389,7 +424,7 @@ export function DeliveryAreasPageContent({
                 <Label htmlFor="delivery-type">Tipo de Entrega *</Label>
                 <Select
                   value={editingArea.deliveryType || 'PAID'}
-                  onValueChange={(value: 'FREE' | 'PAID') =>
+                  onValueChange={(value: 'FREE' | 'PAID' | 'DISTANCE') =>
                     setEditingArea({ ...editingArea, deliveryType: value })
                   }
                 >
@@ -398,7 +433,8 @@ export function DeliveryAreasPageContent({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="FREE">Grátis</SelectItem>
-                    <SelectItem value="PAID">Pago</SelectItem>
+                    <SelectItem value="PAID">Pago (Taxa Fixa)</SelectItem>
+                    <SelectItem value="DISTANCE">Por Distância</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -415,10 +451,32 @@ export function DeliveryAreasPageContent({
                       deliveryFee: parseFloat(e.target.value) || 0,
                     })
                   }
-                  disabled={editingArea.deliveryType === 'FREE'}
+                  disabled={editingArea.deliveryType === 'FREE' || editingArea.deliveryType === 'DISTANCE'}
                 />
               </div>
             </div>
+            {editingArea.deliveryType === 'DISTANCE' && (
+              <div>
+                <Label htmlFor="price-per-km">Preço por Km (€) *</Label>
+                <Input
+                  id="price-per-km"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={editingArea.pricePerKm || 0}
+                  onChange={(e) =>
+                    setEditingArea({
+                      ...editingArea,
+                      pricePerKm: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  placeholder="Ex: 1.50"
+                />
+                <p className="text-xs text-[#a16b45] mt-1">
+                  O valor da entrega será calculado automaticamente com base na distância do restaurante ao endereço de entrega.
+                </p>
+              </div>
+            )}
             {editingArea.deliveryType === 'FREE' && (
               <div>
                 <Label htmlFor="min-order">
@@ -441,6 +499,50 @@ export function DeliveryAreasPageContent({
                 />
               </div>
             )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="draw-mode">Modo de Desenho *</Label>
+                <Select
+                  value={editingArea.drawMode || 'POLYGON'}
+                  onValueChange={(value: string) =>
+                    setEditingArea({ ...editingArea, drawMode: value })
+                  }
+                >
+                  <SelectTrigger id="draw-mode">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="POLYGON">Polígono</SelectItem>
+                    <SelectItem value="RADIUS">Raio</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-[#a16b45] mt-1">
+                  Polígono permite desenhar áreas customizadas. Raio cria uma área circular.
+                </p>
+              </div>
+              {editingArea.drawMode === 'RADIUS' && (
+                <div>
+                  <Label htmlFor="radius-km">Raio (Km) *</Label>
+                  <Input
+                    id="radius-km"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    value={editingArea.radiusKm || ''}
+                    onChange={(e) =>
+                      setEditingArea({
+                        ...editingArea,
+                        radiusKm: e.target.value ? parseFloat(e.target.value) : null,
+                      })
+                    }
+                    placeholder="Ex: 5"
+                  />
+                  <p className="text-xs text-[#a16b45] mt-1">
+                    Define o raio da área circular em quilômetros.
+                  </p>
+                </div>
+              )}
+            </div>
             <div>
               <Label htmlFor="priority">
                 Prioridade (para áreas sobrepostas)
@@ -461,19 +563,37 @@ export function DeliveryAreasPageContent({
                 Maior valor = maior prioridade. Use para resolver conflitos quando áreas se sobrepõem.
               </p>
             </div>
-            {drawnPolygon && drawnPolygon.length >= 3 && (
-              <div className="rounded-lg border border-green-200 bg-green-50 p-3">
-                <p className="text-sm text-green-800">
-                  ✓ Polígono desenhado com {drawnPolygon.length} pontos
-                </p>
-              </div>
-            )}
-            {(!drawnPolygon || drawnPolygon.length < 3) && (
-              <div className="rounded-lg border border-orange-200 bg-orange-50 p-3">
-                <p className="text-sm text-orange-800">
-                  Desenhe a área no mapa usando a ferramenta de polígono
-                </p>
-              </div>
+            {editingArea.drawMode === 'RADIUS' ? (
+              editingArea.centerLat && editingArea.centerLng && editingArea.radiusKm ? (
+                <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+                  <p className="text-sm text-green-800">
+                    ✓ Área circular definida: {editingArea.radiusKm}km de raio
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-orange-200 bg-orange-50 p-3">
+                  <p className="text-sm text-orange-800">
+                    Defina o raio e clique no mapa para posicionar o centro da área circular
+                  </p>
+                </div>
+              )
+            ) : (
+              <>
+                {drawnPolygon && drawnPolygon.length >= 3 && (
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+                    <p className="text-sm text-green-800">
+                      ✓ Polígono desenhado com {drawnPolygon.length} pontos
+                    </p>
+                  </div>
+                )}
+                {(!drawnPolygon || drawnPolygon.length < 3) && (
+                  <div className="rounded-lg border border-orange-200 bg-orange-50 p-3">
+                    <p className="text-sm text-orange-800">
+                      Desenhe a área no mapa usando a ferramenta de polígono
+                    </p>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Mapa para desenhar dentro do dialog */}
@@ -504,7 +624,11 @@ export function DeliveryAreasPageContent({
             <Button
               onClick={handleSave}
               className="bg-[#FF6B00] hover:bg-[#FF6B00]/90"
-              disabled={!drawnPolygon || drawnPolygon.length < 3}
+              disabled={
+                editingArea.drawMode === 'RADIUS'
+                  ? !editingArea.centerLat || !editingArea.centerLng || !editingArea.radiusKm
+                  : !drawnPolygon || drawnPolygon.length < 3
+              }
             >
               Salvar Área
             </Button>

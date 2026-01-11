@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { geocodeAddressWithContext, type DeliveryAreaData } from '@/lib/geo-utils';
+import { calculateDistance, isPointInCircle, calculateDeliveryFeeByDistance, formatDistance } from '@/lib/distance-utils';
 
 // POST - Verificar se endereço está em área de entrega usando geocodificação com contexto
 export async function POST(request: NextRequest) {
@@ -28,9 +29,14 @@ export async function POST(request: NextRequest) {
         id: true,
         name: true,
         polygon: true,
+        drawMode: true,
+        centerLat: true,
+        centerLng: true,
+        radiusKm: true,
         deliveryType: true,
         deliveryFee: true,
         minOrderValue: true,
+        pricePerKm: true,
         priority: true,
       },
     });
@@ -95,6 +101,45 @@ export async function POST(request: NextRequest) {
     console.log(`[Check Area API] Confiança: ${(geocodeResult.confidence * 100).toFixed(1)}%`);
     console.log(`[Check Area API] Prioridade: ${matchedArea.priority}`);
 
+    // Calcular distância e taxa se for modo DISTANCE
+    let distance: number | undefined;
+    let calculatedDeliveryFee = matchedArea.deliveryFee;
+    let distanceInfo: string | undefined;
+
+    if (matchedArea.deliveryType === 'DISTANCE') {
+      // Se for modo RADIUS, usar as coordenadas do centro
+      if (matchedArea.drawMode === 'RADIUS' && matchedArea.centerLat && matchedArea.centerLng) {
+        distance = calculateDistance(
+          geocodeResult.coordinates[0],
+          geocodeResult.coordinates[1],
+          matchedArea.centerLat,
+          matchedArea.centerLng
+        );
+      } else {
+        // Para polígonos, calcular distância até o centróide
+        const polygon = matchedArea.polygon as number[][];
+        const centerLat = polygon.reduce((sum, p) => sum + p[0], 0) / polygon.length;
+        const centerLng = polygon.reduce((sum, p) => sum + p[1], 0) / polygon.length;
+
+        distance = calculateDistance(
+          geocodeResult.coordinates[0],
+          geocodeResult.coordinates[1],
+          centerLat,
+          centerLng
+        );
+      }
+
+      calculatedDeliveryFee = calculateDeliveryFeeByDistance(
+        distance,
+        matchedArea.pricePerKm || 0,
+        matchedArea.deliveryFee || 0
+      );
+
+      distanceInfo = `${formatDistance(distance)} - €${matchedArea.pricePerKm}/km`;
+      console.log(`[Check Area API] 📏 Distância: ${formatDistance(distance)}`);
+      console.log(`[Check Area API] 💰 Taxa calculada: €${calculatedDeliveryFee.toFixed(2)}`);
+    }
+
     // Retornar sucesso com dados da área e log de decisão
     return NextResponse.json({
       delivers: true,
@@ -106,9 +151,12 @@ export async function POST(request: NextRequest) {
         id: matchedArea.id,
         name: matchedArea.name,
         deliveryType: matchedArea.deliveryType,
-        deliveryFee: matchedArea.deliveryFee,
+        deliveryFee: calculatedDeliveryFee, // Taxa calculada ou fixa
         minOrderValue: matchedArea.minOrderValue,
+        pricePerKm: matchedArea.pricePerKm,
         priority: matchedArea.priority,
+        distance, // Distância em km (se aplicável)
+        distanceInfo, // String formatada da distância
       },
       // Log de decisão para auditoria
       decisionLog: {
@@ -119,6 +167,8 @@ export async function POST(request: NextRequest) {
         matchedAreaName: matchedArea.name,
         matchedAreaId: matchedArea.id,
         priority: matchedArea.priority,
+        distance,
+        calculatedFee: calculatedDeliveryFee,
         timestamp: new Date().toISOString(),
       },
     });

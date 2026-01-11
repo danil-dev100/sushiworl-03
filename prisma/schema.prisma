@@ -347,14 +347,24 @@ model DeliveryArea {
   id   String @id @default(cuid())
   name String
 
-  // Polígono (array de coordenadas)
+  // Modo de desenho: POLYGON ou RADIUS
+  drawMode String @default("POLYGON") // "POLYGON" ou "RADIUS"
+
+  // Polígono (array de coordenadas) - usado quando drawMode = POLYGON
   polygon Json // [[lat, lng], [lat, lng], ...]
-  color   String @default("#3B82F6") // Cor no mapa
+
+  // Raio (usado quando drawMode = RADIUS)
+  centerLat Float? // Latitude do centro
+  centerLng Float? // Longitude do centro
+  radiusKm  Float? // Raio em quilômetros
+
+  color String @default("#3B82F6") // Cor no mapa
 
   // Configuração de entrega
   deliveryType  DeliveryType
-  deliveryFee   Float        @default(0)
-  minOrderValue Float? // Valor mínimo para frete grátis
+  deliveryFee   Float        @default(0) // Taxa fixa (para PAID) ou base (para DISTANCE)
+  minOrderValue Float? // Valor mínimo para frete grátis (para FREE)
+  pricePerKm    Float        @default(0) // Preço por km (para DISTANCE)
 
   // Contextos de busca para geocodificação (cidades/concelhos)
   // TEMPORARIAMENTE DESABILITADO - Execute o script SQL em scripts/add-search-contexts-column.sql
@@ -976,8 +986,9 @@ enum PrintStatus {
 }
 
 enum DeliveryType {
-  FREE
-  PAID
+  FREE     // Grátis (com ou sem valor mínimo)
+  PAID     // Valor fixo
+  DISTANCE // Por quilômetro
 }
 
 enum PromotionType {

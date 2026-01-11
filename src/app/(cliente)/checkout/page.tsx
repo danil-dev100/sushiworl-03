@@ -68,6 +68,9 @@ export default function CheckoutPage() {
       deliveryType: string;
       deliveryFee: number;
       minOrderValue: number | null;
+      pricePerKm?: number;
+      distance?: number;
+      distanceInfo?: string;
     };
   } | null>(null);
   const [userLocation, setUserLocation] = useState<{
@@ -79,7 +82,29 @@ export default function CheckoutPage() {
   const taxaIVA = 13; // Taxa de IVA em percentual (13% conforme especificado)
 
   const subtotal = totalPrice;
-  const taxaEntrega = 5.00;
+
+  // Calcular taxa de entrega baseado na área validada
+  const taxaEntrega = (() => {
+    if (!deliveryValidation?.isValid || !deliveryValidation.area) {
+      return 5.00; // Taxa padrão se não houver validação
+    }
+
+    const area = deliveryValidation.area;
+
+    // Se for entrega grátis
+    if (area.deliveryType === 'FREE') {
+      // Verificar se atingiu o valor mínimo
+      if (area.minOrderValue && subtotal >= area.minOrderValue) {
+        return 0; // Grátis
+      }
+      // Não atingiu o mínimo, cobrar taxa
+      return area.deliveryFee || 0;
+    }
+
+    // Entrega paga
+    return area.deliveryFee || 0;
+  })();
+
   const desconto = appliedCoupon?.discountAmount || 0;
 
   // Calcular total dos itens adicionais do checkout selecionados
@@ -274,7 +299,33 @@ export default function CheckoutPage() {
       setDeliveryValidation({
         isValid: data.delivers || false,
         message: data.delivers
-          ? `Entregamos em ${data.area?.name || 'sua região'}! Taxa: €${(data.area?.deliveryFee || 0).toFixed(2)}`
+          ? (() => {
+              const area = data.area;
+              if (!area) return `Entregamos em sua região!`;
+
+              // Se for entrega grátis com mínimo
+              if (area.deliveryType === 'FREE' && area.minOrderValue) {
+                if (subtotal >= area.minOrderValue) {
+                  return `Entregamos em ${area.name}! 🎉 Frete GRÁTIS!`;
+                } else {
+                  const faltam = area.minOrderValue - subtotal;
+                  return `Entregamos em ${area.name}! Faltam €${faltam.toFixed(2)} para frete grátis (Taxa: €${area.deliveryFee.toFixed(2)})`;
+                }
+              }
+
+              // Entrega grátis sem mínimo
+              if (area.deliveryType === 'FREE') {
+                return `Entregamos em ${area.name}! 🎉 Frete GRÁTIS!`;
+              }
+
+              // Entrega por distância
+              if (area.deliveryType === 'DISTANCE' && area.distance) {
+                return `Entregamos em ${area.name}! Distância: ${area.distanceInfo || `${area.distance.toFixed(1)} km`} - Taxa: €${area.deliveryFee.toFixed(2)}`;
+              }
+
+              // Entrega paga
+              return `Entregamos em ${area.name}! Taxa: €${area.deliveryFee.toFixed(2)}`;
+            })()
           : data.message || 'Desculpe, não entregamos neste endereço.',
         area: data.area,
       });

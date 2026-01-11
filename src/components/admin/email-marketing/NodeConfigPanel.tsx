@@ -226,32 +226,90 @@ export default function NodeConfigPanel({
   const renderDelayConfig = () => (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="delayValue">Valor do Delay</Label>
-        <Input
-          id="delayValue"
-          type="number"
-          value={config.delayValue || 60}
-          onChange={(e) => setConfig({ ...config, delayValue: parseInt(e.target.value) })}
-          min="1"
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="delayType">Unidade de Tempo</Label>
+        <Label htmlFor="delayMode">Modo de Delay</Label>
         <Select
-          value={config.delayType || 'minutes'}
-          onValueChange={(value) => setConfig({ ...config, delayType: value })}
+          value={config.delayMode || 'fixed'}
+          onValueChange={(value) => setConfig({ ...config, delayMode: value })}
         >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="minutes">Minutos</SelectItem>
-            <SelectItem value="hours">Horas</SelectItem>
-            <SelectItem value="days">Dias</SelectItem>
+            <SelectItem value="fixed">Tempo Fixo</SelectItem>
+            <SelectItem value="before_scheduled">Antes do Horário Agendado</SelectItem>
           </SelectContent>
         </Select>
       </div>
+
+      {config.delayMode === 'before_scheduled' ? (
+        <>
+          <div>
+            <Label htmlFor="beforeValue">Enviar Quantos Minutos/Horas Antes</Label>
+            <Input
+              id="beforeValue"
+              type="number"
+              value={config.beforeValue || 60}
+              onChange={(e) => setConfig({ ...config, beforeValue: parseInt(e.target.value) })}
+              min="10"
+              max="1440"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="beforeUnit">Unidade</Label>
+            <Select
+              value={config.beforeUnit || 'minutes'}
+              onValueChange={(value) => setConfig({ ...config, beforeUnit: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="minutes">Minutos</SelectItem>
+                <SelectItem value="hours">Horas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-xs text-blue-800">
+              <strong>ℹ️ Delay Dinâmico</strong>
+              <br />
+              O email será enviado {config.beforeValue || 60} {config.beforeUnit === 'hours' ? 'hora(s)' : 'minuto(s)'} antes do horário agendado do pedido.
+            </p>
+          </div>
+        </>
+      ) : (
+        <>
+          <div>
+            <Label htmlFor="delayValue">Valor do Delay</Label>
+            <Input
+              id="delayValue"
+              type="number"
+              value={config.delayValue || 60}
+              onChange={(e) => setConfig({ ...config, delayValue: parseInt(e.target.value) })}
+              min="1"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="delayType">Unidade de Tempo</Label>
+            <Select
+              value={config.delayType || 'minutes'}
+              onValueChange={(value) => setConfig({ ...config, delayType: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="minutes">Minutos</SelectItem>
+                <SelectItem value="hours">Horas</SelectItem>
+                <SelectItem value="days">Dias</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
     </div>
   );
 

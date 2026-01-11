@@ -128,6 +128,7 @@ export class FlowExecutionService {
 
     switch (eventType) {
       case 'order_created':
+      case 'order_scheduled': // Também validar para pedidos agendados
         if (!context.orderId) return false;
 
         // Se o trigger especifica que deve ser primeiro pedido
@@ -139,6 +140,8 @@ export class FlowExecutionService {
               status: { not: 'CANCELLED' },
             }
           });
+
+          console.log(`[Flow Execution] Verificando primeiro pedido para ${context.email}: ${previousOrders} pedido(s) encontrado(s)`);
           return previousOrders === 1; // Retorna true se este for o primeiro (count = 1 porque inclui o pedido atual)
         }
 
@@ -150,6 +153,8 @@ export class FlowExecutionService {
               status: { not: 'CANCELLED' },
             }
           });
+
+          console.log(`[Flow Execution] Verificando pedido não-primeiro para ${context.email}: ${previousOrders} pedido(s) encontrado(s)`);
           return previousOrders > 1; // Retorna true se já houve pedidos anteriores
         }
 
@@ -552,6 +557,27 @@ export class FlowExecutionService {
             .map(item => `• ${item.quantity}x ${item.name} - €${item.priceAtTime.toFixed(2)}`)
             .join('\n');
           content = content.replace(/\{\{lista_produtos\}\}/g, listaProdutos);
+          content = content.replace(/\{\{orderItems\}\}/g, listaProdutos);
+
+          // Valores adicionais
+          content = content.replace(/\{\{orderTotal\}\}/g, order.total.toFixed(2));
+          content = content.replace(/\{\{deliveryAddress\}\}/g, address);
+
+          // Data/Hora Agendada (se for pedido agendado)
+          if (order.isScheduled && order.scheduledFor) {
+            const scheduledDateTime = new Date(order.scheduledFor);
+            const scheduledDate = scheduledDateTime.toLocaleDateString('pt-PT', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+            });
+            const scheduledTime = scheduledDateTime.toLocaleTimeString('pt-PT', {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+            content = content.replace(/\{\{scheduledDate\}\}/g, scheduledDate);
+            content = content.replace(/\{\{scheduledTime\}\}/g, scheduledTime);
+          }
 
           // Tempo estimado (pode ser configurado futuramente)
           content = content.replace(/\{\{tempo_estimado\}\}/g, '30-45 minutos');

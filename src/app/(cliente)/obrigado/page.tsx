@@ -67,6 +67,7 @@ export default async function ObrigadoPage({
     ...order,
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
+    scheduledFor: order.scheduledFor ? order.scheduledFor.toISOString() : null,
   };
 
   // 5. Passar dados VALIDADOS para componente client

@@ -25,6 +25,8 @@ interface Order {
   status: OrderStatus;
   createdAt: Date;
   orderItems: OrderItem[];
+  isScheduled?: boolean;
+  scheduledFor?: Date | string;
 }
 
 const statusConfig = {
@@ -260,6 +262,35 @@ export function ObrigadoClient({ order }: ObrigadoClientProps) {
 
             {/* Divisor */}
             <div className="border-t border-gray-200 dark:border-gray-700"></div>
+
+            {/* Data/Hora Agendada (se aplicável) */}
+            {order.isScheduled && order.scheduledFor && (
+              <div className="w-full bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-l-4 border-green-500 p-6 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <Clock className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <h4 className="text-green-800 dark:text-green-200 text-lg font-bold">
+                    📅 Pedido Agendado
+                  </h4>
+                </div>
+                <p className="text-green-700 dark:text-green-300 text-2xl font-bold mb-1">
+                  {new Date(order.scheduledFor).toLocaleDateString('pt-PT', {
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
+                <p className="text-green-600 dark:text-green-400 text-xl font-semibold">
+                  às {new Date(order.scheduledFor).toLocaleTimeString('pt-PT', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </p>
+                <p className="text-green-600/80 dark:text-green-400/80 text-sm mt-3">
+                  ✨ Seu pedido será preparado fresquinho no horário agendado!
+                </p>
+              </div>
+            )}
 
             {/* Resumo da Compra */}
             <div className="text-left w-full bg-[#f5f1e9] dark:bg-[#23170f] p-6 rounded-lg">

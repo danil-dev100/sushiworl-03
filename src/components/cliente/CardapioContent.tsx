@@ -129,12 +129,16 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex">
-        <SidebarMenu categories={categories} activeSection="destaques" />
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row">
+        {/* Sidebar Desktop - Hidden on mobile */}
+        <div className="hidden lg:block">
+          <SidebarMenu categories={categories} activeSection="destaques" />
+        </div>
 
-        <main className="flex-1 py-8">
+        {/* Main Content */}
+        <main className="flex-1 py-4 sm:py-6 lg:py-8">
           {/* Menu Mobile - Carrossel de Categorias */}
-          <div className="lg:hidden mb-6 overflow-x-auto scrollbar-hide">
+          <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto scrollbar-hide">
             <div className="flex gap-2 pb-2">
               {categories.map((cat) => (
                 <button
@@ -151,10 +155,10 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
                       });
                     }
                   }}
-                  className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-[#3a2c20] border-2 border-[#FF6B00]/20 hover:border-[#FF6B00] hover:bg-[#FF6B00]/10 transition-all"
+                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#3a2c20] border-2 border-[#FF6B00]/20 hover:border-[#FF6B00] hover:bg-[#FF6B00]/10 transition-all"
                 >
-                  <span className="text-lg">{cat.emoji}</span>
-                  <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9] whitespace-nowrap">
+                  <span className="text-base">{cat.emoji}</span>
+                  <span className="text-xs font-medium text-[#333333] dark:text-[#f5f1e9] whitespace-nowrap">
                     {cat.name.toUpperCase()}
                   </span>
                 </button>
@@ -162,11 +166,15 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
             </div>
           </div>
 
-          <MenuSearch onSearch={setSearchTerm} />
+          {/* Search */}
+          <div className="mb-6">
+            <MenuSearch onSearch={setSearchTerm} />
+          </div>
 
+          {/* No Results */}
           {searchTerm && Object.keys(filteredProducts).length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <p className="text-xl font-semibold text-[#333333] dark:text-[#f5f1e9]">
+            <div className="flex flex-col items-center justify-center py-12 sm:py-16">
+              <p className="text-lg sm:text-xl font-semibold text-[#333333] dark:text-[#f5f1e9]">
                 Nenhum produto encontrado
               </p>
               <p className="mt-2 text-sm text-[#a16b45]">
@@ -175,14 +183,15 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
             </div>
           ) : (
             <>
+              {/* Product Sections */}
               {categories.map((cat) => {
                 const products = filteredProducts[cat.id] || filteredProducts[cat.name.toLowerCase().replace(/\s+/g, '-')] || [];
                 
                 if (searchTerm && products.length === 0) return null;
 
                 return (
-                  <section key={cat.id} id={cat.id} className={cat.id === 'destaques' ? '' : 'mt-12'}>
-                    <h2 className="text-[#FF6B00] text-3xl font-bold tracking-tight pb-6">
+                  <section key={cat.id} id={cat.id} className={cat.id === 'destaques' ? '' : 'mt-8 sm:mt-10 lg:mt-12'}>
+                    <h2 className="text-[#FF6B00] text-2xl sm:text-3xl font-bold tracking-tight pb-4 sm:pb-6">
                       {cat.emoji} {cat.name.toUpperCase()}
                     </h2>
                     <ProductSection products={products} />

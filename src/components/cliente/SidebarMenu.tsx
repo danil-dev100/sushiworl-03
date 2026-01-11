@@ -41,8 +41,8 @@ export default function SidebarMenu({ categories, activeSection = 'destaques' }:
   };
 
   return (
-    <aside className="sticky top-[73px] h-[calc(100vh-73px)] w-64 hidden lg:block py-8 pr-8 shrink-0">
-      <div className="flex flex-col gap-2 bg-white dark:bg-[#3a2c20] rounded-xl p-4 shadow-sm">
+    <aside className="sticky top-[73px] h-[calc(100vh-73px)] w-56 xl:w-64 py-6 lg:py-8 pr-4 lg:pr-8 shrink-0">
+      <div className="flex flex-col gap-1.5 bg-white dark:bg-[#3a2c20] rounded-xl p-3 lg:p-4 shadow-sm">
         {categories.map((category) => {
           const isActive = activeSection === category.id;
           
@@ -50,16 +50,16 @@ export default function SidebarMenu({ categories, activeSection = 'destaques' }:
             <button
               key={category.id}
               onClick={() => handleClick(category.id)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+              className={`flex items-center gap-2 lg:gap-3 px-2.5 lg:px-3 py-2 lg:py-2.5 rounded-lg transition-all duration-200 ${
                 isActive
                   ? 'bg-[#FF6B00]/20 dark:bg-[#FF6B00]/30'
                   : 'hover:bg-[#FF6B00]/10 dark:hover:bg-[#FF6B00]/20'
               }`}
             >
-              <span className={`text-lg ${isActive ? 'text-[#FF6B00]' : 'text-[#333333] dark:text-[#f5f1e9]'}`}>
+              <span className={`text-base lg:text-lg ${isActive ? 'text-[#FF6B00]' : 'text-[#333333] dark:text-[#f5f1e9]'}`}>
                 {category.emoji}
               </span>
-              <p className={`text-sm font-medium ${isActive ? 'text-[#FF6B00] font-bold' : 'text-[#333333] dark:text-[#f5f1e9]'}`}>
+              <p className={`text-xs lg:text-sm font-medium ${isActive ? 'text-[#FF6B00] font-bold' : 'text-[#333333] dark:text-[#f5f1e9]'}`}>
                 {category.name.toUpperCase()}
               </p>
             </button>

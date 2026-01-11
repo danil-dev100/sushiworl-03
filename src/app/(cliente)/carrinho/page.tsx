@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Trash2, Plus, Minus } from 'lucide-react';
+import { Trash2, Plus, Minus, Gift } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
 interface CartAdditionalItem {
@@ -14,9 +14,20 @@ interface CartAdditionalItem {
   isRequired: boolean;
 }
 
+interface DeliveryArea {
+  id: string;
+  name: string;
+  deliveryType: 'FREE' | 'PAID' | 'DISTANCE';
+  deliveryFee: number;
+  minOrderValue: number | null;
+  pricePerKm?: number;
+}
+
 export default function CarrinhoPage() {
   const { items, additionalItems, updateQuantity, removeItem, addAdditionalItem, removeAdditionalItem, totalPrice } = useCart();
   const [availableCartItems, setAvailableCartItems] = useState<CartAdditionalItem[]>([]);
+  const [deliveryArea, setDeliveryArea] = useState<DeliveryArea | null>(null);
+  const [isCheckingDelivery, setIsCheckingDelivery] = useState(true);
 
   // TODO: Buscar taxa de IVA das configurações do banco de dados
   const taxaIVA = 13; // Taxa de IVA em percentual (13% conforme especificado)
@@ -28,6 +39,41 @@ export default function CarrinhoPage() {
   const taxaEntrega = 0.00;
 
   const total = subtotal + taxaEntrega;
+
+  // Verificar área de entrega baseado no endereço do cliente
+  useEffect(() => {
+    const checkDeliveryArea = async () => {
+      try {
+        // Buscar endereço salvo do localStorage
+        const savedAddress = localStorage.getItem('deliveryAddress');
+        if (!savedAddress) {
+          setIsCheckingDelivery(false);
+          return;
+        }
+
+        const response = await fetch('/api/delivery/check-area', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ address: savedAddress }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.delivers && data.area) {
+            setDeliveryArea(data.area);
+          }
+        }
+      } catch (error) {
+        console.error('[Carrinho] Erro ao verificar área de entrega:', error);
+      } finally {
+        setIsCheckingDelivery(false);
+      }
+    };
+
+    checkDeliveryArea();
+  }, []);
 
   // Buscar itens adicionais configurados
   useEffect(() => {
@@ -90,6 +136,18 @@ export default function CarrinhoPage() {
     }
   };
 
+  // Calcular quanto falta para entrega grátis
+  const calculateRemainingForFreeDelivery = () => {
+    if (!deliveryArea || deliveryArea.deliveryType !== 'FREE' || !deliveryArea.minOrderValue) {
+      return null;
+    }
+
+    const remaining = deliveryArea.minOrderValue - subtotal;
+    return remaining > 0 ? remaining : 0;
+  };
+
+  const remainingForFreeDelivery = calculateRemainingForFreeDelivery();
+
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">
       <div className="flex h-full grow flex-col">
@@ -100,6 +158,44 @@ export default function CarrinhoPage() {
                 Carrinho
               </h1>
             </div>
+
+            {/* Notificação de Entrega Grátis */}
+            {!isCheckingDelivery && remainingForFreeDelivery !== null && remainingForFreeDelivery > 0 && (
+              <div className="mx-4 mb-6 rounded-xl border-2 border-[#FF6B00] bg-gradient-to-r from-[#FF6B00]/10 to-[#FF6B00]/5 p-4 shadow-md animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#FF6B00] flex items-center justify-center">
+                    <Gift className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-base font-bold text-[#333333] dark:text-[#f5f1e9]">
+                      Faltam €{remainingForFreeDelivery.toFixed(2)} para você ganhar entrega grátis!
+                    </p>
+                    <p className="text-sm text-[#a16b45] mt-1">
+                      Adicione mais itens ao seu pedido e aproveite o frete gratuito
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Notificação de Entrega Grátis Conquistada */}
+            {!isCheckingDelivery && remainingForFreeDelivery !== null && remainingForFreeDelivery === 0 && (
+              <div className="mx-4 mb-6 rounded-xl border-2 border-green-500 bg-gradient-to-r from-green-500/10 to-green-500/5 p-4 shadow-md">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                    <Gift className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-base font-bold text-green-700 dark:text-green-400">
+                      Parabéns! Você ganhou entrega grátis!
+                    </p>
+                    <p className="text-sm text-green-600 dark:text-green-500 mt-1">
+                      Seu pedido atingiu o valor mínimo para frete gratuito
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16">

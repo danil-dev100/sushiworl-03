@@ -13,7 +13,7 @@ const defaultEmojis: Record<string, string> = {
   'Sashimi': '🐟',
   'Nigiri': '🍙',
   'Makis': '🥢',
-  'Temaki': '🍦',
+  'Temaki': '🌯',
   'Hossomaki': '🍙',
   'Uramaki': '🍱',
   'Futomaki': '🍙',

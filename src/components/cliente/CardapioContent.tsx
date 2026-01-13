@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import SidebarMenu from '@/components/cliente/SidebarMenu';
 import ProductSection from '@/components/cliente/ProductSection';
 import { MenuSearch } from '@/components/cliente/MenuSearch';
@@ -107,9 +107,9 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
       setTimeout(() => {
         const element = document.getElementById(hash);
         if (element) {
-          const headerOffset = 100;
+          const headerOffset = 130;
           const elementPosition = element.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          const offsetPosition = elementPosition + window.scrollY - headerOffset;
           window.scrollTo({
             top: offsetPosition,
             behavior: 'smooth'
@@ -136,44 +136,46 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
         </div>
 
         {/* Main Content */}
-        <main className="flex-1 py-4 sm:py-6 lg:py-8">
-          {/* Menu Mobile - Carrossel de Categorias */}
-          <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto scrollbar-hide">
-            <div className="flex gap-2 pb-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    const element = document.getElementById(cat.id);
-                    if (element) {
-                      const headerOffset = 80;
-                      const elementPosition = element.getBoundingClientRect().top;
-                      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                      window.scrollTo({
-                        top: offsetPosition,
-                        behavior: 'smooth'
-                      });
-                    }
-                  }}
-                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#3a2c20] border-2 border-[#FF6B00]/20 hover:border-[#FF6B00] hover:bg-[#FF6B00]/10 transition-all"
-                >
-                  <span className="text-base">{cat.emoji}</span>
-                  <span className="text-xs font-medium text-[#333333] dark:text-[#f5f1e9] whitespace-nowrap">
-                    {cat.name.toUpperCase()}
-                  </span>
-                </button>
-              ))}
+        <main className="flex-1 lg:py-8">
+          {/* Menu Mobile - Carrossel de Categorias FIXO */}
+          <div className="lg:hidden sticky top-[73px] z-40 bg-[#f5f1e9] dark:bg-[#23170f] -mx-4 px-4 py-3 border-b border-[#ead9cd] dark:border-[#4a3c30] shadow-sm">
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2 pb-1">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      const element = document.getElementById(cat.id);
+                      if (element) {
+                        const headerOffset = 130;
+                        const elementPosition = element.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.scrollY - headerOffset;
+                        window.scrollTo({
+                          top: offsetPosition,
+                          behavior: 'smooth'
+                        });
+                      }
+                    }}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#3a2c20] border-2 border-[#FF6B00]/20 hover:border-[#FF6B00] hover:bg-[#FF6B00]/10 transition-all"
+                  >
+                    <span className="text-base">{cat.emoji}</span>
+                    <span className="text-xs font-medium text-[#333333] dark:text-[#f5f1e9] whitespace-nowrap">
+                      {cat.name.toUpperCase()}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Search */}
-          <div className="mb-6">
+          <div className="mb-6 mt-4 lg:mt-0 px-4 lg:px-0">
             <MenuSearch onSearch={setSearchTerm} />
           </div>
 
           {/* No Results */}
           {searchTerm && Object.keys(filteredProducts).length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 sm:py-16">
+            <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
               <p className="text-lg sm:text-xl font-semibold text-[#333333] dark:text-[#f5f1e9]">
                 Nenhum produto encontrado
               </p>
@@ -182,11 +184,11 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
               </p>
             </div>
           ) : (
-            <>
+            <div className="px-4 lg:px-0">
               {/* Product Sections */}
               {categories.map((cat) => {
                 const products = filteredProducts[cat.id] || filteredProducts[cat.name.toLowerCase().replace(/\s+/g, '-')] || [];
-                
+
                 if (searchTerm && products.length === 0) return null;
 
                 return (
@@ -198,7 +200,7 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
                   </section>
                 );
               })}
-            </>
+            </div>
           )}
         </main>
       </div>

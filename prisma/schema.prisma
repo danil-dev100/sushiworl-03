@@ -283,6 +283,7 @@ model Order {
   // Agendamento de pedidos
   isScheduled  Boolean   @default(false) // Indica se é um pedido agendado
   scheduledFor DateTime? // Data/hora agendada para o pedido
+  reminderSent Boolean   @default(false) // Indica se o lembrete de pedido agendado foi enviado
 
   // Controle
   acceptedAt  DateTime?

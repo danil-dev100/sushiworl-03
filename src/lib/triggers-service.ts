@@ -56,7 +56,10 @@ export class TriggersService {
 
       // 2. Novos pedidos (já são tratados no momento da criação)
 
-      // 3. Pedidos entregues (será tratado quando o status mudar)
+      // 3. Pedidos agendados que precisam de lembrete
+      await this.checkScheduledOrderReminders();
+
+      // 4. Pedidos entregues (será tratado quando o status mudar)
 
       console.log('✅ Verificação de triggers concluída');
 
@@ -112,6 +115,76 @@ export class TriggersService {
     return [
       // Dados de exemplo para teste
     ];
+  }
+
+  /**
+   * Verifica pedidos agendados que precisam de lembrete
+   */
+  private async checkScheduledOrderReminders(): Promise<void> {
+    try {
+      const now = new Date();
+
+      // Buscar pedidos agendados que ainda não foram entregues
+      // e cujo horário agendado está entre 50 e 70 minutos no futuro
+      // (janela de 20 minutos para garantir que pegamos o lembrete)
+      const reminderWindowStart = new Date(now.getTime() + 50 * 60 * 1000); // 50 min
+      const reminderWindowEnd = new Date(now.getTime() + 70 * 60 * 1000); // 70 min
+
+      const scheduledOrders = await prisma.order.findMany({
+        where: {
+          isScheduled: true,
+          scheduledFor: {
+            gte: reminderWindowStart,
+            lte: reminderWindowEnd,
+          },
+          status: {
+            notIn: ['CANCELLED', 'DELIVERED']
+          },
+          // Evitar enviar lembrete múltiplas vezes
+          reminderSent: false
+        },
+        include: {
+          user: true,
+          orderItems: true,
+        }
+      });
+
+      console.log(`[Triggers Service] Encontrados ${scheduledOrders.length} pedidos agendados para lembrete`);
+
+      for (const order of scheduledOrders) {
+        try {
+          console.log(`[Triggers Service] Enviando lembrete para pedido #${order.orderNumber}`);
+
+          // Disparar evento de lembrete
+          await flowExecutionService.triggerEvent('scheduled_order_reminder', {
+            userId: order.userId || undefined,
+            email: order.customerEmail,
+            orderId: order.id,
+            eventData: {
+              orderNumber: order.orderNumber,
+              total: order.total,
+              itemsCount: order.orderItems.length,
+              customerName: order.customerName,
+              scheduledFor: order.scheduledFor,
+            }
+          });
+
+          // Marcar lembrete como enviado
+          await prisma.order.update({
+            where: { id: order.id },
+            data: { reminderSent: true }
+          });
+
+          console.log(`[Triggers Service] ✅ Lembrete enviado para pedido #${order.orderNumber}`);
+
+        } catch (error) {
+          console.error(`[Triggers Service] Erro ao enviar lembrete para pedido #${order.orderNumber}:`, error);
+        }
+      }
+
+    } catch (error) {
+      console.error('Erro ao verificar lembretes de pedidos agendados:', error);
+    }
   }
 
   /**

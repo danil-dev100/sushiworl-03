@@ -86,7 +86,7 @@ export default function CheckoutPage() {
   // Calcular taxa de entrega baseado na área validada
   const taxaEntrega = (() => {
     if (!deliveryValidation?.isValid || !deliveryValidation.area) {
-      return 5.00; // Taxa padrão se não houver validação
+      return 0; // Não mostrar taxa até validar endereço
     }
 
     const area = deliveryValidation.area;
@@ -1111,10 +1111,12 @@ export default function CheckoutPage() {
                         <span>Subtotal</span>
                         <span>€{subtotal.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
-                        <span>Taxa de Entrega</span>
-                        <span>€{taxaEntrega.toFixed(2)}</span>
-                      </div>
+                      {deliveryValidation?.isValid && deliveryValidation.area && (
+                        <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                          <span>Taxa de Entrega</span>
+                          <span>€{taxaEntrega.toFixed(2)}</span>
+                        </div>
+                      )}
                       {checkoutItems
                         .filter(item => selectedCheckoutItems.has(item.id))
                         .map((item) => (

@@ -212,6 +212,14 @@ export default function CheckoutPage() {
 
   // Alternar seleção de item adicional do checkout
   const toggleCheckoutItem = (itemId: string) => {
+    // Verificar se o item é obrigatório
+    const item = checkoutItems.find(i => i.id === itemId);
+    if (item?.isRequired) {
+      console.log('[Checkout] ⚠️ Não é possível desmarcar item obrigatório:', item.name);
+      toast.warning('Este item é obrigatório e não pode ser removido');
+      return;
+    }
+
     setSelectedCheckoutItems(prev => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {

@@ -105,15 +105,6 @@ export default function CarrinhoPage() {
               removeAdditionalItem(addedItem.id);
             }
           });
-
-          // Adicionar automaticamente itens obrigatórios
-          const requiredItems = activeItems.filter(item => item.isRequired);
-          requiredItems.forEach(item => {
-            const alreadyAdded = additionalItems.some(added => added.name === item.name);
-            if (!alreadyAdded) {
-              addAdditionalItem({ name: item.name, price: item.price });
-            }
-          });
         } else {
           console.error('[Carrinho] ❌ Erro na resposta:', response.status);
         }
@@ -125,7 +116,26 @@ export default function CarrinhoPage() {
     fetchCartItems();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Adicionar automaticamente itens obrigatórios quando availableCartItems mudar
+  useEffect(() => {
+    const requiredItems = availableCartItems.filter(item => item.isRequired);
+
+    requiredItems.forEach(item => {
+      const alreadyAdded = additionalItems.some(added => added.name === item.name);
+      if (!alreadyAdded) {
+        console.log('[Carrinho] ➕ Adicionando item obrigatório:', item.name);
+        addAdditionalItem({ name: item.name, price: item.price });
+      }
+    });
+  }, [availableCartItems, additionalItems, addAdditionalItem]);
+
   const handleItemToggle = (item: CartAdditionalItem, checked: boolean) => {
+    // Impedir desmarcar itens obrigatórios
+    if (!checked && item.isRequired) {
+      console.log('[Carrinho] ⚠️ Não é possível remover item obrigatório:', item.name);
+      return;
+    }
+
     if (checked) {
       addAdditionalItem({ name: item.name, price: item.price });
     } else {

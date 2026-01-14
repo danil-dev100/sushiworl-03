@@ -14,6 +14,7 @@ import {
 import { DashboardCharts } from '@/components/admin/dashboard/DashboardCharts';
 import { RecentOrders } from '@/components/admin/dashboard/RecentOrders';
 import { TopProducts } from '@/components/admin/dashboard/TopProducts';
+import CategoryRevenue from '@/components/admin/dashboard/CategoryRevenue';
 import { TooltipHelper } from '@/components/shared/TooltipHelper';
 import { Button } from '@/components/ui/button';
 import { CustomMetricsDialog } from '@/components/admin/dashboard/CustomMetricsDialog';
@@ -414,6 +415,11 @@ export default function DashboardPage() {
           </div>
           <TopProducts products={data.topProducts} />
         </div>
+      </div>
+
+      {/* Category Revenue Chart */}
+      <div className="mt-8">
+        <CategoryRevenue />
       </div>
 
       {/* Custom Metrics Dialog */}

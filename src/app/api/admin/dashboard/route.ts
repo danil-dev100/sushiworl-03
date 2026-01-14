@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
+// Cache por 5 minutos
+export const revalidate = 300;
+
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticação
@@ -65,58 +68,46 @@ export async function GET(request: NextRequest) {
       include: {
         orderItems: {
           include: {
-            product: true,
+            product: {
+              include: {
+                category: true,
+              },
+            },
           },
         },
       },
     });
 
-    // Buscar pedidos de hoje
+    // Buscar pedidos de hoje e calcular receita em uma única query otimizada
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const todayOrders = await prisma.order.count({
+
+    // Query otimizada: contar e somar em uma única operação
+    const todayStats = await prisma.order.aggregate({
       where: {
-        createdAt: {
-          gte: todayStart,
-        },
-        status: {
-          notIn: ['CANCELLED'],
-        },
+        createdAt: { gte: todayStart },
+        status: { notIn: ['CANCELLED'] },
+        isTest: false,
+      },
+      _count: true,
+      _sum: { total: true },
+    });
+
+    const todayOrders = todayStats._count;
+    const todayRevenue = todayStats._sum.total || 0;
+
+    // Contar pedidos por status em uma única query
+    const statusCounts = await prisma.order.groupBy({
+      by: ['status'],
+      _count: true,
+      where: {
         isTest: false,
       },
     });
 
-    // Contar pedidos pendentes e ativos
-    const pendingOrders = await prisma.order.count({
-      where: {
-        status: 'PENDING',
-      },
-    });
-
-    const activeOrders = await prisma.order.count({
-      where: {
-        status: {
-          in: ['CONFIRMED', 'PREPARING', 'DELIVERING'],
-        },
-      },
-    });
-
-    // Calcular receita de hoje
-    const todayOrdersData = await prisma.order.findMany({
-      where: {
-        createdAt: {
-          gte: todayStart,
-        },
-        status: {
-          notIn: ['CANCELLED'],
-        },
-        isTest: false,
-      },
-      select: {
-        total: true,
-      },
-    });
-
-    const todayRevenue = todayOrdersData.reduce((sum, order) => sum + order.total, 0);
+    const pendingOrders = statusCounts.find(s => s.status === 'PENDING')?._count || 0;
+    const activeOrders = statusCounts
+      .filter(s => ['CONFIRMED', 'PREPARING', 'DELIVERING'].includes(s.status))
+      .reduce((sum, s) => sum + s._count, 0);
 
     // Calcular receita total do período
     const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
@@ -127,25 +118,22 @@ export async function GET(request: NextRequest) {
     // Contar clientes únicos
     const uniqueCustomers = new Set(orders.map(order => order.customerEmail)).size;
 
-    // Calcular mudança de receita (comparar com período anterior)
+    // Calcular mudança de receita (comparar com período anterior) - query otimizada
     const previousPeriodStart = new Date(startDate.getTime() - (now.getTime() - startDate.getTime()));
-    const previousOrders = await prisma.order.findMany({
+
+    const previousStats = await prisma.order.aggregate({
       where: {
         createdAt: {
           gte: previousPeriodStart,
           lt: startDate,
         },
-        status: {
-          notIn: ['CANCELLED'],
-        },
+        status: { notIn: ['CANCELLED'] },
         isTest: false,
       },
-      select: {
-        total: true,
-      },
+      _sum: { total: true },
     });
 
-    const previousRevenue = previousOrders.reduce((sum, order) => sum + order.total, 0);
+    const previousRevenue = previousStats._sum.total || 0;
     const revenueChange = previousRevenue > 0
       ? ((totalRevenue - previousRevenue) / previousRevenue) * 100
       : 0;
@@ -195,6 +183,34 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Receita por categoria
+    const categoryRevenue: { [key: string]: { name: string; revenue: number; orderCount: number } } = {};
+
+    orders.forEach(order => {
+      order.orderItems.forEach(item => {
+        if (item.product && item.product.category) {
+          const categoryName = item.product.category.name;
+          if (!categoryRevenue[categoryName]) {
+            categoryRevenue[categoryName] = {
+              name: categoryName,
+              revenue: 0,
+              orderCount: 0,
+            };
+          }
+          categoryRevenue[categoryName].revenue += item.priceAtTime * item.quantity;
+          categoryRevenue[categoryName].orderCount += 1;
+        }
+      });
+    });
+
+    const categoryRevenueArray = Object.values(categoryRevenue)
+      .map(cat => ({
+        name: cat.name,
+        revenue: Number(cat.revenue.toFixed(2)),
+        orderCount: cat.orderCount,
+      }))
+      .sort((a, b) => b.revenue - a.revenue);
+
     return NextResponse.json({
       todayOrders,
       pendingOrders,
@@ -205,7 +221,7 @@ export async function GET(request: NextRequest) {
       averageTicket: Number(averageTicket.toFixed(2)),
       totalOrders: orders.length,
       uniqueCustomers,
-      categoryRevenue: [],
+      categoryRevenue: categoryRevenueArray,
       topProducts,
       recentOrders,
     });

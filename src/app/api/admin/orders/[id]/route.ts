@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions, canManageOrders } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { triggerWebhooks, formatOrderPayload, WebhookEvent } from '@/lib/webhooks';
 
 export async function GET(
   request: NextRequest,
@@ -100,10 +101,30 @@ export async function PUT(
         ...(status === 'CANCELLED' && { cancelledAt: new Date() }),
         ...(status === 'DELIVERED' && { deliveredAt: new Date() }),
       },
+      include: {
+        orderItems: true,
+        user: true,
+      },
     });
 
+    // Disparar webhook baseado no novo status
+    const eventMap: Record<string, WebhookEvent> = {
+      'CONFIRMED': 'order.confirmed',
+      'PREPARING': 'order.preparing',
+      'DELIVERING': 'order.delivering',
+      'DELIVERED': 'order.delivered',
+      'CANCELLED': 'order.cancelled',
+    };
+
+    const event = eventMap[status];
+    if (event) {
+      console.log(`[Order API] ✅ Disparando webhook: ${event} para pedido #${updatedOrder.orderNumber}`);
+      triggerWebhooks(event, formatOrderPayload(updatedOrder)).catch(error => {
+        console.error(`[Order API] ❌ Erro ao disparar webhook ${event}:`, error);
+      });
+    }
+
     // TODO: Enviar notificação ao cliente (email/SMS)
-    // TODO: Disparar webhook se configurado
 
     return NextResponse.json(updatedOrder);
   } catch (error) {

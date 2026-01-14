@@ -119,6 +119,23 @@ export function CompanySettingsForm({ initialData }: CompanySettingsFormProps) {
         const result = await response.json();
         console.log('[CompanySettingsForm] ✅ Resposta da API:', result);
         console.log('[CompanySettingsForm] ⏰ openingHours salvo:', result.openingHours);
+
+        // Atualizar o formData com os dados retornados do servidor
+        setFormData({
+          companyName: result.companyName || '',
+          billingName: result.billingName || '',
+          nif: result.nif || '',
+          address: result.address || '',
+          phone: result.phone || '',
+          email: result.email || '',
+          websiteUrl: result.websiteUrl || '',
+          vatRate: result.vatRate || 13,
+          vatType: result.vatType || 'INCLUSIVE',
+          openingHours: result.openingHours || {},
+          additionalItems: result.additionalItems || [],
+          checkoutAdditionalItems: result.checkoutAdditionalItems || [],
+        });
+
         alert('Configurações salvas com sucesso!');
         router.refresh();
       } else {

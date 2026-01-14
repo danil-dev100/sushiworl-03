@@ -40,7 +40,24 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const data: Record<string, unknown> = {};
 
     if (typeof name === 'string') data.name = name;
-    if (typeof email === 'string') data.email = email;
+
+    // Validar email duplicado antes de atualizar
+    if (typeof email === 'string') {
+      const existingEmail = await prisma.user.findUnique({
+        where: { email },
+        select: { id: true },
+      });
+
+      if (existingEmail && existingEmail.id !== id) {
+        return NextResponse.json(
+          { error: 'Já existe um usuário com este email' },
+          { status: 409 }
+        );
+      }
+
+      data.email = email;
+    }
+
     if (typeof isActive === 'boolean') data.isActive = isActive;
 
     if (role) {
@@ -77,6 +94,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     if (password) {
+      // Validar comprimento mínimo da senha
+      if (password.trim().length < 8) {
+        return NextResponse.json(
+          { error: 'A senha deve ter no mínimo 8 caracteres' },
+          { status: 400 }
+        );
+      }
+
       data.password = await bcrypt.hash(password, 10);
       data.firstLogin = true;
     }
@@ -117,6 +142,19 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ user: updatedUser });
   } catch (error) {
     console.error('[Users API][PATCH] Erro ao atualizar usuário:', error);
+
+    // Tratar erro de email duplicado (caso escape da validação)
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      (error as any).code === 'P2002'
+    ) {
+      return NextResponse.json(
+        { error: 'Já existe um usuário com este email' },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Erro ao atualizar usuário' },
       { status: 500 }

@@ -11,9 +11,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Buscar dados de vendas dos últimos 7 dias (excluir pedidos de teste)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    // Obter período da query string
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get('period') || '7days';
+
+    // Calcular data de início baseado no período
+    const now = new Date();
+    let startDate: Date;
+    let days: number;
+
+    switch (period) {
+      case '7days':
+        days = 7;
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '30days':
+        days = 30;
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '90days':
+        days = 90;
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        days = 7;
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    }
 
     const salesData = await prisma.$queryRaw`
       SELECT
@@ -21,12 +44,12 @@ export async function GET(request: NextRequest) {
         SUM(total) as sales,
         COUNT(*) as orders
       FROM "Order"
-      WHERE "createdAt" >= ${sevenDaysAgo}
+      WHERE "createdAt" >= ${startDate}
         AND status != 'CANCELLED'
         AND "isTest" = false
       GROUP BY DATE("createdAt")
       ORDER BY DATE("createdAt") DESC
-      LIMIT 7
+      LIMIT ${days}
     `;
 
     // Buscar dados de status dos pedidos (excluir pedidos de teste)
@@ -37,7 +60,7 @@ export async function GET(request: NextRequest) {
       },
       where: {
         createdAt: {
-          gte: sevenDaysAgo,
+          gte: startDate,
         },
         isTest: false,
       },

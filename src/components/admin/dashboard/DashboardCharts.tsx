@@ -193,7 +193,7 @@ export function DashboardCharts() {
   const fetchRealData = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/dashboard/charts');
+      const response = await fetch(`/api/admin/dashboard/charts?period=${chartPeriod}`);
       if (response.ok) {
         const data = await response.json();
 

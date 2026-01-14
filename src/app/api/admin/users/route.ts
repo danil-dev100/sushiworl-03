@@ -4,12 +4,19 @@ import { authOptions, canManageUsers } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
+import { triggerWebhooks } from '@/lib/webhooks';
 
 /**
  * Lista todos os usuários administrativos (ADMIN e MANAGER)
  */
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !canManageUsers(session.user.role)) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
     const users = await prisma.user.findMany({
       where: {
         role: {
@@ -63,6 +70,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validar comprimento mínimo da senha
+    if (password.trim().length < 8) {
+      return NextResponse.json(
+        { error: 'A senha deve ter no mínimo 8 caracteres' },
+        { status: 400 }
+      );
+    }
+
     if (!['ADMIN', 'MANAGER'].includes(role)) {
       return NextResponse.json(
         { error: 'Cargo inválido' },
@@ -112,6 +127,18 @@ export async function POST(request: NextRequest) {
         createdAt: true,
         updatedAt: true,
       },
+    });
+
+    // Disparar webhook customer.created
+    console.log(`[Users API] ✅ Disparando webhook: customer.created para usuário ${user.email}`);
+    triggerWebhooks('customer.created', {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt.toISOString(),
+    }).catch(error => {
+      console.error('[Users API] ❌ Erro ao disparar webhook customer.created:', error);
     });
 
     revalidatePath('/admin/configuracoes/usuarios');

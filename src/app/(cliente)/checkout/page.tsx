@@ -192,6 +192,7 @@ export default function CheckoutPage() {
           name: data.promotion.name,
           discountAmount: data.promotion.discountAmount,
         });
+        setDesconto(data.promotion.discountAmount);
         toast.success(`Cupom "${data.promotion.code}" aplicado! Desconto: €${data.promotion.discountAmount.toFixed(2)}`);
       } else {
         toast.error(data.error || 'Cupom inválido');
@@ -207,6 +208,7 @@ export default function CheckoutPage() {
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setCouponCode('');
+    setDesconto(0);
     toast.success('Cupom removido');
   };
 
@@ -444,6 +446,40 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
 
     try {
+      // Revalidar cupom se houver um aplicado
+      if (appliedCoupon) {
+        console.log('[Checkout] 🔄 Revalidando cupom antes de finalizar...');
+        const revalidateResponse = await fetch('/api/promocoes/validar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: appliedCoupon.code,
+            cartTotal: subtotal,
+            items: items.map(item => ({ productId: item.productId })),
+            customerEmail: formData.email,
+          }),
+        });
+
+        const revalidateData = await revalidateResponse.json();
+
+        if (!revalidateData.valid) {
+          console.error('[Checkout] ❌ Cupom não é mais válido:', revalidateData.error);
+          toast.error(`Cupom não é mais válido: ${revalidateData.error}`);
+          setAppliedCoupon(null);
+          setDesconto(0);
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Atualizar desconto com valor revalidado
+        if (revalidateData.promotion.discountAmount !== desconto) {
+          console.log('[Checkout] ⚠️ Desconto atualizado de', desconto, 'para', revalidateData.promotion.discountAmount);
+          setDesconto(revalidateData.promotion.discountAmount);
+        }
+
+        console.log('[Checkout] ✅ Cupom revalidado com sucesso');
+      }
+
       // Construir endereço completo (CEP é opcional)
       const addressParts = [formData.endereco, formData.codigoPostal].filter(Boolean);
       const fullAddress = addressParts.join(', ');

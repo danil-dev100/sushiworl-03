@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import crypto from 'crypto';
 
@@ -119,7 +121,15 @@ export async function POST(request: NextRequest) {
 // GET para obter estatísticas (apenas para admins)
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Adicionar verificação de autenticação de admin aqui
+    // Verificar autenticação de admin
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user || !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+      return NextResponse.json(
+        { error: 'Não autorizado. Esta rota requer permissões de administrador.' },
+        { status: 401 }
+      );
+    }
 
     const searchParams = request.nextUrl.searchParams;
     const startDate = searchParams.get('startDate');

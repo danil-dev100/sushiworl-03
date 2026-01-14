@@ -62,11 +62,123 @@ export async function POST(request: NextRequest) {
           // Por exemplo: criar pedido, atualizar status, etc.
           console.log(`[Webhook INBOUND] Processando webhook "${webhook.name}":`, body);
 
-          // TODO: Adicionar lógica de processamento específica baseada no evento
-          // Exemplos:
-          // - order.created: criar pedido no sistema
-          // - payment.confirmed: marcar pagamento como confirmado
-          // - order.cancelled: cancelar pedido
+          // Processar evento baseado no tipo
+          switch (event) {
+            case 'order.created':
+              console.log('[Webhook INBOUND] 📦 Pedido criado externamente:', body.data?.orderNumber || body.data?.id);
+              // Aqui você pode criar um pedido no sistema se vier de uma plataforma externa
+              // Exemplo: iFood, Rappi, etc.
+              if (body.data) {
+                // Validar dados necessários
+                if (!body.data.orderNumber || !body.data.items) {
+                  throw new Error('Dados incompletos para criar pedido');
+                }
+                // Lógica de criação seria implementada aqui
+                console.log('[Webhook INBOUND] ✅ Pedido validado e pronto para criação');
+              }
+              break;
+
+            case 'order.confirmed':
+              console.log('[Webhook INBOUND] ✅ Pedido confirmado externamente:', body.data?.orderNumber || body.data?.id);
+              if (body.data?.orderId) {
+                // Buscar pedido e atualizar status
+                const order = await prisma.order.findFirst({
+                  where: {
+                    OR: [
+                      { id: body.data.orderId },
+                      { orderNumber: body.data.orderNumber },
+                    ],
+                  },
+                });
+
+                if (order) {
+                  await prisma.order.update({
+                    where: { id: order.id },
+                    data: {
+                      status: 'CONFIRMED',
+                      acceptedAt: new Date(),
+                    },
+                  });
+                  console.log('[Webhook INBOUND] ✅ Pedido confirmado:', order.orderNumber);
+                }
+              }
+              break;
+
+            case 'payment.confirmed':
+              console.log('[Webhook INBOUND] 💰 Pagamento confirmado:', body.data?.paymentId || body.data?.orderId);
+              if (body.data?.orderId) {
+                // Buscar pedido e atualizar status de pagamento
+                const order = await prisma.order.findFirst({
+                  where: {
+                    OR: [
+                      { id: body.data.orderId },
+                      { orderNumber: body.data.orderNumber },
+                    ],
+                  },
+                });
+
+                if (order) {
+                  await prisma.order.update({
+                    where: { id: order.id },
+                    data: {
+                      paymentStatus: 'PAID',
+                      paidAt: new Date(),
+                    },
+                  });
+                  console.log('[Webhook INBOUND] ✅ Pagamento confirmado para pedido:', order.orderNumber);
+                }
+              }
+              break;
+
+            case 'order.cancelled':
+              console.log('[Webhook INBOUND] ❌ Pedido cancelado externamente:', body.data?.orderNumber || body.data?.id);
+              if (body.data?.orderId) {
+                // Buscar pedido e cancelar
+                const order = await prisma.order.findFirst({
+                  where: {
+                    OR: [
+                      { id: body.data.orderId },
+                      { orderNumber: body.data.orderNumber },
+                    ],
+                  },
+                });
+
+                if (order && order.status !== 'DELIVERED') {
+                  await prisma.order.update({
+                    where: { id: order.id },
+                    data: {
+                      status: 'CANCELLED',
+                      cancelledAt: new Date(),
+                      cancelReason: body.data.reason || 'Cancelado externamente via webhook',
+                    },
+                  });
+                  console.log('[Webhook INBOUND] ✅ Pedido cancelado:', order.orderNumber);
+                }
+              }
+              break;
+
+            case 'customer.created':
+              console.log('[Webhook INBOUND] 👤 Cliente criado externamente:', body.data?.email || body.data?.id);
+              // Aqui você pode sincronizar clientes de plataformas externas
+              if (body.data?.email) {
+                // Verificar se cliente já existe
+                const existingUser = await prisma.user.findUnique({
+                  where: { email: body.data.email },
+                });
+
+                if (!existingUser) {
+                  console.log('[Webhook INBOUND] ✅ Cliente novo, pronto para criar');
+                  // Lógica de criação seria implementada aqui
+                } else {
+                  console.log('[Webhook INBOUND] ℹ️ Cliente já existe:', body.data.email);
+                }
+              }
+              break;
+
+            default:
+              console.log('[Webhook INBOUND] ⚠️ Evento não reconhecido:', event);
+              console.log('[Webhook INBOUND] Dados recebidos:', body);
+          }
 
         } catch (error) {
           status = 'FAILED';

@@ -21,10 +21,11 @@ export async function GET() {
         measurementId: true,
         isActive: true,
         config: true,
+        events: true,
       },
     });
 
-    // Extrair eventos da configuração (assumindo que está em config.events)
+    // Formatar integrações com eventos
     const formattedIntegrations = integrations.map(integration => ({
       id: integration.id,
       platform: integration.platform,
@@ -32,18 +33,23 @@ export async function GET() {
       pixelId: integration.pixelId,
       measurementId: integration.measurementId,
       isActive: integration.isActive,
-      events: Array.isArray((integration.config as any)?.events)
-        ? (integration.config as any).events
-        : [
-            // Fallback: todos os eventos se não configurado
-            'page_view',
-            'sign_up',
-            'add_to_cart',
-            'view_cart',
-            'begin_checkout',
-            'purchase',
-            'cart_abandonment',
-          ],
+      events:
+        // Tentar pegar do campo events primeiro
+        Array.isArray((integration as any).events) && (integration as any).events.length > 0
+          ? (integration as any).events
+          // Fallback para config.events
+          : Array.isArray((integration.config as any)?.events) && (integration.config as any).events.length > 0
+          ? (integration.config as any).events
+          // Fallback padrão: todos os eventos
+          : [
+              'page_view',
+              'sign_up',
+              'add_to_cart',
+              'view_cart',
+              'begin_checkout',
+              'purchase',
+              'cart_abandonment',
+            ],
     }));
 
     return NextResponse.json({

@@ -5,17 +5,31 @@ import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import { triggerWebhooks } from '@/lib/webhooks';
+import { logCreate, logAccess } from '@/lib/audit-log';
 
 /**
  * Lista todos os usuários administrativos (ADMIN e MANAGER)
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session || !canManageUsers(session.user.role)) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
+
+    // Registrar acesso à lista de usuários
+    await logAccess(
+      'User',
+      'all',
+      {
+        id: session.user.id,
+        email: session.user.email,
+        role: session.user.role,
+      },
+      request,
+      { action: 'list_users' }
+    );
 
     const users = await prisma.user.findMany({
       where: {
@@ -128,6 +142,24 @@ export async function POST(request: NextRequest) {
         updatedAt: true,
       },
     });
+
+    // Registrar criação no audit log
+    await logCreate(
+      'User',
+      user.id,
+      {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        managerLevel: user.managerLevel,
+      },
+      {
+        id: session.user.id,
+        email: session.user.email,
+        role: session.user.role,
+      },
+      request
+    );
 
     // Disparar webhook customer.created
     console.log(`[Users API] ✅ Disparando webhook: customer.created para usuário ${user.email}`);

@@ -5,9 +5,15 @@ import { emitNewOrderEvent } from '@/lib/socket-emitter';
 import { triggersService } from '@/lib/triggers-service';
 import { isRestaurantOpen } from '@/lib/restaurant-status';
 import { validateScheduleDateTime } from '@/lib/scheduling';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting - 3 pedidos por minuto
+    const rateLimitResult = await checkRateLimit(request, RATE_LIMITS.ORDERS);
+    if (rateLimitResult) {
+      return rateLimitResult;
+    }
     const body = await request.json();
     const {
       customerName,

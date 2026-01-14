@@ -1170,3 +1170,39 @@ enum AppInstallEvent {
   APP_INSTALLED // Instalou o app (detectado via beforeinstallprompt)
   APP_OPENED // Abriu o app instalado
 }
+
+// ============================================
+// AUDIT LOGGING
+// ============================================
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  userId     String?
+  userEmail  String
+  userRole   String?
+  action     AuditAction
+  entity     String
+  entityId   String?
+  changes    Json?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now())
+
+  @@index([userId])
+  @@index([userEmail])
+  @@index([action])
+  @@index([entity])
+  @@index([entityId])
+  @@index([createdAt(sort: Desc)])
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  ACCESS
+  EXPORT
+}

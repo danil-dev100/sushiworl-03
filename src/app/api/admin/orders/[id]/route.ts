@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions, canManageOrders } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { triggerWebhooks, formatOrderPayload, WebhookEvent } from '@/lib/webhooks';
+import { logUpdate } from '@/lib/audit-log';
 
 export async function GET(
   request: NextRequest,
@@ -92,6 +93,15 @@ export async function PUT(
       );
     }
 
+    // Buscar pedido antes de atualizar para audit log
+    const oldOrder = await prisma.order.findUnique({
+      where: { id },
+      select: {
+        status: true,
+        orderNumber: true,
+      },
+    });
+
     // Atualizar pedido
     const updatedOrder = await prisma.order.update({
       where: { id },
@@ -122,6 +132,22 @@ export async function PUT(
       triggerWebhooks(event, formatOrderPayload(updatedOrder)).catch(error => {
         console.error(`[Order API] ❌ Erro ao disparar webhook ${event}:`, error);
       });
+    }
+
+    // Registrar mudança de status no audit log
+    if (oldOrder) {
+      await logUpdate(
+        'Order',
+        id,
+        { status: oldOrder.status },
+        { status: updatedOrder.status },
+        {
+          id: session.user.id,
+          email: session.user.email,
+          role: session.user.role,
+        },
+        request
+      );
     }
 
     // TODO: Enviar notificação ao cliente (email/SMS)

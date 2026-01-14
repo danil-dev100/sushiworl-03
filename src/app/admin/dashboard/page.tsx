@@ -15,6 +15,7 @@ import { DashboardCharts } from '@/components/admin/dashboard/DashboardCharts';
 import { RecentOrders } from '@/components/admin/dashboard/RecentOrders';
 import { TopProducts } from '@/components/admin/dashboard/TopProducts';
 import CategoryRevenue from '@/components/admin/dashboard/CategoryRevenue';
+import CustomMetricsDisplay from '@/components/admin/dashboard/CustomMetricsDisplay';
 import { TooltipHelper } from '@/components/shared/TooltipHelper';
 import { Button } from '@/components/ui/button';
 import { CustomMetricsDialog } from '@/components/admin/dashboard/CustomMetricsDialog';
@@ -391,6 +392,9 @@ export default function DashboardPage() {
           );
         })}
       </div>
+
+      {/* Custom Metrics Display */}
+      <CustomMetricsDisplay />
 
       {/* Charts */}
       <div className="flex items-center gap-2">

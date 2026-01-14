@@ -21,7 +21,11 @@
     "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
     "db:validate": "prisma validate",
-    "verify:featured": "tsx scripts/verify-featured-products.ts"
+    "verify:featured": "tsx scripts/verify-featured-products.ts",
+    "test": "tsx tests/audit-log.test.ts && tsx tests/rate-limit.test.ts && tsx tests/custom-metrics.test.ts",
+    "test:audit": "tsx tests/audit-log.test.ts",
+    "test:rate": "tsx tests/rate-limit.test.ts",
+    "test:metrics": "tsx tests/custom-metrics.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

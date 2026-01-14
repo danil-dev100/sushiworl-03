@@ -4,6 +4,7 @@ import { authOptions, canManageUsers } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
+import { logUpdate, logDelete } from '@/lib/audit-log';
 
 type RouteParams = {
   params: Promise<{
@@ -121,6 +122,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Buscar dados antigos antes de atualizar
+    const oldUser = await prisma.user.findUnique({
+      where: { id: id },
+      select: {
+        name: true,
+        email: true,
+        role: true,
+        managerLevel: true,
+        isActive: true,
+      },
+    });
+
     const updatedUser = await prisma.user.update({
       where: { id: id },
       data,
@@ -136,6 +149,28 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         updatedAt: true,
       },
     });
+
+    // Registrar atualização no audit log
+    if (oldUser) {
+      await logUpdate(
+        'User',
+        id,
+        oldUser,
+        {
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          managerLevel: updatedUser.managerLevel,
+          isActive: updatedUser.isActive,
+        },
+        {
+          id: session.user.id,
+          email: session.user.email,
+          role: session.user.role,
+        },
+        request
+      );
+    }
 
     revalidatePath('/admin/configuracoes/usuarios');
 
@@ -182,9 +217,35 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Buscar dados do usuário antes de deletar
+    const userToDelete = await prisma.user.findUnique({
+      where: { id: id },
+      select: {
+        name: true,
+        email: true,
+        role: true,
+        managerLevel: true,
+      },
+    });
+
     await prisma.user.delete({
       where: { id: id },
     });
+
+    // Registrar exclusão no audit log
+    if (userToDelete) {
+      await logDelete(
+        'User',
+        id,
+        userToDelete,
+        {
+          id: session.user.id,
+          email: session.user.email,
+          role: session.user.role,
+        },
+        request
+      );
+    }
 
     revalidatePath('/admin/configuracoes/usuarios');
 

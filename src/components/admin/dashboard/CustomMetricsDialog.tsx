@@ -233,7 +233,7 @@ export function CustomMetricsDialog({ open, onOpenChange }: CustomMetricsDialogP
             <h3 className="text-lg font-semibold text-[#333333]">Templates Sugeridos</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {METRIC_TEMPLATES.map((template, index) => (
-                <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow">
+                <Card key={index} className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm flex items-center gap-2">
                       {getTypeIcon(template.type)}
@@ -242,19 +242,25 @@ export function CustomMetricsDialog({ open, onOpenChange }: CustomMetricsDialogP
                   </CardHeader>
                   <CardContent className="pt-0">
                     <p className="text-xs text-[#a16b45] mb-2">{template.description}</p>
-                    <code className="text-xs bg-[#f5f1e9] p-1 rounded block">
+                    <code className="text-xs bg-[#f5f1e9] p-1 rounded block overflow-x-auto">
                       {template.formula}
                     </code>
                     <Button
+                      type="button"
                       size="sm"
-                      className="mt-2 w-full bg-[#FF6B00] hover:bg-[#FF6B00]/90"
-                      onClick={() => setNewMetric({
-                        name: template.name,
-                        description: template.description,
-                        formula: template.formula,
-                        type: template.type,
-                        unit: template.unit,
-                      })}
+                      className="mt-2 w-full bg-[#FF6B00] hover:bg-[#FF6B00]/90 relative z-10"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setNewMetric({
+                          name: template.name,
+                          description: template.description,
+                          formula: template.formula,
+                          type: template.type,
+                          unit: template.unit,
+                        });
+                        setIsCreating(true);
+                      }}
                     >
                       Usar Template
                     </Button>

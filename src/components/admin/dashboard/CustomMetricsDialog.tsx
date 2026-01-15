@@ -341,9 +341,42 @@ export function CustomMetricsDialog({ open, onOpenChange }: CustomMetricsDialogP
                     </div>
                   </div>
 
-                  <div className="text-xs text-[#a16b45] bg-[#fefaf3] p-3 rounded-md">
-                    <strong>Variáveis disponíveis:</strong><br />
-                    <code>receita_total, total_pedidos, ticket_medio, clientes_unicos, custos_totais, investimento_marketing, novos_clientes</code>
+                  <div className="text-xs text-[#a16b45] bg-[#fefaf3] p-3 rounded-md space-y-2">
+                    <strong>Variáveis disponíveis:</strong>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div>
+                        <p className="font-semibold">Receita:</p>
+                        <code className="text-xs">receita_total</code>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Pedidos:</p>
+                        <code className="text-xs">total_pedidos</code>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Clientes:</p>
+                        <code className="text-xs">total_clientes</code>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Ticket Médio:</p>
+                        <code className="text-xs">ticket_medio</code>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Clientes Recorrentes:</p>
+                        <code className="text-xs">clientes_recorrentes</code>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Novos Clientes:</p>
+                        <code className="text-xs">novos_clientes</code>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Frequência:</p>
+                        <code className="text-xs">frequencia_compras</code>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Custos:</p>
+                        <code className="text-xs">custos_totais</code>
+                      </div>
+                    </div>
                   </div>
 
                   <Button onClick={handleCreateMetric} className="w-full bg-[#FF6B00] hover:bg-[#FF6B00]/90">

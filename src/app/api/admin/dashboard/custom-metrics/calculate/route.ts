@@ -45,14 +45,71 @@ export async function GET() {
     const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
     const totalOrders = orders.length;
     const uniqueCustomers = new Set(orders.map(o => o.customerEmail)).size;
+    const ticketMedio = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const totalDiscount = orders.reduce((sum, o) => sum + o.discount, 0);
 
-    // Variáveis disponíveis para fórmulas
+    // Contar clientes recorrentes (mais de 1 pedido)
+    const customerOrderCounts: Record<string, number> = {};
+    orders.forEach(o => {
+      customerOrderCounts[o.customerEmail] = (customerOrderCounts[o.customerEmail] || 0) + 1;
+    });
+    const recurrentCustomers = Object.values(customerOrderCounts).filter(count => count > 1).length;
+    const newCustomers = uniqueCustomers - recurrentCustomers;
+
+    // Variáveis disponíveis para fórmulas (com múltiplos nomes para flexibilidade)
     const variables: Record<string, number> = {
+      // Receita
       totalRevenue,
+      receita_total: totalRevenue,
+      total_revenue: totalRevenue,
+
+      // Pedidos
       totalOrders,
+      total_pedidos: totalOrders,
+      total_orders: totalOrders,
+
+      // Clientes
       uniqueCustomers,
-      averageOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
-      totalDiscount: orders.reduce((sum, o) => sum + o.discount, 0),
+      clientes_unicos: uniqueCustomers,
+      unique_customers: uniqueCustomers,
+      total_clientes: uniqueCustomers,
+
+      // Ticket médio
+      averageOrderValue: ticketMedio,
+      ticket_medio: ticketMedio,
+      average_order_value: ticketMedio,
+
+      // Descontos
+      totalDiscount,
+      total_discount: totalDiscount,
+      descontos_totais: totalDiscount,
+
+      // Clientes recorrentes
+      recurrentCustomers,
+      clientes_recorrentes: recurrentCustomers,
+      recurring_customers: recurrentCustomers,
+
+      // Novos clientes
+      newCustomers,
+      novos_clientes: newCustomers,
+      new_customers: newCustomers,
+
+      // Frequência média de compras (pedidos / clientes)
+      frequencia_compras: uniqueCustomers > 0 ? totalOrders / uniqueCustomers : 0,
+      purchase_frequency: uniqueCustomers > 0 ? totalOrders / uniqueCustomers : 0,
+
+      // Tempo de relacionamento (aproximado em meses - usando 1 como padrão para 30 dias)
+      tempo_relacionamento: 1,
+
+      // Custos (estimativa - 35% da receita)
+      custos_totais: totalRevenue * 0.35,
+      total_costs: totalRevenue * 0.35,
+
+      // Marketing (placeholder - pode ser configurado)
+      investimento_marketing: 0,
+      total_investido_marketing: 0,
+      investimento_anuncios: 0,
+      receita_atribuida_anuncios: totalRevenue * 0.3, // Estimativa: 30% vem de anúncios
     };
 
     // Calcular cada métrica

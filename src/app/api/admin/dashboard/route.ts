@@ -68,11 +68,7 @@ export async function GET(request: NextRequest) {
       include: {
         orderItems: {
           include: {
-            product: {
-              include: {
-                category: true,
-              },
-            },
+            product: true, // Product.category é string, não relação
           },
         },
       },
@@ -183,13 +179,13 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Receita por categoria
+    // Receita por categoria (category é string no Product)
     const categoryRevenue: { [key: string]: { name: string; revenue: number; orderCount: number } } = {};
 
     orders.forEach(order => {
       order.orderItems.forEach(item => {
         if (item.product && item.product.category) {
-          const categoryName = item.product.category.name;
+          const categoryName = item.product.category; // category é string
           if (!categoryRevenue[categoryName]) {
             categoryRevenue[categoryName] = {
               name: categoryName,

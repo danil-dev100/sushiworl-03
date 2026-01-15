@@ -1,5 +1,9 @@
 // prisma.config.ts
 import path from 'node:path';
+import dotenv from 'dotenv';
+
+// Carregar variáveis de ambiente do .env
+dotenv.config();
 
 /**
  * Configuração do Prisma

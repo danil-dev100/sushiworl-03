@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL") // Pooler (porta 6543) - para runtime e migrations
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // Pooler (porta 6543) - para runtime
+  directUrl = env("DIRECT_URL") // Conexão direta (porta 5432) - para migrations
 }
 
 // ============================================

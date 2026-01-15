@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 
 interface FloatingMenuNavProps {
-  categories: string[];
+  categories?: string[];
 }
 
-export default function FloatingMenuNav({ categories }: FloatingMenuNavProps) {
+export default function FloatingMenuNav({ categories = [] }: FloatingMenuNavProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   const getIconName = (category: string) => {
@@ -43,7 +43,7 @@ export default function FloatingMenuNav({ categories }: FloatingMenuNavProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (!isVisible) {
+  if (!isVisible || !categories || categories.length === 0) {
     return null;
   }
 

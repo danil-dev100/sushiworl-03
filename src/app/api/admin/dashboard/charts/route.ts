@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     }
 
-    const salesData = await prisma.$queryRaw`
+    const salesDataRaw = await prisma.$queryRaw<Array<{ date: Date; sales: bigint | number | null; orders: bigint | number }>>`
       SELECT
         DATE("createdAt") as date,
         SUM(total) as sales,
@@ -51,6 +51,13 @@ export async function GET(request: NextRequest) {
       ORDER BY DATE("createdAt") DESC
       LIMIT ${days}
     `;
+
+    // Converter BigInt para Number (JSON não suporta BigInt)
+    const salesData = (salesDataRaw || []).map((item) => ({
+      date: item.date,
+      sales: Number(item.sales || 0),
+      orders: Number(item.orders || 0),
+    }));
 
     // Buscar dados de status dos pedidos (excluir pedidos de teste)
     const orderStatusData = await prisma.order.groupBy({
@@ -76,14 +83,14 @@ export async function GET(request: NextRequest) {
       CANCELLED: 'Cancelado',
     };
 
-    const processedOrderStatusData = orderStatusData.map((item) => ({
+    const processedOrderStatusData = (orderStatusData || []).map((item) => ({
       name: statusMapping[item.status] || item.status,
-      value: item._count.status,
+      value: Number(item._count.status || 0),
     }));
 
     return NextResponse.json({
-      salesData: salesData || [],
-      orderStatusData: processedOrderStatusData || [],
+      salesData: salesData,
+      orderStatusData: processedOrderStatusData,
       lastUpdate: new Date().toISOString(),
     });
 

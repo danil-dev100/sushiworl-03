@@ -10,11 +10,11 @@ interface Category {
 }
 
 interface SidebarMenuProps {
-  categories: Category[];
+  categories?: Category[];
   activeSection?: string;
 }
 
-export default function SidebarMenu({ categories, activeSection = 'destaques' }: SidebarMenuProps) {
+export default function SidebarMenu({ categories = [], activeSection = 'destaques' }: SidebarMenuProps) {
   const pathname = usePathname();
   const router = useRouter();
   const isCardapioPage = pathname === '/cardapio';
@@ -39,6 +39,10 @@ export default function SidebarMenu({ categories, activeSection = 'destaques' }:
       });
     }
   };
+
+  if (!categories || categories.length === 0) {
+    return null;
+  }
 
   return (
     <aside className="sticky top-[73px] h-[calc(100vh-73px)] w-56 xl:w-64 py-6 lg:py-8 pr-4 lg:pr-8 shrink-0">

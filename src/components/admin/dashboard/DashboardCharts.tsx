@@ -193,18 +193,27 @@ export function DashboardCharts() {
   const fetchRealData = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/admin/dashboard/charts?period=${chartPeriod}`);
+      const days = TIME_RANGE_OPTIONS.find(opt => opt.value === timeRange)?.days || 7;
+      const response = await fetch(`/api/admin/dashboard/charts?period=${timeRange}`);
+
       if (response.ok) {
         const data = await response.json();
 
-        // Processar dados de vendas dos últimos 7 dias
+        // Processar dados de vendas
         if (data.salesData && data.salesData.length > 0) {
           const processedSalesData = data.salesData.map((item: any) => ({
-            date: new Date(item.date).toLocaleDateString('pt-PT', { weekday: 'short' }),
+            date: new Date(item.date).toLocaleDateString('pt-PT', {
+              weekday: days <= 7 ? 'short' : undefined,
+              day: days > 7 ? '2-digit' : undefined,
+              month: days > 7 ? '2-digit' : undefined,
+            }),
             sales: Math.round(item.sales),
             orders: item.orders,
           }));
           setSalesData(processedSalesData);
+        } else {
+          // Usar dados mockados se não houver dados reais
+          setSalesData(generateSalesData(days));
         }
 
         // Processar dados de status dos pedidos
@@ -216,11 +225,21 @@ export function DashboardCharts() {
             icon: getStatusIcon(item.name),
           }));
           setOrderStatusData(processedOrderData);
+        } else {
+          // Usar dados mockados se não houver dados reais
+          setOrderStatusData(generateOrderStatusData());
         }
+      } else {
+        // Usar dados mockados se a API falhar
+        setSalesData(generateSalesData(days));
+        setOrderStatusData(generateOrderStatusData());
       }
     } catch (error) {
       console.log('Usando dados mockados (API não disponível):', error);
-      // Manter dados mockados se a API falhar
+      // Usar dados mockados se a API falhar
+      const days = TIME_RANGE_OPTIONS.find(opt => opt.value === timeRange)?.days || 7;
+      setSalesData(generateSalesData(days));
+      setOrderStatusData(generateOrderStatusData());
     } finally {
       setIsLoading(false);
       setLastUpdate(new Date());

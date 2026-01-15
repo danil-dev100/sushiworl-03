@@ -38,6 +38,8 @@ export async function GET(request: NextRequest) {
         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     }
 
+    console.log('[Charts API] Buscando dados de vendas para período:', period, 'desde:', startDate.toISOString());
+
     const salesDataRaw = await prisma.$queryRaw<Array<{ date: Date; sales: bigint | number | null; orders: bigint | number }>>`
       SELECT
         DATE("createdAt") as date,
@@ -48,9 +50,13 @@ export async function GET(request: NextRequest) {
         AND status != 'CANCELLED'
         AND "isTest" = false
       GROUP BY DATE("createdAt")
-      ORDER BY DATE("createdAt") DESC
+      ORDER BY DATE("createdAt") ASC
       LIMIT ${days}
     `;
+
+    console.log('[Charts API] Dados brutos retornados:', JSON.stringify(salesDataRaw, (key, value) =>
+      typeof value === 'bigint' ? value.toString() : value
+    ));
 
     // Converter BigInt para Number (JSON não suporta BigInt)
     const salesData = (salesDataRaw || []).map((item) => ({
@@ -58,6 +64,8 @@ export async function GET(request: NextRequest) {
       sales: Number(item.sales || 0),
       orders: Number(item.orders || 0),
     }));
+
+    console.log('[Charts API] Dados processados:', salesData);
 
     // Buscar dados de status dos pedidos (excluir pedidos de teste)
     const orderStatusData = await prisma.order.groupBy({

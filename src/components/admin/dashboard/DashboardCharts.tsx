@@ -32,6 +32,17 @@ interface SalesData {
   date: string;
   sales: number;
   orders: number;
+  // Métricas adicionais para comparações
+  revenue?: number;
+  costs?: number;
+  profit?: number;
+  pending?: number;
+  confirmed?: number;
+  preparing?: number;
+  delivering?: number;
+  topProducts?: number;
+  avgPrice?: number;
+  categories?: number;
 }
 
 interface OrderStatusData {
@@ -92,10 +103,36 @@ function generateSalesData(days: number = 7): SalesData[] {
       dateLabel = date.toLocaleDateString('pt-PT', { month: 'short', year: '2-digit' });
     }
 
+    // Métricas adicionais para gráficos de comparação
+    const revenue = Math.round(baseSales * 0.85); // Receita líquida
+    const costs = Math.round(baseSales * 0.35); // Custos operacionais
+    const profit = revenue - costs;
+
+    // Status dos pedidos
+    const pending = Math.floor(orders * 0.15);
+    const confirmed = Math.floor(orders * 0.35);
+    const preparing = Math.floor(orders * 0.25);
+    const delivering = orders - pending - confirmed - preparing;
+
+    // Performance de produtos
+    const topProducts = Math.floor(3 + Math.random() * 5);
+    const avgPrice = 15 + Math.random() * 10;
+    const categories = Math.floor(2 + Math.random() * 4);
+
     data.push({
       date: dateLabel,
       sales: Math.round(baseSales),
-      orders: Math.max(1, orders), // Garantir pelo menos 1 pedido
+      orders: Math.max(1, orders),
+      revenue,
+      costs,
+      profit,
+      pending,
+      confirmed,
+      preparing,
+      delivering,
+      topProducts,
+      avgPrice: Math.round(avgPrice * 100) / 100,
+      categories,
     });
   }
 

@@ -165,6 +165,9 @@ export async function getAvailableScheduleDates(): Promise<{
     const schedulingMinTime = settings.schedulingMinTime ?? 120; // Default 2 horas
     const availableDates = [];
 
+    console.log('[Scheduling] schedulingMinTime do banco:', settings.schedulingMinTime);
+    console.log('[Scheduling] schedulingMinTime usado:', schedulingMinTime);
+
     // Gerar próximos 30 dias
     const now = new Date();
     for (let i = 0; i < 30; i++) {
@@ -186,7 +189,7 @@ export async function getAvailableScheduleDates(): Promise<{
       // Obter horários disponíveis para o dia
       let times = getAvailableTimesForDay(daySchedule);
 
-      // Se for hoje, filtrar horários que já passaram
+      // Se for hoje, filtrar horários que já passaram + tempo mínimo
       if (isToday) {
         const currentHour = now.getHours();
         const currentMinute = now.getMinutes();
@@ -195,10 +198,14 @@ export async function getAvailableScheduleDates(): Promise<{
         // Usar o tempo mínimo configurado em vez de valor fixo
         const minMinutes = currentMinutes + schedulingMinTime;
 
+        console.log('[Scheduling] Hoje - hora atual:', `${currentHour}:${currentMinute}`, '| minMinutes:', minMinutes, '| schedulingMinTime:', schedulingMinTime);
+
         times = times.filter(time => {
           const timeMin = timeToMinutes(time);
           return timeMin !== null && timeMin >= minMinutes;
         });
+
+        console.log('[Scheduling] Horários filtrados para hoje:', times);
       }
 
       if (times.length > 0) {

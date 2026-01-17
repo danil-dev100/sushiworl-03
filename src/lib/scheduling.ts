@@ -54,25 +54,23 @@ function minutesToTime(minutes: number): string {
 
 /**
  * Obtém os horários disponíveis para um dia específico
+ * @param daySchedule - Configuração de horários do dia
+ * @param interval - Intervalo entre horários em minutos (padrão: 30)
  */
 export function getAvailableTimesForDay(
-  daySchedule: DaySchedule | undefined
+  daySchedule: DaySchedule | undefined,
+  interval: number = 30
 ): string[] {
   if (!daySchedule || daySchedule.closed === true) {
     return [];
   }
 
   const times: string[] = [];
-  const interval = 30; // Intervalos de 30 minutos
-
-  console.log('[Scheduling] Processando horários:', daySchedule);
 
   // Processar período de almoço
   if (daySchedule.lunchOpen && daySchedule.lunchClose) {
     const lunchStart = timeToMinutes(daySchedule.lunchOpen);
     const lunchEnd = timeToMinutes(daySchedule.lunchClose);
-
-    console.log('[Scheduling] Almoço:', { lunchStart, lunchEnd, lunchOpen: daySchedule.lunchOpen, lunchClose: daySchedule.lunchClose });
 
     if (lunchStart !== null && lunchEnd !== null) {
       for (let min = lunchStart; min < lunchEnd; min += interval) {
@@ -91,8 +89,6 @@ export function getAvailableTimesForDay(
       dinnerEnd = 1440; // 24:00 em minutos
     }
 
-    console.log('[Scheduling] Jantar:', { dinnerStart, dinnerEnd, dinnerOpen: daySchedule.dinnerOpen, dinnerClose: daySchedule.dinnerClose });
-
     if (dinnerStart !== null && dinnerEnd !== null) {
       for (let min = dinnerStart; min < dinnerEnd; min += interval) {
         times.push(minutesToTime(min));
@@ -105,16 +101,12 @@ export function getAvailableTimesForDay(
     const openMin = timeToMinutes(daySchedule.open);
     const closeMin = timeToMinutes(daySchedule.close);
 
-    console.log('[Scheduling] Formato antigo:', { openMin, closeMin, open: daySchedule.open, close: daySchedule.close });
-
     if (openMin !== null && closeMin !== null) {
       for (let min = openMin; min < closeMin; min += interval) {
         times.push(minutesToTime(min));
       }
     }
   }
-
-  console.log('[Scheduling] Total de horários gerados:', times.length, times);
 
   return times;
 }
@@ -165,9 +157,6 @@ export async function getAvailableScheduleDates(): Promise<{
     const schedulingMinTime = settings.schedulingMinTime ?? 120; // Default 2 horas
     const availableDates = [];
 
-    console.log('[Scheduling] schedulingMinTime do banco:', settings.schedulingMinTime);
-    console.log('[Scheduling] schedulingMinTime usado:', schedulingMinTime);
-
     // Gerar próximos 30 dias
     const now = new Date();
     for (let i = 0; i < 30; i++) {
@@ -186,8 +175,8 @@ export async function getAvailableScheduleDates(): Promise<{
         continue;
       }
 
-      // Obter horários disponíveis para o dia
-      let times = getAvailableTimesForDay(daySchedule);
+      // Obter horários disponíveis para o dia usando o intervalo configurado
+      let times = getAvailableTimesForDay(daySchedule, schedulingMinTime);
 
       // Se for hoje, filtrar horários que já passaram + tempo mínimo
       if (isToday) {
@@ -198,14 +187,10 @@ export async function getAvailableScheduleDates(): Promise<{
         // Usar o tempo mínimo configurado em vez de valor fixo
         const minMinutes = currentMinutes + schedulingMinTime;
 
-        console.log('[Scheduling] Hoje - hora atual:', `${currentHour}:${currentMinute}`, '| minMinutes:', minMinutes, '| schedulingMinTime:', schedulingMinTime);
-
         times = times.filter(time => {
           const timeMin = timeToMinutes(time);
           return timeMin !== null && timeMin >= minMinutes;
         });
-
-        console.log('[Scheduling] Horários filtrados para hoje:', times);
       }
 
       if (times.length > 0) {

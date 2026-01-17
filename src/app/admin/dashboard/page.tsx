@@ -15,6 +15,7 @@ import { DashboardCharts } from '@/components/admin/dashboard/DashboardCharts';
 import { RecentOrders } from '@/components/admin/dashboard/RecentOrders';
 import { TopProducts } from '@/components/admin/dashboard/TopProducts';
 import CategoryRevenue from '@/components/admin/dashboard/CategoryRevenue';
+import CustomersData from '@/components/admin/dashboard/CustomersData';
 import CustomMetricsDisplay from '@/components/admin/dashboard/CustomMetricsDisplay';
 import { TooltipHelper } from '@/components/shared/TooltipHelper';
 import { Button } from '@/components/ui/button';
@@ -424,6 +425,15 @@ export default function DashboardPage() {
       {/* Category Revenue Chart */}
       <div className="mt-8">
         <CategoryRevenue />
+      </div>
+
+      {/* Customers Data */}
+      <div className="mt-8">
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-2xl font-bold text-[#333333] dark:text-[#f5f1e9]">Dados dos Clientes</h2>
+          <TooltipHelper text="Informações de contato dos clientes, quantidade de pedidos e valor total gasto" />
+        </div>
+        <CustomersData />
       </div>
 
       {/* Custom Metrics Dialog */}

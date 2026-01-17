@@ -107,7 +107,7 @@ export default function CustomMetricsDisplay() {
                   </p>
                   <div className="mt-2 flex items-baseline gap-2">
                     <p className="text-3xl font-bold text-[#333333] dark:text-[#f5f1e9]">
-                      {metric.value.toLocaleString('pt-PT', {
+                      {(metric.value ?? 0).toLocaleString('pt-PT', {
                         minimumFractionDigits: metric.unit === '€' ? 2 : 0,
                         maximumFractionDigits: 2,
                       })}

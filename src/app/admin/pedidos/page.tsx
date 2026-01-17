@@ -57,6 +57,7 @@ interface PageProps {
 
 async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
   const { status, search, date} = searchParams;
+  const now = new Date(); // Data/hora atual para comparações
 
   const where: any = {};
 
@@ -74,8 +75,11 @@ async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
   } else if (status === 'cancelled') {
     where.status = 'CANCELLED';
   } else if (status === 'scheduled') {
-    // Filtrar apenas pedidos agendados
+    // Filtrar apenas pedidos agendados que ainda não passaram da data/hora
     where.isScheduled = true;
+    where.scheduledFor = {
+      gte: now, // Apenas pedidos agendados para o futuro
+    };
   }
   // Se status for 'all' ou 'today' ou undefined, não aplicar filtro de status
 
@@ -190,11 +194,14 @@ async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
     where: countWhere,
   });
 
-  // Contar pedidos agendados
+  // Contar pedidos agendados (apenas futuros)
   const scheduledCount = await prisma.order.count({
     where: {
       ...countWhere,
       isScheduled: true,
+      scheduledFor: {
+        gte: now,
+      },
     },
   });
 

@@ -319,7 +319,7 @@ export function ScheduledOrdersTable({ orders }: OrdersTableProps) {
     }
   };
 
-  // Agrupar pedidos por data
+  // Agrupar pedidos por data e ordenar por horário
   const groupedOrders = useMemo(() => {
     const groups = new Map<string, Order[]>();
 
@@ -333,7 +333,7 @@ export function ScheduledOrdersTable({ orders }: OrdersTableProps) {
       }
     });
 
-    // Converter para array e ordenar por data
+    // Converter para array e ordenar por data (mais próximo primeiro)
     return Array.from(groups.entries())
       .sort(([dateA], [dateB]) => {
         const a = new Date(dateA.split('/').reverse().join('-'));
@@ -342,7 +342,12 @@ export function ScheduledOrdersTable({ orders }: OrdersTableProps) {
       })
       .map(([date, orders], index) => ({
         date,
-        orders,
+        // Ordenar pedidos dentro do grupo por horário (mais cedo primeiro)
+        orders: orders.sort((a, b) => {
+          const dateA = new Date(a.scheduledFor!);
+          const dateB = new Date(b.scheduledFor!);
+          return dateA.getTime() - dateB.getTime();
+        }),
         colorClass: DATE_COLORS[index % DATE_COLORS.length],
       }));
   }, [localOrders]);

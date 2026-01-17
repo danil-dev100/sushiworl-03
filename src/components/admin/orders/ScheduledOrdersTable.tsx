@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -15,10 +15,19 @@ import {
   Loader2,
   Trash2,
   Calendar,
+  Settings,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type OrderItem = {
   id: string;
@@ -205,12 +214,110 @@ function formatSelectedOptions(options?: Record<string, unknown> | null): string
   }
 }
 
+// Opções de tempo mínimo de agendamento (5 a 60 minutos, de 5 em 5)
+const SCHEDULING_TIME_OPTIONS = [
+  { value: '5', label: '5 minutos' },
+  { value: '10', label: '10 minutos' },
+  { value: '15', label: '15 minutos' },
+  { value: '20', label: '20 minutos' },
+  { value: '25', label: '25 minutos' },
+  { value: '30', label: '30 minutos' },
+  { value: '35', label: '35 minutos' },
+  { value: '40', label: '40 minutos' },
+  { value: '45', label: '45 minutos' },
+  { value: '50', label: '50 minutos' },
+  { value: '55', label: '55 minutos' },
+  { value: '60', label: '60 minutos' },
+];
+
 export function ScheduledOrdersTable({ orders }: OrdersTableProps) {
   const router = useRouter();
   const [localOrders, setLocalOrders] = useState(orders);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [schedulingMinTime, setSchedulingMinTime] = useState<string>('30');
+  const [schedulingEnabled, setSchedulingEnabled] = useState<boolean>(true);
+  const [isLoadingSchedulingConfig, setIsLoadingSchedulingConfig] = useState(true);
+  const [isSavingSchedulingTime, setIsSavingSchedulingTime] = useState(false);
+  const [isSavingSchedulingEnabled, setIsSavingSchedulingEnabled] = useState(false);
+
+  // Buscar a configuração atual de agendamento
+  useEffect(() => {
+    const fetchSchedulingConfig = async () => {
+      try {
+        const response = await fetch('/api/admin/settings/scheduling');
+        if (response.ok) {
+          const data = await response.json();
+          setSchedulingMinTime(String(data.schedulingMinTime || 30));
+          setSchedulingEnabled(data.schedulingEnabled ?? true);
+        }
+      } catch (error) {
+        console.error('[ScheduledOrdersTable] Erro ao buscar configuração:', error);
+      } finally {
+        setIsLoadingSchedulingConfig(false);
+      }
+    };
+    fetchSchedulingConfig();
+  }, []);
+
+  // Salvar o tempo mínimo quando alterado
+  const handleSchedulingTimeChange = async (value: string) => {
+    const previousValue = schedulingMinTime;
+    setSchedulingMinTime(value);
+    setIsSavingSchedulingTime(true);
+
+    try {
+      const response = await fetch('/api/admin/settings/scheduling', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ schedulingMinTime: parseInt(value, 10) }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao salvar');
+      }
+
+      toast.success(`Tempo mínimo de agendamento alterado para ${value} minutos`);
+    } catch (error) {
+      setSchedulingMinTime(previousValue);
+      toast.error('Erro ao salvar configuração de agendamento');
+      console.error('[ScheduledOrdersTable] Erro ao salvar tempo mínimo:', error);
+    } finally {
+      setIsSavingSchedulingTime(false);
+    }
+  };
+
+  // Salvar o estado de ativação do agendamento
+  const handleSchedulingEnabledChange = async (enabled: boolean) => {
+    const previousValue = schedulingEnabled;
+    setSchedulingEnabled(enabled);
+    setIsSavingSchedulingEnabled(true);
+
+    try {
+      const response = await fetch('/api/admin/settings/scheduling', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ schedulingEnabled: enabled }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao salvar');
+      }
+
+      toast.success(enabled ? 'Agendamento ativado' : 'Agendamento desativado');
+    } catch (error) {
+      setSchedulingEnabled(previousValue);
+      toast.error('Erro ao salvar configuração de agendamento');
+      console.error('[ScheduledOrdersTable] Erro ao salvar estado de agendamento:', error);
+    } finally {
+      setIsSavingSchedulingEnabled(false);
+    }
+  };
 
   // Agrupar pedidos por data
   const groupedOrders = useMemo(() => {
@@ -433,7 +540,102 @@ export function ScheduledOrdersTable({ orders }: OrdersTableProps) {
   };
 
   return (
-    <div className="rounded-xl border border-[#ead9cd] bg-white p-3 sm:p-6 dark:border-[#4a3c30] dark:bg-[#2a1e14]">
+    <div className="space-y-4">
+      {/* Configuração de Agendamento */}
+      <div className="rounded-xl border border-[#ead9cd] bg-gradient-to-r from-[#fff9f5] to-[#fff5eb] p-4 sm:p-6 dark:border-[#4a3c30] dark:from-[#2a1e14] dark:to-[#23170f]">
+        <div className="flex flex-col gap-4">
+          {/* Toggle Ativar/Desativar Agendamento */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-[#ead9cd] dark:border-[#4a3c30]">
+            <div className="flex items-center gap-3">
+              <div className={`rounded-lg p-2.5 ${schedulingEnabled ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                <Calendar className={`h-5 w-5 ${schedulingEnabled ? 'text-green-600' : 'text-red-500'}`} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-[#333333] dark:text-[#f5f1e9]">
+                  Agendamento de Pedidos
+                </h3>
+                <p className="text-sm text-[#a16b45] dark:text-[#d4a574]">
+                  {schedulingEnabled
+                    ? 'Clientes podem agendar pedidos'
+                    : 'Agendamento desativado para os clientes'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {isLoadingSchedulingConfig ? (
+                <div className="flex items-center gap-2 text-sm text-[#a16b45]">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Carregando...
+                </div>
+              ) : (
+                <>
+                  <span className={`text-sm font-medium ${schedulingEnabled ? 'text-green-600' : 'text-red-500'}`}>
+                    {schedulingEnabled ? 'Ativo' : 'Inativo'}
+                  </span>
+                  <Switch
+                    checked={schedulingEnabled}
+                    onCheckedChange={handleSchedulingEnabledChange}
+                    disabled={isSavingSchedulingEnabled}
+                    className="data-[state=checked]:bg-green-500"
+                  />
+                  {isSavingSchedulingEnabled && (
+                    <Loader2 className="h-4 w-4 animate-spin text-[#FF6B00]" />
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Tempo Mínimo de Agendamento */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-[#FF6B00]/10 p-2.5">
+                <Settings className="h-5 w-5 text-[#FF6B00]" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-[#333333] dark:text-[#f5f1e9]">
+                  Tempo Mínimo de Agendamento
+                </h3>
+                <p className="text-sm text-[#a16b45] dark:text-[#d4a574]">
+                  Define com quantos minutos de antecedência o cliente pode agendar
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {isLoadingSchedulingConfig ? (
+                <div className="flex items-center gap-2 text-sm text-[#a16b45]">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Carregando...
+                </div>
+              ) : (
+                <>
+                  <Select
+                    value={schedulingMinTime}
+                    onValueChange={handleSchedulingTimeChange}
+                    disabled={isSavingSchedulingTime || !schedulingEnabled}
+                  >
+                    <SelectTrigger className="w-[160px] border-[#ead9cd] bg-white dark:border-[#4a3c30] dark:bg-[#2a1e14]">
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SCHEDULING_TIME_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {isSavingSchedulingTime && (
+                    <Loader2 className="h-4 w-4 animate-spin text-[#FF6B00]" />
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-[#ead9cd] bg-white p-3 sm:p-6 dark:border-[#4a3c30] dark:bg-[#2a1e14]">
       {hasOrders && (
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -698,6 +900,7 @@ export function ScheduledOrdersTable({ orders }: OrdersTableProps) {
           </p>
         </div>
       )}
+      </div>
     </div>
   );
 }

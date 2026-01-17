@@ -360,10 +360,6 @@ export default function CarrinhoPage() {
                           <span>€{item.price.toFixed(2)}</span>
                         </div>
                       ))}
-                      <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
-                        <span>Taxa de Entrega</span>
-                        <span>€{taxaEntrega.toFixed(2)}</span>
-                      </div>
                       <div className="text-[#333333]/80 dark:text-[#f5f1e9]/80">
                         <span>IVA ({taxaIVA}% incluído)</span>
                       </div>

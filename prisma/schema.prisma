@@ -893,6 +893,10 @@ model Settings {
   // Horários de atendimento
   openingHours Json? // {monday: {open: "11:00", close: "23:00", closed: false}, ...}
 
+  // Configuração de agendamento
+  schedulingMinTime    Int     @default(120) // Tempo mínimo em minutos para agendar (padrão 2 horas)
+  schedulingEnabled    Boolean @default(true) // Se o agendamento está ativo
+
   // Status do restaurante
   isOnline Boolean @default(true) // Restaurante online/offline (aceita pedidos)
 

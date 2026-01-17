@@ -29,6 +29,7 @@ export function ScheduleOrderModal({
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
+  const [schedulingEnabled, setSchedulingEnabled] = useState(true);
 
   const dayNames: Record<string, string> = {
     sunday: 'Domingo',
@@ -52,12 +53,17 @@ export function ScheduleOrderModal({
       const response = await fetch('/api/scheduling/available-dates');
       const data = await response.json();
 
-      if (data.success && data.availableDates) {
-        setAvailableDates(data.availableDates);
+      if (data.success) {
+        // Verificar se agendamento está ativado
+        setSchedulingEnabled(data.schedulingEnabled !== false);
 
-        // Pré-selecionar a primeira data disponível
-        if (data.availableDates.length > 0) {
-          setSelectedDate(data.availableDates[0].date);
+        if (data.availableDates) {
+          setAvailableDates(data.availableDates);
+
+          // Pré-selecionar a primeira data disponível
+          if (data.availableDates.length > 0) {
+            setSelectedDate(data.availableDates[0].date);
+          }
         }
       }
     } catch (error) {
@@ -157,6 +163,18 @@ export function ScheduleOrderModal({
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#FF6B00]/20 border-t-[#FF6B00]"></div>
             </div>
+          ) : !schedulingEnabled ? (
+            <div className="text-center py-12 space-y-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+                <AlertCircle className="h-8 w-8 text-[#FF6B00]" />
+              </div>
+              <h3 className="text-lg font-bold text-[#333333] dark:text-[#f5f1e9]">
+                Agendamento Temporariamente Indisponível
+              </h3>
+              <p className="text-[#666666] dark:text-[#a1a1aa] max-w-md mx-auto">
+                Desculpe, devido à alta demanda de pedidos, não estamos recebendo agendamentos no momento. Por favor, tente novamente mais tarde.
+              </p>
+            </div>
           ) : availableDates.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-[#666666] dark:text-[#a1a1aa]">
@@ -234,21 +252,23 @@ export function ScheduleOrderModal({
 
           {/* Botões de ação */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#ead9cd] dark:border-[#5a4a3e]">
-            <Button
-              type="button"
-              onClick={handleSchedule}
-              disabled={!selectedDate || !selectedTime || isLoading}
-              className="flex-1 h-12 bg-[#FF6B00] hover:bg-[#ff8533] text-white font-bold text-base rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Confirmar Agendamento
-            </Button>
+            {schedulingEnabled && (
+              <Button
+                type="button"
+                onClick={handleSchedule}
+                disabled={!selectedDate || !selectedTime || isLoading}
+                className="flex-1 h-12 bg-[#FF6B00] hover:bg-[#ff8533] text-white font-bold text-base rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Confirmar Agendamento
+              </Button>
+            )}
             <Button
               type="button"
               onClick={onClose}
               variant="outline"
               className="flex-1 h-12 border-2 border-[#ead9cd] dark:border-[#5a4a3e] hover:bg-[#f5f1e9] dark:hover:bg-[#3a2a1d] text-[#333333] dark:text-[#f5f1e9] font-semibold text-base rounded-xl"
             >
-              Voltar
+              {schedulingEnabled ? 'Voltar' : 'Fechar'}
             </Button>
           </div>
         </div>

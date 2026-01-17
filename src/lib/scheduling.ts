@@ -129,23 +129,40 @@ export async function getAvailableScheduleDates(): Promise<{
     times: string[];
   }>;
   openingHours: OpeningHours | null;
+  schedulingMinTime: number;
+  schedulingEnabled: boolean;
 }> {
   try {
     const settings = await prisma.settings.findFirst({
       select: {
         openingHours: true,
-        isOnline: true
+        isOnline: true,
+        schedulingMinTime: true,
+        schedulingEnabled: true
       }
     });
+
+    // Se agendamento está desativado, retornar lista vazia
+    if (!settings?.schedulingEnabled) {
+      return {
+        availableDates: [],
+        openingHours: null,
+        schedulingMinTime: settings?.schedulingMinTime ?? 120,
+        schedulingEnabled: false
+      };
+    }
 
     if (!settings?.openingHours) {
       return {
         availableDates: [],
-        openingHours: null
+        openingHours: null,
+        schedulingMinTime: 120,
+        schedulingEnabled: true
       };
     }
 
     const openingHours = settings.openingHours as OpeningHours;
+    const schedulingMinTime = settings.schedulingMinTime ?? 120; // Default 2 horas
     const availableDates = [];
 
     // Gerar próximos 30 dias
@@ -175,8 +192,8 @@ export async function getAvailableScheduleDates(): Promise<{
         const currentMinute = now.getMinutes();
         const currentMinutes = currentHour * 60 + currentMinute;
 
-        // Adicionar buffer de 2 horas para preparação
-        const minMinutes = currentMinutes + 120;
+        // Usar o tempo mínimo configurado em vez de valor fixo
+        const minMinutes = currentMinutes + schedulingMinTime;
 
         times = times.filter(time => {
           const timeMin = timeToMinutes(time);
@@ -195,13 +212,17 @@ export async function getAvailableScheduleDates(): Promise<{
 
     return {
       availableDates,
-      openingHours
+      openingHours,
+      schedulingMinTime,
+      schedulingEnabled: true
     };
   } catch (error) {
     console.error('[Scheduling] Erro ao obter datas disponíveis:', error);
     return {
       availableDates: [],
-      openingHours: null
+      openingHours: null,
+      schedulingMinTime: 120,
+      schedulingEnabled: true
     };
   }
 }
@@ -260,20 +281,25 @@ export async function validateScheduleDateTime(
       };
     }
 
-    // Verificar buffer mínimo de 2 horas
+    // Buscar configurações incluindo tempo mínimo de agendamento
+    const settings = await prisma.settings.findFirst({
+      select: {
+        openingHours: true,
+        schedulingMinTime: true
+      }
+    });
+
+    const schedulingMinTime = settings?.schedulingMinTime ?? 120; // Default 2 horas
+
+    // Verificar buffer mínimo configurado
     const minDateTime = new Date(now);
-    minDateTime.setHours(minDateTime.getHours() + 2);
+    minDateTime.setMinutes(minDateTime.getMinutes() + schedulingMinTime);
     if (scheduledDateTime < minDateTime) {
       return {
         isValid: false,
-        reason: 'Agendamento deve ser feito com no mínimo 2 horas de antecedência'
+        reason: `Agendamento deve ser feito com no mínimo ${schedulingMinTime} minutos de antecedência`
       };
     }
-
-    // Buscar horários de funcionamento
-    const settings = await prisma.settings.findFirst({
-      select: { openingHours: true }
-    });
 
     if (!settings?.openingHours) {
       return {

@@ -7,12 +7,14 @@ import { getAvailableScheduleDates } from '@/lib/scheduling';
  */
 export async function GET() {
   try {
-    const { availableDates, openingHours } = await getAvailableScheduleDates();
+    const { availableDates, openingHours, schedulingMinTime, schedulingEnabled } = await getAvailableScheduleDates();
 
     return NextResponse.json({
       success: true,
       availableDates,
-      openingHours
+      openingHours,
+      schedulingMinTime,
+      schedulingEnabled
     });
   } catch (error) {
     console.error('[Available Dates API] Erro:', error);

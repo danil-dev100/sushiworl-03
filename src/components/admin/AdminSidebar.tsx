@@ -14,7 +14,8 @@ import {
   Printer,
   Mail,
   Link2,
-  Download
+  Download,
+  MessageSquare
 } from 'lucide-react';
 import { useOrderPolling } from '@/hooks/useOrderPolling';
 
@@ -48,6 +49,11 @@ const menuItems = [
     label: 'Email',
     icon: Mail,
     href: '/admin/marketing/email',
+  },
+  {
+    label: 'SMS',
+    icon: MessageSquare,
+    href: '/admin/marketing/sms-marketing',
   },
   {
     label: 'Webhooks',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import {
   Users,
   Download,
@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -49,8 +50,19 @@ export default function CustomersData() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Debounce para a busca - atualiza após 300ms de parar de digitar
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setCurrentPage(1); // Reset para primeira página ao buscar
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
     fetchCustomers();
@@ -130,26 +142,39 @@ export default function CustomersData() {
     }
   };
 
-  // Filtrar clientes por busca
-  const filteredCustomers = data?.customers.filter((customer) => {
-    if (!searchTerm || searchTerm.trim() === '') return true;
-    const search = searchTerm.toLowerCase().trim();
+  // Filtrar clientes por busca usando useMemo para performance
+  const filteredCustomers = useMemo(() => {
+    if (!data?.customers) return [];
+    if (!debouncedSearchTerm || debouncedSearchTerm.trim() === '') return data.customers;
 
-    // Verificar cada campo com segurança para null/undefined
-    const nameMatch = customer.name ? customer.name.toLowerCase().includes(search) : false;
-    const emailMatch = customer.email ? customer.email.toLowerCase().includes(search) : false;
-    const phoneMatch = customer.phone ? customer.phone.toLowerCase().includes(search) : false;
-    const addressMatch = customer.address ? customer.address.toLowerCase().includes(search) : false;
+    const search = debouncedSearchTerm.toLowerCase().trim();
 
-    return nameMatch || emailMatch || phoneMatch || addressMatch;
-  }) || [];
+    return data.customers.filter((customer) => {
+      // Verificar cada campo com segurança para null/undefined
+      const nameMatch = customer.name ? customer.name.toLowerCase().includes(search) : false;
+      const emailMatch = customer.email ? customer.email.toLowerCase().includes(search) : false;
+      const phoneMatch = customer.phone ? customer.phone.toLowerCase().includes(search) : false;
+      const addressMatch = customer.address ? customer.address.toLowerCase().includes(search) : false;
+
+      return nameMatch || emailMatch || phoneMatch || addressMatch;
+    });
+  }, [data?.customers, debouncedSearchTerm]);
 
   // Paginação
   const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
-  const paginatedCustomers = filteredCustomers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const paginatedCustomers = useMemo(() => {
+    return filteredCustomers.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    );
+  }, [filteredCustomers, currentPage, itemsPerPage]);
+
+  // Limpar busca
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+    setCurrentPage(1);
+  }, []);
 
   if (isLoading) {
     return (
@@ -288,14 +313,31 @@ export default function CustomersData() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            placeholder="Buscar por nome, email, telefone ou endereço..."
-            className="w-full rounded-lg border border-[#ead9cd] bg-white py-2 pl-10 pr-4 text-sm text-[#333333] outline-none focus:border-[#FF6B00] dark:border-[#4a3c30] dark:bg-[#23170f] dark:text-[#f5f1e9]"
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Digite para buscar por nome, email, telefone ou endereço..."
+            className="w-full rounded-lg border border-[#ead9cd] bg-white py-2.5 pl-10 pr-10 text-sm text-[#333333] outline-none focus:border-[#FF6B00] focus:ring-2 focus:ring-[#FF6B00]/20 dark:border-[#4a3c30] dark:bg-[#23170f] dark:text-[#f5f1e9]"
           />
+          {/* Botão limpar e indicador de busca */}
+          {searchTerm && (
+            <button
+              onClick={handleClearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-[#a16b45] hover:bg-[#ead9cd] hover:text-[#333333] dark:hover:bg-[#4a3c30] dark:hover:text-[#f5f1e9]"
+              title="Limpar busca"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
+        {/* Feedback da busca */}
+        {debouncedSearchTerm && (
+          <div className="mt-2 flex items-center gap-2 text-sm text-[#a16b45]">
+            <span>
+              {filteredCustomers.length === 0
+                ? `Nenhum resultado para "${debouncedSearchTerm}"`
+                : `${filteredCustomers.length} cliente${filteredCustomers.length !== 1 ? 's' : ''} encontrado${filteredCustomers.length !== 1 ? 's' : ''} para "${debouncedSearchTerm}"`}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Tabela de Clientes */}

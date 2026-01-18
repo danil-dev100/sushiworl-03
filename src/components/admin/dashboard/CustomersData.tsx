@@ -132,14 +132,16 @@ export default function CustomersData() {
 
   // Filtrar clientes por busca
   const filteredCustomers = data?.customers.filter((customer) => {
-    if (!searchTerm) return true;
-    const search = searchTerm.toLowerCase();
-    return (
-      customer.name.toLowerCase().includes(search) ||
-      customer.email.toLowerCase().includes(search) ||
-      customer.phone.includes(search) ||
-      customer.address.toLowerCase().includes(search)
-    );
+    if (!searchTerm || searchTerm.trim() === '') return true;
+    const search = searchTerm.toLowerCase().trim();
+
+    // Verificar cada campo com segurança para null/undefined
+    const nameMatch = customer.name ? customer.name.toLowerCase().includes(search) : false;
+    const emailMatch = customer.email ? customer.email.toLowerCase().includes(search) : false;
+    const phoneMatch = customer.phone ? customer.phone.toLowerCase().includes(search) : false;
+    const addressMatch = customer.address ? customer.address.toLowerCase().includes(search) : false;
+
+    return nameMatch || emailMatch || phoneMatch || addressMatch;
   }) || [];
 
   // Paginação

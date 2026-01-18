@@ -828,6 +828,125 @@ model SmtpSettings {
 }
 
 // ============================================
+// MARKETING - SMS MARKETING
+// ============================================
+
+model SmsSettings {
+  id String @id @default(cuid())
+
+  // Provedor: 'twilio' ou 'd7'
+  provider String @default("twilio")
+
+  // Twilio
+  twilioAccountSid String?
+  twilioAuthToken  String?
+
+  // D7 Networks
+  d7ApiKey String?
+
+  // Número de origem (para ambos)
+  fromNumber String?
+
+  // Configurações
+  maxSmsPerHour Int @default(100)
+  isActive      Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SmsCampaign {
+  id String @id @default(cuid())
+
+  name    String
+  message String @db.Text
+
+  // Status
+  status String @default("draft") // draft, scheduled, sending, completed, paused
+
+  // Agendamento
+  scheduledAt DateTime?
+
+  // Segmentação
+  targetAudience Json? // Filtros de audiência
+
+  // Estatísticas
+  totalRecipients Int @default(0)
+  sentCount       Int @default(0)
+  deliveredCount  Int @default(0)
+  failedCount     Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logs SmsCampaignLog[]
+}
+
+model SmsCampaignLog {
+  id         String @id @default(cuid())
+  campaignId String
+
+  phoneNumber String
+  status      String // sent, delivered, failed
+  errorMessage String?
+  providerMessageId String?
+
+  sentAt      DateTime @default(now())
+  deliveredAt DateTime?
+
+  campaign SmsCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([sentAt])
+}
+
+model SmsAutomation {
+  id String @id @default(cuid())
+
+  name        String
+  description String?
+
+  // Fluxo visual (mesmo formato do email)
+  nodes Json?
+  edges Json?
+
+  // Gatilho
+  triggerType  String? // order_created, order_delivered, customer_birthday, etc
+  triggerValue Json?
+
+  // Status
+  isActive Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logs SmsAutomationLog[]
+}
+
+model SmsAutomationLog {
+  id           String @id @default(cuid())
+  automationId String
+
+  // Dados da execução
+  userId      String?
+  phoneNumber String
+  message     String @db.Text
+
+  // Status
+  status       String // sent, delivered, failed
+  errorMessage String?
+  providerMessageId String?
+
+  executedAt  DateTime @default(now())
+  deliveredAt DateTime?
+
+  automation SmsAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@index([automationId])
+  @@index([executedAt])
+}
+
+// ============================================
 // MARKETING - PROMOÇÕES INTELIGENTES
 // ============================================
 

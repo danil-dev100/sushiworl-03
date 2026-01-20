@@ -65,6 +65,8 @@ export async function GET(request: NextRequest) {
           ...campaign,
           promotionId: targetAudience?.promotionId || null,
           promotion,
+          // Mapear scheduledAt para scheduledFor para o frontend
+          scheduledFor: campaign.scheduledAt,
           targetAudience: {
             type: targetAudience?.type || 'all',
             filters: targetAudience?.filters,
@@ -126,7 +128,7 @@ export async function POST(request: NextRequest) {
         name,
         message,
         status: status || 'draft',
-        scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
+        scheduledAt: scheduledFor ? new Date(scheduledFor) : undefined,
         targetAudience: {
           ...targetAudience,
           promotionId: promotionId || null,
@@ -197,11 +199,11 @@ async function sendCampaignInBackground(campaignId: string) {
         await prisma.smsCampaignLog.create({
           data: {
             campaignId,
-            phone: customer.phone,
+            phoneNumber: customer.phone,
             status: result.success ? 'sent' : 'failed',
-            messageId: result.messageId,
+            providerMessageId: result.messageId,
             errorMessage: result.error,
-            sentAt: result.success ? new Date() : null,
+            sentAt: new Date(),
           },
         });
 
@@ -244,33 +246,45 @@ async function getTargetCustomers(audienceType: string) {
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
+  // Base: usuários com role CUSTOMER e telefone
   let where: any = {
+    role: 'CUSTOMER',
     phone: { not: null },
   };
 
   switch (audienceType) {
     case 'active':
       // Clientes com pedidos nos últimos 30 dias
-      const activeCustomerIds = await prisma.order.findMany({
+      const activeOrders = await prisma.order.findMany({
         where: {
           createdAt: { gte: thirtyDaysAgo },
+          userId: { not: null },
         },
-        select: { customerId: true },
-        distinct: ['customerId'],
+        select: { userId: true },
+        distinct: ['userId'],
       });
-      where.id = { in: activeCustomerIds.map(o => o.customerId).filter(Boolean) as string[] };
+      const activeIds = activeOrders.map(o => o.userId).filter(Boolean) as string[];
+      if (activeIds.length > 0) {
+        where.id = { in: activeIds };
+      } else {
+        return [];
+      }
       break;
 
     case 'inactive':
       // Clientes sem pedidos há mais de 60 dias
-      const recentCustomerIds = await prisma.order.findMany({
+      const recentOrders = await prisma.order.findMany({
         where: {
           createdAt: { gte: sixtyDaysAgo },
+          userId: { not: null },
         },
-        select: { customerId: true },
-        distinct: ['customerId'],
+        select: { userId: true },
+        distinct: ['userId'],
       });
-      where.id = { notIn: recentCustomerIds.map(o => o.customerId).filter(Boolean) as string[] };
+      const recentIds = recentOrders.map(o => o.userId).filter(Boolean) as string[];
+      if (recentIds.length > 0) {
+        where.id = { notIn: recentIds };
+      }
       break;
 
     case 'new':
@@ -284,7 +298,7 @@ async function getTargetCustomers(audienceType: string) {
       break;
   }
 
-  const customers = await prisma.customer.findMany({
+  const customers = await prisma.user.findMany({
     where,
     select: {
       id: true,

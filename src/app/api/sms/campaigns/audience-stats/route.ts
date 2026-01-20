@@ -23,36 +23,45 @@ export async function GET(request: NextRequest) {
     const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    let whereTotal: any = {};
-    let whereWithPhone: any = { phone: { not: null } };
+    // Base: apenas usuários com role CUSTOMER
+    let whereTotal: any = { role: 'CUSTOMER' };
+    let whereWithPhone: any = { role: 'CUSTOMER', phone: { not: null } };
 
     switch (audienceType) {
       case 'active':
         // Clientes com pedidos nos últimos 30 dias
-        const activeCustomerIds = await prisma.order.findMany({
+        const activeOrders = await prisma.order.findMany({
           where: {
             createdAt: { gte: thirtyDaysAgo },
+            userId: { not: null },
           },
-          select: { customerId: true },
-          distinct: ['customerId'],
+          select: { userId: true },
+          distinct: ['userId'],
         });
-        const activeIds = activeCustomerIds.map(o => o.customerId).filter(Boolean) as string[];
-        whereTotal.id = { in: activeIds };
-        whereWithPhone.id = { in: activeIds };
+        const activeIds = activeOrders.map(o => o.userId).filter(Boolean) as string[];
+        if (activeIds.length > 0) {
+          whereTotal.id = { in: activeIds };
+          whereWithPhone.id = { in: activeIds };
+        } else {
+          return NextResponse.json({ total: 0, withPhone: 0, percentage: 0 });
+        }
         break;
 
       case 'inactive':
         // Clientes sem pedidos há mais de 60 dias
-        const recentCustomerIds = await prisma.order.findMany({
+        const recentOrders = await prisma.order.findMany({
           where: {
             createdAt: { gte: sixtyDaysAgo },
+            userId: { not: null },
           },
-          select: { customerId: true },
-          distinct: ['customerId'],
+          select: { userId: true },
+          distinct: ['userId'],
         });
-        const recentIds = recentCustomerIds.map(o => o.customerId).filter(Boolean) as string[];
-        whereTotal.id = { notIn: recentIds };
-        whereWithPhone.id = { notIn: recentIds };
+        const recentIds = recentOrders.map(o => o.userId).filter(Boolean) as string[];
+        if (recentIds.length > 0) {
+          whereTotal.id = { notIn: recentIds };
+          whereWithPhone.id = { notIn: recentIds };
+        }
         break;
 
       case 'new':
@@ -68,12 +77,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Contar total de clientes no segmento
-    const total = await prisma.customer.count({
+    const total = await prisma.user.count({
       where: whereTotal,
     });
 
     // Contar clientes com telefone no segmento
-    const withPhone = await prisma.customer.count({
+    const withPhone = await prisma.user.count({
       where: whereWithPhone,
     });
 

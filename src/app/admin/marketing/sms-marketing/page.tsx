@@ -22,7 +22,9 @@ import {
   BarChart3,
   Send,
   Smartphone,
-  Settings
+  Settings,
+  Gift,
+  Ticket
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -249,6 +251,14 @@ export default function SMSMarketingPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/admin/marketing/sms-marketing/campanhas')}
+            className="border-purple-200 text-purple-700 hover:bg-purple-50"
+          >
+            <Gift className="h-4 w-4 mr-2" />
+            Campanhas Promocionais
+          </Button>
           <Button
             variant="outline"
             onClick={() => router.push('/admin/marketing/sms-marketing/settings')}

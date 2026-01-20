@@ -67,6 +67,8 @@ export interface OrderReceiptProps {
     subtotal: number;
     deliveryFee: number;
     bagFee: number;
+    discount?: number;
+    vatAmount?: number;
     total: number;
   };
   companyInfo: {
@@ -318,6 +320,18 @@ export default function OrderReceiptPreview({ order, companyInfo, config = defau
                 <div className="flex justify-between">
                   <span className="text-gray-600">Taxa de Saco:</span>
                   <span className="font-medium">{formatCurrency(order.bagFee)}</span>
+                </div>
+              )}
+              {order.discount && order.discount > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span>Desconto:</span>
+                  <span className="font-medium">- {formatCurrency(order.discount)}</span>
+                </div>
+              )}
+              {order.vatAmount && order.vatAmount > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">IVA:</span>
+                  <span className="font-medium">{formatCurrency(order.vatAmount)}</span>
                 </div>
               )}
               {config.fields.showTotal && (

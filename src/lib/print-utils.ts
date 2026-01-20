@@ -55,6 +55,8 @@ export function renderOrderReceipt(
     subtotal: orderData.subtotal,
     deliveryFee: orderData.deliveryFee || 0,
     bagFee: checkoutItemsTotal, // Usar total real dos itens adicionais
+    discount: orderData.discount || 0, // Desconto aplicado
+    vatAmount: orderData.vatAmount || 0, // IVA
     total: orderData.total,
   };
 
@@ -304,6 +306,22 @@ function renderSection(sectionId: string, order: any, company: any, fields: any)
           `).join('')
         : '';
 
+      // Desconto (se houver)
+      const discountHTML = order.discount && order.discount > 0
+        ? `<div class="flex justify-between text-green-600">
+            <span>Desconto:</span>
+            <span class="font-medium">- € ${order.discount.toFixed(2)}</span>
+          </div>`
+        : '';
+
+      // IVA (se houver)
+      const vatHTML = order.vatAmount && order.vatAmount > 0
+        ? `<div class="flex justify-between">
+            <span class="text-gray-600">IVA:</span>
+            <span class="font-medium">€ ${order.vatAmount.toFixed(2)}</span>
+          </div>`
+        : '';
+
       return `
         <div class="px-4 py-3 border-b border-gray-200">
           <div class="space-y-1 text-xs">
@@ -320,6 +338,8 @@ function renderSection(sectionId: string, order: any, company: any, fields: any)
               </div>
             ` : ''}
             ${checkoutItemsHTML}
+            ${discountHTML}
+            ${vatHTML}
             ${fields.showTotal ? `
               <div class="flex justify-between pt-2 border-t border-gray-300">
                 <span class="font-bold text-sm">Total:</span>
@@ -434,6 +454,9 @@ function getPrintStyles(paperSize: string): string {
     }
     .text-gray-700 {
       color: #374151;
+    }
+    .text-green-600 {
+      color: #16a34a;
     }
     .rounded {
       border-radius: 0.25rem;

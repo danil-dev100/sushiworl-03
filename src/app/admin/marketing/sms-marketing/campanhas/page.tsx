@@ -182,10 +182,14 @@ export default function SmsCampanhasPage() {
 
   const loadPromotions = async () => {
     try {
-      const response = await fetch('/api/promotions?active=true');
+      const response = await fetch('/api/admin/marketing/promotions');
       if (response.ok) {
         const data = await response.json();
-        setPromotions(data.promotions || data || []);
+        // Filtrar apenas promoções ativas com código de cupom
+        const activePromos = (data.promotions || data || []).filter(
+          (p: any) => p.isActive && p.code
+        );
+        setPromotions(activePromos);
       }
     } catch (error) {
       console.error('Erro ao carregar promoções:', error);
@@ -721,14 +725,14 @@ export default function SmsCampanhasPage() {
             <div className="space-y-2">
               <Label>Promoção / Cupom de Desconto</Label>
               <Select
-                value={formData.promotionId}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, promotionId: value }))}
+                value={formData.promotionId || 'none'}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, promotionId: value === 'none' ? '' : value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma promoção (opcional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sem promoção</SelectItem>
+                  <SelectItem value="none">Sem promoção</SelectItem>
                   {promotions.map((promo) => (
                     <SelectItem key={promo.id} value={promo.id}>
                       <div className="flex items-center gap-2">

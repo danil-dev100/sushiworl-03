@@ -23,11 +23,41 @@ interface DeliveryArea {
   pricePerKm?: number;
 }
 
+interface GlobalOption {
+  id: string;
+  name: string;
+  description: string | null;
+  type: 'REQUIRED' | 'OPTIONAL';
+  isPaid: boolean;
+  basePrice: number;
+  minSelection: number;
+  maxSelection: number;
+  allowMultiple: boolean;
+  choices: {
+    id: string;
+    name: string;
+    price: number;
+    isDefault: boolean;
+  }[];
+}
+
+interface SelectedGlobalOption {
+  optionId: string;
+  optionName: string;
+  choices: {
+    choiceId: string;
+    choiceName: string;
+    price: number;
+  }[];
+}
+
 export default function CarrinhoPage() {
-  const { items, additionalItems, updateQuantity, removeItem, addAdditionalItem, removeAdditionalItem, totalPrice } = useCart();
+  const { items, additionalItems, updateQuantity, removeItem, addAdditionalItem, removeAdditionalItem, totalPrice, globalOptions: cartGlobalOptions, setGlobalOptions: setCartGlobalOptions } = useCart();
   const [availableCartItems, setAvailableCartItems] = useState<CartAdditionalItem[]>([]);
   const [deliveryArea, setDeliveryArea] = useState<DeliveryArea | null>(null);
   const [isCheckingDelivery, setIsCheckingDelivery] = useState(true);
+  const [globalOptions, setGlobalOptions] = useState<GlobalOption[]>([]);
+  const [selectedGlobalOptions, setSelectedGlobalOptions] = useState<SelectedGlobalOption[]>(cartGlobalOptions || []);
 
   // TODO: Buscar taxa de IVA das configurações do banco de dados
   const taxaIVA = 13; // Taxa de IVA em percentual (13% conforme especificado)
@@ -116,6 +146,74 @@ export default function CarrinhoPage() {
     fetchCartItems();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Buscar opções globais para o carrinho
+  useEffect(() => {
+    const fetchGlobalOptions = async () => {
+      if (items.length === 0) {
+        setGlobalOptions([]);
+        return;
+      }
+
+      try {
+        // Obter productIds e categorias dos itens no carrinho
+        const productIds = items.map(item => item.productId).join(',');
+        const categories = [...new Set(items.map(item => item.name.split(' - ')[0]))].join(',');
+
+        console.log('[Carrinho] 📡 Buscando opções globais para carrinho...');
+        const response = await fetch(`/api/cart/global-options?productIds=${productIds}&categories=${categories}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('[Carrinho] 📦 Opções globais recebidas:', data);
+
+          if (data.success && data.options) {
+            setGlobalOptions(data.options);
+
+            // Selecionar automaticamente as escolhas padrão
+            const defaultSelections: SelectedGlobalOption[] = [];
+            data.options.forEach((opt: GlobalOption) => {
+              const defaultChoices = opt.choices.filter(c => c.isDefault);
+              if (defaultChoices.length > 0) {
+                const existingSelection = selectedGlobalOptions.find(s => s.optionId === opt.id);
+                if (!existingSelection) {
+                  defaultSelections.push({
+                    optionId: opt.id,
+                    optionName: opt.name,
+                    choices: defaultChoices.map(c => ({
+                      choiceId: c.id,
+                      choiceName: c.name,
+                      price: c.price
+                    }))
+                  });
+                }
+              }
+            });
+
+            if (defaultSelections.length > 0) {
+              setSelectedGlobalOptions(prev => [...prev, ...defaultSelections]);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[Carrinho] ❌ Erro ao buscar opções globais:', error);
+      }
+    };
+
+    fetchGlobalOptions();
+  }, [items]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sincronizar seleções com o contexto do carrinho
+  useEffect(() => {
+    if (setCartGlobalOptions) {
+      setCartGlobalOptions(selectedGlobalOptions);
+    }
+  }, [selectedGlobalOptions, setCartGlobalOptions]);
+
   // Adicionar automaticamente itens obrigatórios quando availableCartItems mudar
   useEffect(() => {
     const requiredItems = availableCartItems.filter(item => item.isRequired);
@@ -144,6 +242,92 @@ export default function CarrinhoPage() {
         removeAdditionalItem(addedItem.id);
       }
     }
+  };
+
+  // Manipular seleção de opções globais
+  const handleGlobalOptionToggle = (option: GlobalOption, choice: GlobalOption['choices'][0], checked: boolean) => {
+    setSelectedGlobalOptions(prev => {
+      const existingIndex = prev.findIndex(s => s.optionId === option.id);
+
+      if (checked) {
+        // Se a opção permite múltipla escolha
+        if (option.allowMultiple) {
+          if (existingIndex >= 0) {
+            // Adicionar escolha à seleção existente
+            const updated = [...prev];
+            const alreadyHasChoice = updated[existingIndex].choices.some(c => c.choiceId === choice.id);
+            if (!alreadyHasChoice) {
+              updated[existingIndex] = {
+                ...updated[existingIndex],
+                choices: [...updated[existingIndex].choices, {
+                  choiceId: choice.id,
+                  choiceName: choice.name,
+                  price: choice.price
+                }]
+              };
+            }
+            return updated;
+          } else {
+            // Criar nova seleção
+            return [...prev, {
+              optionId: option.id,
+              optionName: option.name,
+              choices: [{
+                choiceId: choice.id,
+                choiceName: choice.name,
+                price: choice.price
+              }]
+            }];
+          }
+        } else {
+          // Seleção única - substituir
+          if (existingIndex >= 0) {
+            const updated = [...prev];
+            updated[existingIndex] = {
+              ...updated[existingIndex],
+              choices: [{
+                choiceId: choice.id,
+                choiceName: choice.name,
+                price: choice.price
+              }]
+            };
+            return updated;
+          } else {
+            return [...prev, {
+              optionId: option.id,
+              optionName: option.name,
+              choices: [{
+                choiceId: choice.id,
+                choiceName: choice.name,
+                price: choice.price
+              }]
+            }];
+          }
+        }
+      } else {
+        // Remover escolha
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          const newChoices = updated[existingIndex].choices.filter(c => c.choiceId !== choice.id);
+          if (newChoices.length === 0) {
+            // Remover toda a seleção se não houver mais escolhas
+            return prev.filter((_, i) => i !== existingIndex);
+          } else {
+            updated[existingIndex] = {
+              ...updated[existingIndex],
+              choices: newChoices
+            };
+            return updated;
+          }
+        }
+        return prev;
+      }
+    });
+  };
+
+  const isChoiceSelected = (optionId: string, choiceId: string) => {
+    const selection = selectedGlobalOptions.find(s => s.optionId === optionId);
+    return selection?.choices.some(c => c.choiceId === choiceId) || false;
   };
 
   // Calcular quanto falta para entrega grátis
@@ -299,6 +483,59 @@ export default function CarrinhoPage() {
                     </div>
                   ))}
 
+                  {/* Opções Globais do Carrinho */}
+                  {globalOptions.length > 0 && (
+                    <div className="space-y-4 bg-white dark:bg-[#2a1e14] rounded-xl p-4 shadow-sm border border-[#ead9cd] dark:border-[#4a3c30]">
+                      <h3 className="text-lg font-bold text-[#333333] dark:text-[#f5f1e9]">
+                        Opções Adicionais
+                      </h3>
+                      {globalOptions.map((option) => (
+                        <div key={option.id} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <p className="font-semibold text-[#333333] dark:text-[#f5f1e9]">
+                              {option.name}
+                              {option.type === 'REQUIRED' && (
+                                <span className="ml-2 text-xs text-red-500">(Obrigatório)</span>
+                              )}
+                            </p>
+                            {option.allowMultiple && (
+                              <span className="text-xs text-[#a16b45]">
+                                Múltipla escolha
+                              </span>
+                            )}
+                          </div>
+                          {option.description && (
+                            <p className="text-sm text-[#a16b45]">{option.description}</p>
+                          )}
+                          <div className="flex flex-wrap gap-2">
+                            {option.choices.map((choice) => {
+                              const isSelected = isChoiceSelected(option.id, choice.id);
+                              return (
+                                <button
+                                  key={choice.id}
+                                  type="button"
+                                  onClick={() => handleGlobalOptionToggle(option, choice, !isSelected)}
+                                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    isSelected
+                                      ? 'bg-[#FF6B00] text-white'
+                                      : 'bg-[#FF6B00]/10 text-[#333333] dark:text-[#f5f1e9] hover:bg-[#FF6B00]/20'
+                                  }`}
+                                >
+                                  {choice.name}
+                                  {choice.price > 0 && (
+                                    <span className="ml-1">
+                                      +€{choice.price.toFixed(2)}
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Itens Adicionais do Carrinho */}
                   {availableCartItems.length > 0 && (
                     <div className="space-y-3">
@@ -359,6 +596,18 @@ export default function CarrinhoPage() {
                           <span>{item.name}</span>
                           <span>€{item.price.toFixed(2)}</span>
                         </div>
+                      ))}
+                      {selectedGlobalOptions.map((option) => (
+                        option.choices.map((choice) => (
+                          <div key={`${option.optionId}-${choice.choiceId}`} className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                            <span>{option.optionName}: {choice.choiceName}</span>
+                            {choice.price > 0 ? (
+                              <span>€{choice.price.toFixed(2)}</span>
+                            ) : (
+                              <span className="text-green-600 dark:text-green-400">Grátis</span>
+                            )}
+                          </div>
+                        ))
                       ))}
                       <div className="text-[#333333]/80 dark:text-[#f5f1e9]/80">
                         <span>IVA ({taxaIVA}% incluído)</span>

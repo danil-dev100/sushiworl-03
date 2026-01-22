@@ -21,7 +21,7 @@ export function TargetSelector({
   onAssignmentTypeChange,
   onTargetIdChange,
 }: TargetSelectorProps) {
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string; emoji: string }[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -118,8 +118,11 @@ export function TargetSelector({
             </SelectTrigger>
             <SelectContent>
               {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
+                <SelectItem key={cat.name} value={cat.name}>
+                  <div className="flex items-center gap-2">
+                    <span>{cat.emoji}</span>
+                    <span>{cat.name}</span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>

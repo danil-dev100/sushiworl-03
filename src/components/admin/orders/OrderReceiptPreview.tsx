@@ -69,6 +69,8 @@ export interface OrderReceiptProps {
     bagFee: number;
     discount?: number;
     vatAmount?: number;
+    vatType?: 'INCLUSIVE' | 'EXCLUSIVE';
+    vatRate?: number;
     total: number;
   };
   companyInfo: {
@@ -328,11 +330,18 @@ export default function OrderReceiptPreview({ order, companyInfo, config = defau
                   <span className="font-medium">- {formatCurrency(order.discount)}</span>
                 </div>
               )}
-              {order.vatAmount && order.vatAmount > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">IVA:</span>
-                  <span className="font-medium">{formatCurrency(order.vatAmount)}</span>
-                </div>
+              {order.vatRate && order.vatRate > 0 && (
+                order.vatType === 'INCLUSIVE' ? (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">IVA ({order.vatRate}% incluído)</span>
+                    <span></span>
+                  </div>
+                ) : order.vatType === 'EXCLUSIVE' && order.vatAmount && order.vatAmount > 0 ? (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">IVA ({order.vatRate}%):</span>
+                    <span className="font-medium">{formatCurrency(order.vatAmount)}</span>
+                  </div>
+                ) : null
               )}
               {config.fields.showTotal && (
                 <div className="flex justify-between pt-2 border-t border-gray-300">

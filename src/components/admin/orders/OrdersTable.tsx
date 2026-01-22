@@ -313,7 +313,11 @@ export function OrdersTable({ orders }: OrdersTableProps) {
 
       // Importar dinâmicamente o OrderReceiptPreview para gerar o HTML
       const { renderOrderReceipt } = await import('@/lib/print-utils');
-      const receiptHTML = renderOrderReceipt(orderData, companyInfo, printerConfig, settings.paperSize || '80mm');
+      const vatConfig = {
+        vatType: settings.vatType || 'INCLUSIVE',
+        vatRate: settings.vatRate || 0
+      };
+      const receiptHTML = renderOrderReceipt(orderData, companyInfo, printerConfig, settings.paperSize || '80mm', vatConfig);
 
       printWindow.document.write(receiptHTML);
       printWindow.document.close();

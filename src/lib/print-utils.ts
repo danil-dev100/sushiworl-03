@@ -6,7 +6,8 @@ export function renderOrderReceipt(
   orderData: any,
   companyInfo: any,
   printerConfig: any,
-  paperSize: string
+  paperSize: string,
+  vatConfig?: { vatType: 'INCLUSIVE' | 'EXCLUSIVE'; vatRate: number }
 ): string {
   // Calcular total de itens adicionais do checkout
   const checkoutItems = Array.isArray(orderData.checkoutAdditionalItems)
@@ -57,6 +58,8 @@ export function renderOrderReceipt(
     bagFee: checkoutItemsTotal, // Usar total real dos itens adicionais
     discount: orderData.discount || 0, // Desconto aplicado
     vatAmount: orderData.vatAmount || 0, // IVA
+    vatType: vatConfig?.vatType || 'INCLUSIVE', // Tipo de IVA
+    vatRate: vatConfig?.vatRate || 0, // Taxa de IVA
     total: orderData.total,
   };
 
@@ -314,13 +317,23 @@ function renderSection(sectionId: string, order: any, company: any, fields: any)
           </div>`
         : '';
 
-      // IVA (se houver)
-      const vatHTML = order.vatAmount && order.vatAmount > 0
-        ? `<div class="flex justify-between">
-            <span class="text-gray-600">IVA:</span>
+      // IVA - exibição condicional baseada no tipo
+      let vatHTML = '';
+      if (order.vatRate && order.vatRate > 0) {
+        if (order.vatType === 'INCLUSIVE') {
+          // IVA inclusivo: mostrar apenas mensagem informativa
+          vatHTML = `<div class="flex justify-between">
+            <span class="text-gray-600">IVA (${order.vatRate}% incluído)</span>
+            <span></span>
+          </div>`;
+        } else if (order.vatType === 'EXCLUSIVE' && order.vatAmount && order.vatAmount > 0) {
+          // IVA exclusivo: mostrar o valor
+          vatHTML = `<div class="flex justify-between">
+            <span class="text-gray-600">IVA (${order.vatRate}%):</span>
             <span class="font-medium">€ ${order.vatAmount.toFixed(2)}</span>
-          </div>`
-        : '';
+          </div>`;
+        }
+      }
 
       return `
         <div class="px-4 py-3 border-b border-gray-200">

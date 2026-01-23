@@ -332,8 +332,8 @@ export function GlobalOptionDialog({
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {isPaid
-                      ? 'Defina o preço de cada escolha abaixo'
-                      : 'Ative para adicionar preço às escolhas'}
+                      ? '✓ Preço individual por escolha ativado'
+                      : 'Ative para definir preço em cada escolha'}
                   </p>
                 </div>
                 <Switch

@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
       isScheduled,
       scheduledDate,
       scheduledTime,
+      globalOptions,
     } = body;
 
     // Normalizar método de pagamento para corresponder ao ENUM do Prisma
@@ -173,6 +174,8 @@ export async function POST(request: NextRequest) {
 
     // Calcular totais
     const additionalTotal = additionalItems?.reduce((acc: number, item: { price: number }) => acc + item.price, 0) || 0;
+    const globalOptionsTotal = globalOptions?.reduce((acc: number, opt: { choices: { price: number }[] }) =>
+      acc + opt.choices.reduce((sum: number, choice: { price: number }) => sum + choice.price, 0), 0) || 0;
     const itemsSubtotal = subtotal || items.reduce((acc: number, item: { price: number; quantity: number }) => acc + (item.price * item.quantity), 0);
     const vatAmount = Number((itemsSubtotal * (vatRate / 100)).toFixed(2));
 
@@ -271,7 +274,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const total = Number((itemsSubtotal + actualDeliveryFee + additionalTotal - discountAmount).toFixed(2));
+    const total = Number((itemsSubtotal + actualDeliveryFee + additionalTotal + globalOptionsTotal - discountAmount).toFixed(2));
 
     console.log('[Orders API] 📦 Itens adicionais do checkout:', additionalItems);
     console.log('[Orders API] 💰 Total de itens adicionais:', additionalTotal);
@@ -316,6 +319,12 @@ export async function POST(request: NextRequest) {
       }
     } catch (e) {
       console.log('[Orders API] ⚠️ Campo checkoutAdditionalItems ainda não existe no schema');
+    }
+
+    // Adicionar opções globais se existirem
+    if (globalOptions && globalOptions.length > 0) {
+      orderData.globalOptions = globalOptions;
+      console.log('[Orders API] 🎯 Opções globais do pedido:', globalOptions);
     }
 
     // Criar pedido

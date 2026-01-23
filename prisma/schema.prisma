@@ -261,6 +261,9 @@ model Order {
   // Itens adicionais do checkout (talheres, guardanapos, etc.)
   checkoutAdditionalItems Json? // [{name: string, price: number, isRequired: boolean}]
 
+  // Opções globais selecionadas no carrinho
+  globalOptions Json? // [{optionId, optionName, choices: [{choiceId, choiceName, price}]}]
+
   // Pagamento
   status        OrderStatus   @default(PENDING)
   paymentMethod PaymentMethod @default(CASH)

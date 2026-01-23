@@ -18,8 +18,19 @@ export function renderOrderReceipt(
     sum + (item.price || 0), 0
   );
 
+  // Calcular total das opções globais
+  const globalOptions = Array.isArray(orderData.globalOptions)
+    ? orderData.globalOptions
+    : [];
+
+  const globalOptionsTotal = globalOptions.reduce((sum: number, opt: any) =>
+    sum + (opt.choices?.reduce((choiceSum: number, choice: any) => choiceSum + (choice.price || 0), 0) || 0), 0
+  );
+
   console.log('[Print Utils] 📦 Itens adicionais do checkout:', checkoutItems);
   console.log('[Print Utils] 💰 Total de itens adicionais:', checkoutItemsTotal);
+  console.log('[Print Utils] 🎯 Opções globais:', globalOptions);
+  console.log('[Print Utils] 💰 Total de opções globais:', globalOptionsTotal);
 
   // Processar dados do pedido para o formato esperado
   const order = {
@@ -53,6 +64,7 @@ export function renderOrderReceipt(
       price: item.priceAtTime,
     })),
     checkoutItems: checkoutItems, // Itens adicionais do checkout
+    globalOptions: globalOptions, // Opções globais selecionadas no carrinho
     subtotal: orderData.subtotal,
     deliveryFee: orderData.deliveryFee || 0,
     bagFee: checkoutItemsTotal, // Usar total real dos itens adicionais
@@ -309,6 +321,18 @@ function renderSection(sectionId: string, order: any, company: any, fields: any)
           `).join('')
         : '';
 
+      // Renderizar opções globais selecionadas
+      const globalOptionsHTML = order.globalOptions && order.globalOptions.length > 0
+        ? order.globalOptions.flatMap((opt: any) =>
+            opt.choices?.map((choice: any) => `
+              <div class="flex justify-between">
+                <span class="text-gray-600">${opt.optionName}: ${choice.choiceName}</span>
+                <span class="font-medium">${choice.price > 0 ? `€ ${(choice.price || 0).toFixed(2)}` : 'Grátis'}</span>
+              </div>
+            `) || []
+          ).join('')
+        : '';
+
       // Desconto (se houver)
       const discountHTML = order.discount && order.discount > 0
         ? `<div class="flex justify-between text-green-600">
@@ -351,6 +375,7 @@ function renderSection(sectionId: string, order: any, company: any, fields: any)
               </div>
             ` : ''}
             ${checkoutItemsHTML}
+            ${globalOptionsHTML}
             ${discountHTML}
             ${vatHTML}
             ${fields.showTotal ? `

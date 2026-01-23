@@ -19,7 +19,7 @@ interface CheckoutAdditionalItem {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, additionalItems, totalPrice, clearCart } = useCart();
+  const { items, additionalItems, globalOptions, totalPrice, clearCart } = useCart();
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [valorEntregue, setValorEntregue] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -192,7 +192,6 @@ export default function CheckoutPage() {
           name: data.promotion.name,
           discountAmount: data.promotion.discountAmount,
         });
-        setDesconto(data.promotion.discountAmount);
         toast.success(`Cupom "${data.promotion.code}" aplicado! Desconto: €${data.promotion.discountAmount.toFixed(2)}`);
       } else {
         toast.error(data.error || 'Cupom inválido');
@@ -208,7 +207,6 @@ export default function CheckoutPage() {
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setCouponCode('');
-    setDesconto(0);
     toast.success('Cupom removido');
   };
 
@@ -466,7 +464,6 @@ export default function CheckoutPage() {
           console.error('[Checkout] ❌ Cupom não é mais válido:', revalidateData.error);
           toast.error(`Cupom não é mais válido: ${revalidateData.error}`);
           setAppliedCoupon(null);
-          setDesconto(0);
           setIsSubmitting(false);
           return;
         }
@@ -474,7 +471,7 @@ export default function CheckoutPage() {
         // Atualizar desconto com valor revalidado
         if (revalidateData.promotion.discountAmount !== desconto) {
           console.log('[Checkout] ⚠️ Desconto atualizado de', desconto, 'para', revalidateData.promotion.discountAmount);
-          setDesconto(revalidateData.promotion.discountAmount);
+          setAppliedCoupon(prev => prev ? { ...prev, discountAmount: revalidateData.promotion.discountAmount } : null);
         }
 
         console.log('[Checkout] ✅ Cupom revalidado com sucesso');
@@ -494,6 +491,17 @@ export default function CheckoutPage() {
         ...additionalItems.map(item => ({ name: item.name, price: item.price })),
         ...selectedCheckoutItemsData,
       ];
+
+      // Preparar opções globais selecionadas para o pedido
+      const globalOptionsData = globalOptions.map(opt => ({
+        optionId: opt.optionId,
+        optionName: opt.optionName,
+        choices: opt.choices.map(c => ({
+          choiceId: c.choiceId,
+          choiceName: c.choiceName,
+          price: c.price
+        }))
+      }));
 
       const orderData: any = {
         customerName: formData.nome,
@@ -517,6 +525,7 @@ export default function CheckoutPage() {
         couponCode: appliedCoupon?.code || null,
         promotionId: appliedCoupon?.id || null,
         additionalItems: allAdditionalItems,
+        globalOptions: globalOptionsData,
       };
 
       // Adicionar dados de agendamento se aplicável
@@ -645,6 +654,24 @@ export default function CheckoutPage() {
                         €{item.price.toFixed(2)}
                       </span>
                     </div>
+                  ))}
+                  {/* Opções Globais Selecionadas */}
+                  {globalOptions.length > 0 && globalOptions.map((option) => (
+                    option.choices.map((choice) => (
+                      <div key={`${option.optionId}-${choice.choiceId}`} className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex w-12 h-12 flex-shrink-0 items-center justify-center rounded-md bg-[#FF6B00]/10">
+                            <span className="text-xl">🍣</span>
+                          </div>
+                          <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
+                            {option.optionName}: {choice.choiceName}
+                          </span>
+                        </div>
+                        <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9] flex-shrink-0">
+                          {choice.price > 0 ? `€${choice.price.toFixed(2)}` : 'Grátis'}
+                        </span>
+                      </div>
+                    ))
                   ))}
                 </div>
                 <div className="mt-3 space-y-2">
@@ -1140,6 +1167,26 @@ export default function CheckoutPage() {
                             €{item.price.toFixed(2)}
                           </span>
                         </div>
+                      ))}
+                      {/* Opções Globais Selecionadas */}
+                      {globalOptions.length > 0 && globalOptions.map((option) => (
+                        option.choices.map((choice) => (
+                          <div key={`sidebar-${option.optionId}-${choice.choiceId}`} className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                              <div className="flex w-14 h-14 items-center justify-center rounded-md bg-[#FF6B00]/10">
+                                <span className="text-2xl">🍣</span>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="font-medium text-[#333333] dark:text-[#f5f1e9]">
+                                  {option.optionName}: {choice.choiceName}
+                                </span>
+                              </div>
+                            </div>
+                            <span className="font-medium text-[#333333] dark:text-[#f5f1e9]">
+                              {choice.price > 0 ? `€${choice.price.toFixed(2)}` : 'Grátis'}
+                            </span>
+                          </div>
+                        ))
                       ))}
                     </div>
                     <div className="mt-4 space-y-2">

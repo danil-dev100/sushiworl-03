@@ -71,6 +71,15 @@ export interface OrderReceiptProps {
     vatAmount?: number;
     vatType?: 'INCLUSIVE' | 'EXCLUSIVE';
     vatRate?: number;
+    globalOptions?: Array<{
+      optionId: string;
+      optionName: string;
+      choices: Array<{
+        choiceId: string;
+        choiceName: string;
+        price: number;
+      }>;
+    }>;
     total: number;
   };
   companyInfo: {
@@ -323,6 +332,14 @@ export default function OrderReceiptPreview({ order, companyInfo, config = defau
                   <span className="text-gray-600">Taxa de Saco:</span>
                   <span className="font-medium">{formatCurrency(order.bagFee)}</span>
                 </div>
+              )}
+              {order.globalOptions && order.globalOptions.length > 0 && order.globalOptions.map((opt) =>
+                opt.choices.map((choice) => (
+                  <div key={`${opt.optionId}-${choice.choiceId}`} className="flex justify-between">
+                    <span className="text-gray-600">{opt.optionName}: {choice.choiceName}</span>
+                    <span className="font-medium">{choice.price > 0 ? formatCurrency(choice.price) : 'Grátis'}</span>
+                  </div>
+                ))
               )}
               {order.discount && order.discount > 0 && (
                 <div className="flex justify-between text-green-600">

@@ -1,5 +1,6 @@
 'use client';
 
+// GlobalOptionDialog v2 - Preços individuais por escolha (sem Preço Base geral)
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {

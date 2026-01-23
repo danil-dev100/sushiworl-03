@@ -21,7 +21,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Trash2, GripVertical, HelpCircle } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 
 interface Choice {
@@ -163,7 +169,7 @@ export function GlobalOptionDialog({
         basePrice: isPaid ? parseFloat(basePrice) || 0 : 0,
         choices: validChoices.map((c, i) => ({
           name: c.name.trim(),
-          price: parseFloat(c.price.toString()) || 0,
+          price: isPaid ? (parseFloat(c.price.toString()) || 0) : 0,
           isDefault: c.isDefault,
           sortOrder: i,
         })),
@@ -218,90 +224,131 @@ export function GlobalOptionDialog({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Informações Básicas */}
           <div className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Nome da Opção *</Label>
-              <Input
-                id="name"
-                placeholder="Ex: Braseado, Wasabi, Shoyu..."
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                placeholder="Descrição opcional para ajudar na identificação"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={2}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            <TooltipProvider>
               <div className="grid gap-2">
-                <Label htmlFor="type">Tipo</Label>
-                <Select value={type} onValueChange={(v: any) => setType(v)}>
-                  <SelectTrigger id="type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="OPTIONAL">Opcional</SelectItem>
-                    <SelectItem value="REQUIRED">Obrigatório</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="displayAt">Exibir em</Label>
-                <Select
-                  value={displayAt}
-                  onValueChange={(v: any) => setDisplayAt(v)}
-                >
-                  <SelectTrigger id="displayAt">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="SITE">Site (Popup)</SelectItem>
-                    <SelectItem value="CART">Carrinho</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Preço Base */}
-            <div className="flex items-center space-x-4 p-4 border rounded-lg">
-              <div className="flex-1">
-                <Label htmlFor="isPaid" className="text-base">
-                  Opção paga
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Cobra um valor base pela opção (além do preço das escolhas)
-                </p>
-              </div>
-              <Switch
-                id="isPaid"
-                checked={isPaid}
-                onCheckedChange={setIsPaid}
-              />
-            </div>
-
-            {isPaid && (
-              <div className="grid gap-2">
-                <Label htmlFor="basePrice">Preço Base (€)</Label>
+                <div className="flex items-center gap-1">
+                  <Label htmlFor="name">Nome da Opção *</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Nome que será exibido para o cliente</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Input
-                  id="basePrice"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  value={basePrice}
-                  onChange={(e) => setBasePrice(e.target.value)}
+                  id="name"
+                  placeholder="Ex: Molhos, Acompanhamentos, Extras..."
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
                 />
               </div>
-            )}
+
+              <div className="grid gap-2">
+                <Label htmlFor="description">Descrição (opcional)</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Ex: Quer brasear o sushi/gunkan? (aquecido)"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={2}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <div className="flex items-center gap-1">
+                    <Label htmlFor="type">Tipo</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p><strong>Opcional:</strong> Cliente pode ignorar</p>
+                        <p><strong>Obrigatório:</strong> Cliente deve escolher</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Select value={type} onValueChange={(v: any) => setType(v)}>
+                    <SelectTrigger id="type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="OPTIONAL">Opcional</SelectItem>
+                      <SelectItem value="REQUIRED">Obrigatório</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-2">
+                  <div className="flex items-center gap-1">
+                    <Label htmlFor="displayAt">Exibir em</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p><strong>Site (Popup):</strong> Exibe ao adicionar produto</p>
+                        <p><strong>Carrinho:</strong> Exibe na página do carrinho</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Select
+                    value={displayAt}
+                    onValueChange={(v: any) => setDisplayAt(v)}
+                  >
+                    <SelectTrigger id="displayAt">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="SITE">Site (Popup)</SelectItem>
+                      <SelectItem value="CART">Carrinho (Descrição)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </TooltipProvider>
+
+            {/* Opção Paga */}
+            <TooltipProvider>
+              <div className="flex items-center space-x-4 p-4 border rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center gap-1">
+                    <Label htmlFor="isPaid" className="text-base">
+                      Opção Paga
+                    </Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Se ativado, você pode definir um preço</p>
+                        <p>para cada escolha (ex: Molho extra +€0.50)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {isPaid
+                      ? 'Defina o preço de cada escolha abaixo'
+                      : 'Ative para adicionar preço às escolhas'}
+                  </p>
+                </div>
+                <Switch
+                  id="isPaid"
+                  checked={isPaid}
+                  onCheckedChange={(checked) => {
+                    setIsPaid(checked);
+                    // Se desativar opção paga, zerar todos os preços
+                    if (!checked) {
+                      setBasePrice('0');
+                      setChoices(choices.map(c => ({ ...c, price: 0 })));
+                    }
+                  }}
+                />
+              </div>
+            </TooltipProvider>
           </div>
 
           {/* Escolhas */}
@@ -324,6 +371,13 @@ export function GlobalOptionDialog({
               </Button>
             </div>
 
+            {/* Cabeçalho das colunas */}
+            <div className={`grid gap-3 px-3 text-xs text-muted-foreground font-medium ${isPaid ? 'grid-cols-12' : 'grid-cols-10'}`}>
+              <div className={isPaid ? 'col-span-5 pl-8' : 'col-span-7 pl-8'}>Nome</div>
+              {isPaid && <div className="col-span-3">Preço (€)</div>}
+              <div className="col-span-3">Padrão</div>
+            </div>
+
             <div className="space-y-3">
               {choices.map((choice, index) => (
                 <div
@@ -332,8 +386,8 @@ export function GlobalOptionDialog({
                 >
                   <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
 
-                  <div className="flex-1 grid grid-cols-12 gap-3">
-                    <div className="col-span-6">
+                  <div className={`flex-1 grid gap-3 ${isPaid ? 'grid-cols-12' : 'grid-cols-10'}`}>
+                    <div className={isPaid ? 'col-span-5' : 'col-span-7'}>
                       <Input
                         placeholder="Nome da escolha"
                         value={choice.name}
@@ -343,18 +397,20 @@ export function GlobalOptionDialog({
                       />
                     </div>
 
-                    <div className="col-span-3">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="Preço (€)"
-                        value={choice.price}
-                        onChange={(e) =>
-                          updateChoice(index, 'price', e.target.value)
-                        }
-                      />
-                    </div>
+                    {isPaid && (
+                      <div className="col-span-3">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="Preço (€)"
+                          value={choice.price}
+                          onChange={(e) =>
+                            updateChoice(index, 'price', e.target.value)
+                          }
+                        />
+                      </div>
+                    )}
 
                     <div className="col-span-3 flex items-center gap-2">
                       <Switch
@@ -374,7 +430,7 @@ export function GlobalOptionDialog({
                     onClick={() => removeChoice(index)}
                     disabled={choices.length === 1}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 text-destructive" />
                   </Button>
                 </div>
               ))}

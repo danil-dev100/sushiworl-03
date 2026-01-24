@@ -46,8 +46,12 @@ export async function POST(request: NextRequest) {
         let errorMessage: string | null = null;
 
         try {
-          // Valida assinatura se o webhook tiver secret configurado
-          if (webhook.secret && signature) {
+          // SEGURANÇA: Validação obrigatória de assinatura quando secret está configurado
+          if (webhook.secret) {
+            if (!signature) {
+              throw new Error('Assinatura ausente - header X-Webhook-Signature é obrigatório');
+            }
+
             const expectedSignature = crypto
               .createHmac('sha256', webhook.secret)
               .update(JSON.stringify(body))

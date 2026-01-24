@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
@@ -8,6 +10,7 @@ export async function GET(
   try {
     const { id: orderId } = await params;
 
+    // Buscar pedido
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       select: {
@@ -16,6 +19,9 @@ export async function GET(
         createdAt: true,
         updatedAt: true,
         total: true,
+        userId: true,
+        customerEmail: true,
+        orderNumber: true,
         orderItems: {
           include: {
             product: {
@@ -36,9 +42,38 @@ export async function GET(
       );
     }
 
+    // Verificar autorização: usuário logado deve ser dono do pedido ou admin
+    const session = await getServerSession(authOptions);
+
+    // Se o pedido tem userId, verificar se o usuário logado é o dono ou admin
+    if (order.userId) {
+      if (!session) {
+        return NextResponse.json(
+          { success: false, error: 'Não autorizado' },
+          { status: 401 }
+        );
+      }
+
+      const isOwner = session.user.id === order.userId;
+      const isAdmin = ['ADMIN', 'MANAGER'].includes(session.user.role);
+
+      if (!isOwner && !isAdmin) {
+        return NextResponse.json(
+          { success: false, error: 'Não autorizado a ver este pedido' },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Se pedido é de cliente não logado (guest), permitir acesso apenas com orderNumber
+    // Para pedidos guest, o ID é suficiente pois é um UUID difícil de adivinhar
+
+    // Remover campos sensíveis da resposta
+    const { userId, customerEmail, ...safeOrder } = order;
+
     return NextResponse.json({
       success: true,
-      order
+      order: safeOrder
     });
   } catch (error) {
     console.error('[Order Status API Error]', error);

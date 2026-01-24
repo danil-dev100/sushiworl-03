@@ -18,10 +18,11 @@ export async function POST() {
     console.log('[Migration API] 🔄 Executando migration: adicionar checkoutAdditionalItems');
 
     // Executar SQL para adicionar coluna se não existir
-    await prisma.$executeRawUnsafe(`
+    // SEGURANÇA: Usando $executeRaw com template literal (não Unsafe)
+    await prisma.$executeRaw`
       ALTER TABLE "Order"
-      ADD COLUMN IF NOT EXISTS "checkoutAdditionalItems" JSONB;
-    `);
+      ADD COLUMN IF NOT EXISTS "checkoutAdditionalItems" JSONB
+    `;
 
     console.log('[Migration API] ✅ Migration executada com sucesso');
 

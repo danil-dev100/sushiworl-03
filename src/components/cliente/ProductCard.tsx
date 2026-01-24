@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Loader2, Clock } from 'lucide-react';
-import { sanitizeHtml } from '@/lib/security';
+import { Loader2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { ProductOptionsDialog } from './ProductOptionsDialog';
 import { toast } from 'sonner';
@@ -305,7 +304,7 @@ export default function ProductCard({
       </div>
       <div className="flex flex-col flex-grow">
         <h3 className="font-bold text-[#FF6B00] text-lg">
-          {sanitizeHtml(name)}
+          {name}
         </h3>
         <div className="flex items-center gap-1.5 mt-1">
           <div className={`w-2 h-2 rounded-full ${isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
@@ -313,10 +312,9 @@ export default function ProductCard({
             {availabilityText}
           </span>
         </div>
-        <p
-          className="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
-        />
+        <p className="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow">
+          {description}
+        </p>
         <div className="flex items-center gap-2">
           <p className="text-price dark:text-background-light text-lg font-bold">
             {price}

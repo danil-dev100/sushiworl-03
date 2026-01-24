@@ -18,12 +18,13 @@ export async function POST() {
     console.log('[Migration API] 🔄 Executando migration: adicionar coluna name à Integration');
 
     // Verificar se a coluna já existe
-    const checkColumn = await prisma.$queryRawUnsafe(`
+    // SEGURANÇA: Usando $queryRaw com template literal (não Unsafe)
+    const checkColumn = await prisma.$queryRaw`
       SELECT column_name
       FROM information_schema.columns
       WHERE table_name = 'Integration'
-      AND column_name = 'name';
-    `);
+      AND column_name = 'name'
+    `;
 
     if (Array.isArray(checkColumn) && checkColumn.length > 0) {
       console.log('[Migration API] ℹ️ Coluna name já existe na tabela Integration');
@@ -35,10 +36,11 @@ export async function POST() {
     }
 
     // Adicionar coluna se não existir
-    await prisma.$executeRawUnsafe(`
+    // SEGURANÇA: Usando $executeRaw com template literal (não Unsafe)
+    await prisma.$executeRaw`
       ALTER TABLE "Integration"
-      ADD COLUMN IF NOT EXISTS "name" TEXT;
-    `);
+      ADD COLUMN IF NOT EXISTS "name" TEXT
+    `;
 
     console.log('[Migration API] ✅ Coluna name adicionada à tabela Integration');
 

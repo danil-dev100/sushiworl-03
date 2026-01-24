@@ -2,6 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions, canManageMarketing } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { z } from 'zod';
+
+// SEGURANÇA: Schemas de validação Zod
+const IntegrationDataSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().max(100).optional().nullable(),
+  platform: z.enum(['FACEBOOK', 'GOOGLE_ANALYTICS', 'GOOGLE_TAG_MANAGER', 'TIKTOK', 'CUSTOM']),
+  type: z.enum(['PIXEL', 'MEASUREMENT', 'TAG_MANAGER', 'CUSTOM']),
+  apiKey: z.string().max(500).optional().nullable(),
+  apiSecret: z.string().max(500).optional().nullable(),
+  pixelId: z.string().max(100).optional().nullable(),
+  measurementId: z.string().max(100).optional().nullable(),
+  accessToken: z.string().max(1000).optional().nullable(),
+  config: z.record(z.any()).optional(),
+  isActive: z.boolean().optional(),
+  events: z.array(z.string()).optional(),
+});
+
+const ActionSchema = z.object({
+  action: z.enum(['create_integration', 'update_integration', 'delete_integration', 'test_connection']),
+  data: IntegrationDataSchema,
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,7 +68,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, data } = body;
+
+    // SEGURANÇA: Validar dados de entrada com Zod
+    const parseResult = ActionSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: 'Dados inválidos', details: parseResult.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { action, data } = parseResult.data;
 
     switch (action) {
       case 'create_integration':

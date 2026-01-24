@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { sanitizeHtml } from '@/lib/security';
 
 interface ProductCardProps {
   name: string;
@@ -39,12 +38,11 @@ export default function ProductCard({
       </div>
       <div className="flex flex-col flex-grow">
         <h3 className="text-price dark:text-background-light text-lg font-bold">
-          {sanitizeHtml(name)}
+          {name}
         </h3>
-        <p
-          className="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
-        />
+        <p className="text-price/70 dark:text-background-light/70 text-sm mt-1 mb-3 flex-grow">
+          {description}
+        </p>
         <div className="flex items-center gap-2">
           <p className="text-price dark:text-background-light text-lg font-bold">
             {price}

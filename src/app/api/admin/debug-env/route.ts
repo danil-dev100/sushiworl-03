@@ -6,8 +6,16 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 // Forçar novo deploy após reconfigurar env vars na Vercel
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
+    // SEGURANÇA: Bloquear em produção
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { error: 'Endpoint de debug não disponível em produção' },
+        { status: 403 }
+      );
+    }
+
     // Verificar autenticação
     const session = await getServerSession(authOptions);
 
@@ -15,18 +23,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Listar todas as variáveis de ambiente relacionadas ao Supabase
-    const envVars = {
-      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'NOT_FOUND',
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'EXISTS (length: ' + process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.length + ')' : 'NOT_FOUND',
-      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'EXISTS (length: ' + process.env.SUPABASE_SERVICE_ROLE_KEY.length + ')' : 'NOT_FOUND',
-      ALL_SUPABASE_VARS: Object.keys(process.env).filter(k => k.includes('SUPABASE')),
+    // Apenas verificar se variáveis existem (sem expor detalhes)
+    const envStatus = {
+      SUPABASE_CONFIGURED: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
       NODE_ENV: process.env.NODE_ENV,
-      VERCEL: process.env.VERCEL,
-      VERCEL_ENV: process.env.VERCEL_ENV,
     };
 
-    return NextResponse.json(envVars, { status: 200 });
+    return NextResponse.json(envStatus, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { error: `Erro: ${error instanceof Error ? error.message : 'Desconhecido'}` },

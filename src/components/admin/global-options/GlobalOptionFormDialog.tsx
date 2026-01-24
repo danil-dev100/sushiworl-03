@@ -47,6 +47,7 @@ export function GlobalOptionFormDialog({
   const [displayAt, setDisplayAt] = useState<'SITE' | 'CART'>('SITE');
   const [isPaid, setIsPaid] = useState(false);
   const [basePrice, setBasePrice] = useState('0');
+  const [allowQuantity, setAllowQuantity] = useState(false);
   const [choices, setChoices] = useState<Choice[]>([
     { name: '', price: 0, isDefault: true, sortOrder: 0 },
   ]);
@@ -61,6 +62,7 @@ export function GlobalOptionFormDialog({
       setDisplayAt(option.displayAt || 'SITE');
       setIsPaid(option.isPaid || false);
       setBasePrice(option.basePrice?.toString() || '0');
+      setAllowQuantity(option.allowQuantity || false);
       setChoices(
         option.choices?.map((c: any, i: number) => ({
           name: c.name,
@@ -81,6 +83,7 @@ export function GlobalOptionFormDialog({
     setDisplayAt('SITE');
     setIsPaid(false);
     setBasePrice('0');
+    setAllowQuantity(false);
     setChoices([{ name: '', price: 0, isDefault: true, sortOrder: 0 }]);
   };
 
@@ -149,6 +152,7 @@ export function GlobalOptionFormDialog({
         displayAt,
         isPaid,
         basePrice: isPaid ? parseFloat(basePrice) || 0 : 0,
+        allowQuantity,
         choices: validChoices.map((c, i) => ({
           name: c.name.trim(),
           price: parseFloat(c.price.toString()) || 0,
@@ -287,6 +291,16 @@ export function GlobalOptionFormDialog({
             <Switch checked={isPaid} onCheckedChange={setIsPaid} />
           </div>
 
+          {/* Permitir Quantidade */}
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <TooltipLabel
+                text="Permitir Quantidade"
+                tooltip="Se ativado, o cliente pode escolher a quantidade de cada opção (ex: 2x Wasabi, 3x Gengibre)"
+              />
+            </div>
+            <Switch checked={allowQuantity} onCheckedChange={setAllowQuantity} />
+          </div>
 
           {/* Escolhas */}
           <div className="space-y-3">

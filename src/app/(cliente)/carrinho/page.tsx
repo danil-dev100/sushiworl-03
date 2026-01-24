@@ -33,6 +33,7 @@ interface GlobalOption {
   minSelection: number;
   maxSelection: number;
   allowMultiple: boolean;
+  allowQuantity: boolean;
   choices: {
     id: string;
     name: string;
@@ -48,6 +49,7 @@ interface SelectedGlobalOption {
     choiceId: string;
     choiceName: string;
     price: number;
+    quantity: number;
   }[];
 }
 
@@ -187,7 +189,8 @@ export default function CarrinhoPage() {
                     choices: defaultChoices.map(c => ({
                       choiceId: c.id,
                       choiceName: c.name,
-                      price: c.price
+                      price: c.price,
+                      quantity: 1
                     }))
                   });
                 }
@@ -262,7 +265,8 @@ export default function CarrinhoPage() {
                 choices: [...updated[existingIndex].choices, {
                   choiceId: choice.id,
                   choiceName: choice.name,
-                  price: choice.price
+                  price: choice.price,
+                  quantity: 1
                 }]
               };
             }
@@ -275,7 +279,8 @@ export default function CarrinhoPage() {
               choices: [{
                 choiceId: choice.id,
                 choiceName: choice.name,
-                price: choice.price
+                price: choice.price,
+                quantity: 1
               }]
             }];
           }
@@ -288,7 +293,8 @@ export default function CarrinhoPage() {
               choices: [{
                 choiceId: choice.id,
                 choiceName: choice.name,
-                price: choice.price
+                price: choice.price,
+                quantity: 1
               }]
             };
             return updated;
@@ -299,7 +305,8 @@ export default function CarrinhoPage() {
               choices: [{
                 choiceId: choice.id,
                 choiceName: choice.name,
-                price: choice.price
+                price: choice.price,
+                quantity: 1
               }]
             }];
           }
@@ -325,9 +332,42 @@ export default function CarrinhoPage() {
     });
   };
 
+  // Atualizar quantidade de uma escolha
+  const handleChoiceQuantity = (optionId: string, choiceId: string, delta: number) => {
+    setSelectedGlobalOptions(prev => {
+      const existingIndex = prev.findIndex(s => s.optionId === optionId);
+      if (existingIndex < 0) return prev;
+
+      const updated = [...prev];
+      const choiceIndex = updated[existingIndex].choices.findIndex(c => c.choiceId === choiceId);
+      if (choiceIndex < 0) return prev;
+
+      const newQty = (updated[existingIndex].choices[choiceIndex].quantity || 1) + delta;
+      if (newQty < 1) {
+        // Remover escolha se quantidade for 0
+        const newChoices = updated[existingIndex].choices.filter(c => c.choiceId !== choiceId);
+        if (newChoices.length === 0) {
+          return prev.filter((_, i) => i !== existingIndex);
+        }
+        updated[existingIndex] = { ...updated[existingIndex], choices: newChoices };
+      } else {
+        updated[existingIndex].choices[choiceIndex] = {
+          ...updated[existingIndex].choices[choiceIndex],
+          quantity: newQty
+        };
+      }
+      return updated;
+    });
+  };
+
   const isChoiceSelected = (optionId: string, choiceId: string) => {
     const selection = selectedGlobalOptions.find(s => s.optionId === optionId);
     return selection?.choices.some(c => c.choiceId === choiceId) || false;
+  };
+
+  const getChoiceQuantity = (optionId: string, choiceId: string) => {
+    const selection = selectedGlobalOptions.find(s => s.optionId === optionId);
+    return selection?.choices.find(c => c.choiceId === choiceId)?.quantity || 0;
   };
 
   // Calcular quanto falta para entrega grátis
@@ -510,6 +550,38 @@ export default function CarrinhoPage() {
                           <div className="flex flex-wrap gap-2">
                             {option.choices.map((choice) => {
                               const isSelected = isChoiceSelected(option.id, choice.id);
+                              const qty = getChoiceQuantity(option.id, choice.id);
+
+                              // Se permite quantidade e está selecionado, mostrar controles de quantidade
+                              if (option.allowQuantity && isSelected) {
+                                return (
+                                  <div
+                                    key={choice.id}
+                                    className="flex items-center gap-1 bg-[#FF6B00] text-white rounded-lg px-2 py-1"
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() => handleChoiceQuantity(option.id, choice.id, -1)}
+                                      className="w-6 h-6 flex items-center justify-center rounded hover:bg-white/20"
+                                    >
+                                      <Minus className="w-3 h-3" />
+                                    </button>
+                                    <span className="min-w-[1.5rem] text-center text-sm font-bold">{qty}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleChoiceQuantity(option.id, choice.id, 1)}
+                                      className="w-6 h-6 flex items-center justify-center rounded hover:bg-white/20"
+                                    >
+                                      <Plus className="w-3 h-3" />
+                                    </button>
+                                    <span className="ml-1 text-sm">{choice.name}</span>
+                                    {choice.price > 0 && (
+                                      <span className="text-xs ml-1">€{(choice.price * qty).toFixed(2)}</span>
+                                    )}
+                                  </div>
+                                );
+                              }
+
                               return (
                                 <button
                                   key={choice.id}
@@ -600,9 +672,11 @@ export default function CarrinhoPage() {
                       {selectedGlobalOptions.map((option) => (
                         option.choices.map((choice) => (
                           <div key={`${option.optionId}-${choice.choiceId}`} className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
-                            <span>{option.optionName}: {choice.choiceName}</span>
+                            <span>
+                              {choice.quantity > 1 ? `${choice.quantity}x ` : ''}{option.optionName}: {choice.choiceName}
+                            </span>
                             {choice.price > 0 ? (
-                              <span>€{choice.price.toFixed(2)}</span>
+                              <span>€{(choice.price * (choice.quantity || 1)).toFixed(2)}</span>
                             ) : (
                               <span className="text-green-600 dark:text-green-400">Grátis</span>
                             )}

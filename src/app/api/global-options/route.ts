@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
         displayAt: data.displayAt || 'CART',
         isPaid: data.isPaid === true,
         basePrice: data.isPaid ? parseFloat(data.basePrice) || 0 : 0,
+        allowQuantity: data.allowQuantity === true,
         isActive: true,
         sortOrder: nextOrder,
         choices: {

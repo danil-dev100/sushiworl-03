@@ -77,6 +77,7 @@ export async function GET(req: NextRequest) {
         displayAt: a.globalOption.displayAt,
         isPaid: a.globalOption.isPaid,
         basePrice: a.globalOption.basePrice,
+        allowQuantity: a.globalOption.allowQuantity,
         choices: a.globalOption.choices,
         isGlobal: true,
         assignmentType: a.assignmentType,

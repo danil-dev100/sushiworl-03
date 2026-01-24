@@ -182,6 +182,7 @@ model GlobalOption {
   displayAt   DisplayAt  @default(CART)
   isPaid      Boolean    @default(false)
   basePrice   Float      @default(0)
+  allowQuantity Boolean  @default(false)
   isActive    Boolean    @default(true)
   sortOrder   Int        @default(0)
   createdAt   DateTime   @default(now())

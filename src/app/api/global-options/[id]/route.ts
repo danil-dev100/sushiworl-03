@@ -103,6 +103,7 @@ export async function PUT(
         displayAt: data.displayAt,
         isPaid: data.isPaid === true,
         basePrice: data.isPaid ? parseFloat(data.basePrice) || 0 : 0,
+        allowQuantity: data.allowQuantity === true,
         sortOrder: data.sortOrder || 0,
         choices: {
           create: data.choices.map((choice: any, index: number) => ({

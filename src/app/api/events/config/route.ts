@@ -21,7 +21,6 @@ export async function GET() {
         measurementId: true,
         isActive: true,
         config: true,
-        events: true,
       },
     });
 
@@ -34,13 +33,9 @@ export async function GET() {
       measurementId: integration.measurementId,
       isActive: integration.isActive,
       events:
-        // Tentar pegar do campo events primeiro
-        Array.isArray((integration as any).events) && (integration as any).events.length > 0
-          ? (integration as any).events
-          // Fallback para config.events
-          : Array.isArray((integration.config as any)?.events) && (integration.config as any).events.length > 0
+        // Pegar do config.events ou usar fallback padrão
+        Array.isArray((integration.config as any)?.events) && (integration.config as any).events.length > 0
           ? (integration.config as any).events
-          // Fallback padrão: todos os eventos
           : [
               'page_view',
               'sign_up',

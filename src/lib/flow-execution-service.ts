@@ -152,34 +152,36 @@ export class FlowExecutionService {
       case 'order_scheduled': // Também validar para pedidos agendados
         if (!context.orderId) return false;
 
+        // Contar pedidos do cliente (incluindo o atual)
+        const orderCount = await prisma.order.count({
+          where: {
+            customerEmail: context.email,
+            status: { not: 'CANCELLED' },
+          }
+        });
+
+        const isFirstPurchase = orderCount === 1;
+        console.log(`[Flow Execution] Email ${context.email}: ${orderCount} pedido(s), primeira compra: ${isFirstPurchase}`);
+
         // Se o trigger especifica que deve ser primeiro pedido
         if (isFirstOrder === true) {
-          // Verificar se é realmente o primeiro pedido do cliente
-          const previousOrders = await prisma.order.count({
-            where: {
-              customerEmail: context.email,
-              status: { not: 'CANCELLED' },
-            }
-          });
-
-          console.log(`[Flow Execution] Verificando primeiro pedido para ${context.email}: ${previousOrders} pedido(s) encontrado(s)`);
-          return previousOrders === 1; // Retorna true se este for o primeiro (count = 1 porque inclui o pedido atual)
+          console.log(`[Flow Execution] Fluxo requer primeira compra: ${isFirstPurchase ? 'SIM' : 'NÃO'}`);
+          return isFirstPurchase;
         }
 
         // Se o trigger especifica que NÃO deve ser primeiro pedido
         if (isFirstOrder === false) {
-          const previousOrders = await prisma.order.count({
-            where: {
-              customerEmail: context.email,
-              status: { not: 'CANCELLED' },
-            }
-          });
-
-          console.log(`[Flow Execution] Verificando pedido não-primeiro para ${context.email}: ${previousOrders} pedido(s) encontrado(s)`);
-          return previousOrders > 1; // Retorna true se já houve pedidos anteriores
+          console.log(`[Flow Execution] Fluxo requer NÃO primeira compra: ${!isFirstPurchase ? 'SIM' : 'NÃO'}`);
+          return !isFirstPurchase;
         }
 
-        // Se não especifica, aceita qualquer pedido
+        // Se não especifica (undefined), NÃO disparar para primeira compra
+        // Isso evita que fluxos genéricos disparem junto com fluxo de primeira compra
+        if (isFirstPurchase) {
+          console.log(`[Flow Execution] Fluxo sem especificação - ignorando primeira compra para evitar duplicidade`);
+          return false;
+        }
+
         return true;
 
       case 'cart_abandoned':
@@ -574,9 +576,34 @@ export class FlowExecutionService {
           content = content.replace(/\{\{endereco_entrega\}\}/g, address);
 
           // Lista de produtos
-          const listaProdutos = order.orderItems
+          let listaProdutos = order.orderItems
             .map(item => `• ${item.quantity}x ${item.name} - €${item.priceAtTime.toFixed(2)}`)
             .join('\n');
+
+          // Adicionar globalOptions ao email
+          const globalOpts = order.globalOptions as Array<{ optionId: string; optionName: string; choices: Array<{ choiceId: string; choiceName: string; price: number; quantity?: number }> }> | null;
+          if (globalOpts && globalOpts.length > 0) {
+            const opcoesGlobais = globalOpts.flatMap(opt =>
+              opt.choices.map(choice => {
+                const qty = choice.quantity && choice.quantity > 1 ? `${choice.quantity}x ` : '';
+                const price = choice.price > 0 ? ` - €${(choice.price * (choice.quantity || 1)).toFixed(2)}` : ' (Grátis)';
+                return `• ${qty}${opt.optionName}: ${choice.choiceName}${price}`;
+              })
+            ).join('\n');
+            if (opcoesGlobais) {
+              listaProdutos += '\n\n📦 Opções:\n' + opcoesGlobais;
+            }
+          }
+
+          // Adicionar checkoutAdditionalItems ao email
+          const additionalItems = order.checkoutAdditionalItems as Array<{ name: string; price: number }> | null;
+          if (additionalItems && additionalItems.length > 0) {
+            const itensAdicionais = additionalItems
+              .map(item => `• ${item.name} - €${item.price.toFixed(2)}`)
+              .join('\n');
+            listaProdutos += '\n\n🛍️ Itens Adicionais:\n' + itensAdicionais;
+          }
+
           content = content.replace(/\{\{lista_produtos\}\}/g, listaProdutos);
           content = content.replace(/\{\{orderItems\}\}/g, listaProdutos);
 

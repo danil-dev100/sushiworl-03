@@ -44,6 +44,7 @@ type Order = {
   isScheduled?: boolean;
   scheduledFor?: string | Date | null;
   checkoutAdditionalItems?: Array<{ name: string; price: number }> | null;
+  globalOptions?: Array<{ optionId: string; optionName: string; choices: Array<{ choiceId: string; choiceName: string; price: number; quantity?: number }> }> | null;
 };
 
 type ProductOption = {

@@ -29,7 +29,21 @@ export default async function ObrigadoPage({
 
     order = await prisma.order.findUnique({
       where: { id: orderId },
-      include: {
+      select: {
+        id: true,
+        orderNumber: true,
+        customerName: true,
+        total: true,
+        subtotal: true,
+        deliveryFee: true,
+        discount: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        isScheduled: true,
+        scheduledFor: true,
+        checkoutAdditionalItems: true,
+        globalOptions: true,
         orderItems: {
           select: {
             id: true,

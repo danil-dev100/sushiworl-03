@@ -56,6 +56,7 @@ type Order = {
   isScheduled?: boolean;
   scheduledFor?: string | Date | null;
   checkoutAdditionalItems?: Array<{ name: string; price: number }> | null;
+  globalOptions?: Array<{ optionId: string; optionName: string; choices: Array<{ choiceId: string; choiceName: string; price: number; quantity?: number }> }> | null;
 };
 
 type OrdersTableProps = {
@@ -508,21 +509,33 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                     );
                   })}
                 </ul>
-                {order.checkoutAdditionalItems && order.checkoutAdditionalItems.length > 0 && (
+                {(order.checkoutAdditionalItems && order.checkoutAdditionalItems.length > 0) || (order.globalOptions && order.globalOptions.length > 0) ? (
                   <div className="mt-3 pt-2 border-t border-[#ead9cd] dark:border-[#4a3c30]">
                     <p className="text-xs font-semibold uppercase text-[#a16b45] mb-1">
                       Adicionais
                     </p>
                     <ul className="space-y-1">
-                      {order.checkoutAdditionalItems.map((item, idx) => (
-                        <li key={idx} className="flex items-center justify-between text-xs">
+                      {order.globalOptions?.map((opt) => (
+                        opt.choices.map((choice, idx) => (
+                          <li key={`${opt.optionId}-${choice.choiceId}-${idx}`} className="flex items-center justify-between text-xs">
+                            <span className="text-[#333333] dark:text-[#f5f1e9]">
+                              {choice.quantity && choice.quantity > 1 ? `${choice.quantity}x ` : ''}{opt.optionName}: {choice.choiceName}
+                            </span>
+                            <span className="text-[#a16b45]">
+                              {choice.price > 0 ? formatCurrency(choice.price * (choice.quantity || 1)) : 'Grátis'}
+                            </span>
+                          </li>
+                        ))
+                      ))}
+                      {order.checkoutAdditionalItems?.map((item, idx) => (
+                        <li key={`checkout-${idx}`} className="flex items-center justify-between text-xs">
                           <span className="text-[#333333] dark:text-[#f5f1e9]">{item.name}</span>
                           <span className="text-[#a16b45]">{formatCurrency(item.price)}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
-                )}
+                ) : null}
               </div>
 
               {order.deliveryAddress && (

@@ -46,6 +46,7 @@ type Order = {
   isScheduled?: boolean;
   scheduledFor?: Date | null;
   checkoutAdditionalItems?: Array<{ name: string; price: number }> | null;
+  globalOptions?: Array<{ optionId: string; optionName: string; choices: Array<{ choiceId: string; choiceName: string; price: number; quantity?: number }> }> | null;
 };
 
 interface PageProps {
@@ -168,6 +169,7 @@ async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
     isScheduled: order.isScheduled,
     scheduledFor: order.scheduledFor,
     checkoutAdditionalItems: order.checkoutAdditionalItems ? (order.checkoutAdditionalItems as Array<{ name: string; price: number }>) : null,
+    globalOptions: order.globalOptions ? (order.globalOptions as Array<{ optionId: string; optionName: string; choices: Array<{ choiceId: string; choiceName: string; price: number; quantity?: number }> }>) : null,
     orderItems: order.orderItems.map(item => ({
       id: item.id,
       name: item.name,

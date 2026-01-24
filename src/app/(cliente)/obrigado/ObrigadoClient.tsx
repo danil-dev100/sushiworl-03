@@ -14,6 +14,24 @@ interface OrderItem {
   priceAtTime: number;
 }
 
+interface GlobalOptionChoice {
+  choiceId: string;
+  choiceName: string;
+  price: number;
+  quantity?: number;
+}
+
+interface GlobalOption {
+  optionId: string;
+  optionName: string;
+  choices: GlobalOptionChoice[];
+}
+
+interface CheckoutAdditionalItem {
+  name: string;
+  price: number;
+}
+
 interface Order {
   id: string;
   orderNumber: number;
@@ -27,6 +45,8 @@ interface Order {
   orderItems: OrderItem[];
   isScheduled?: boolean;
   scheduledFor?: Date | string;
+  checkoutAdditionalItems?: CheckoutAdditionalItem[] | null;
+  globalOptions?: GlobalOption[] | null;
 }
 
 const statusConfig = {
@@ -317,6 +337,34 @@ export function ObrigadoClient({ order }: ObrigadoClientProps) {
                     €{order.subtotal.toFixed(2)}
                   </p>
                 </div>
+                {/* Opções Globais */}
+                {order.globalOptions && order.globalOptions.length > 0 && (
+                  order.globalOptions.map((opt) => (
+                    opt.choices.map((choice, idx) => (
+                      <div key={`${opt.optionId}-${choice.choiceId}-${idx}`} className="flex justify-between gap-x-6 py-1">
+                        <p className="text-[#333333] dark:text-[#f5f1e9] text-sm font-normal leading-normal">
+                          {choice.quantity && choice.quantity > 1 ? `${choice.quantity}x ` : ''}{opt.optionName}: {choice.choiceName}
+                        </p>
+                        <p className="text-[#333333] dark:text-[#f5f1e9] text-sm font-medium leading-normal text-right">
+                          {choice.price > 0 ? `€${(choice.price * (choice.quantity || 1)).toFixed(2)}` : 'Grátis'}
+                        </p>
+                      </div>
+                    ))
+                  ))
+                )}
+                {/* Itens Adicionais do Checkout */}
+                {order.checkoutAdditionalItems && order.checkoutAdditionalItems.length > 0 && (
+                  order.checkoutAdditionalItems.map((item, idx) => (
+                    <div key={`checkout-${idx}`} className="flex justify-between gap-x-6 py-1">
+                      <p className="text-[#333333] dark:text-[#f5f1e9] text-sm font-normal leading-normal">
+                        {item.name}
+                      </p>
+                      <p className="text-[#333333] dark:text-[#f5f1e9] text-sm font-medium leading-normal text-right">
+                        €{item.price.toFixed(2)}
+                      </p>
+                    </div>
+                  ))
+                )}
                 <div className="flex justify-between gap-x-6 py-1">
                   <p className="text-[#333333] dark:text-[#f5f1e9] text-sm font-normal leading-normal">
                     Taxa de Entrega

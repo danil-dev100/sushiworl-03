@@ -287,23 +287,6 @@ export function GlobalOptionFormDialog({
             <Switch checked={isPaid} onCheckedChange={setIsPaid} />
           </div>
 
-          {/* Preço Base */}
-          {isPaid && (
-            <div className="space-y-2">
-              <TooltipLabel
-                text="Preço Base"
-                tooltip="Valor adicional cobrado pela opção (aplicado independente da escolha)"
-              />
-              <Input
-                type="number"
-                min={0}
-                step={0.01}
-                value={basePrice}
-                onChange={(e) => setBasePrice(e.target.value)}
-                placeholder="0.00"
-              />
-            </div>
-          )}
 
           {/* Escolhas */}
           <div className="space-y-3">
@@ -324,25 +307,27 @@ export function GlobalOptionFormDialog({
                   <div className="flex items-start gap-3">
                     <GripVertical className="w-5 h-5 text-muted-foreground mt-2" />
                     <div className="flex-1 grid grid-cols-12 gap-3">
-                      <div className="col-span-6">
+                      <div className={isPaid ? "col-span-6" : "col-span-9"}>
                         <Input
                           value={choice.name}
                           onChange={(e) => updateChoice(index, 'name', e.target.value)}
                           placeholder="Nome da escolha"
                         />
                       </div>
-                      <div className="col-span-3">
-                        <Input
-                          type="number"
-                          min={0}
-                          step={0.01}
-                          value={choice.price}
-                          onChange={(e) =>
-                            updateChoice(index, 'price', parseFloat(e.target.value) || 0)
-                          }
-                          placeholder="Preço"
-                        />
-                      </div>
+                      {isPaid && (
+                        <div className="col-span-3">
+                          <Input
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            value={choice.price}
+                            onChange={(e) =>
+                              updateChoice(index, 'price', parseFloat(e.target.value) || 0)
+                            }
+                            placeholder="Preço"
+                          />
+                        </div>
+                      )}
                       <div className="col-span-2 flex items-center gap-2">
                         <Switch
                           checked={choice.isDefault}

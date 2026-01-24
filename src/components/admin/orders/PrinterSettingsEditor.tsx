@@ -164,7 +164,10 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
             })),
             subtotal: latestOrder.subtotal,
             deliveryFee: latestOrder.deliveryFee || 0,
-            bagFee: 0.50,
+            bagFee: 0,
+            checkoutItems: Array.isArray(latestOrder.checkoutAdditionalItems)
+              ? latestOrder.checkoutAdditionalItems
+              : [],
             total: latestOrder.total,
           };
 
@@ -201,8 +204,9 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
             ],
             subtotal: 10.00,
             deliveryFee: 2.00,
-            bagFee: 0.50,
-            total: 12.50,
+            bagFee: 0,
+            checkoutItems: [{ name: 'Saco Takeaway', price: 0.20 }],
+            total: 12.20,
           });
         }
         setIsLoadingOrder(false);

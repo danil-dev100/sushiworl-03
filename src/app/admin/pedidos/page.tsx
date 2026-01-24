@@ -45,6 +45,7 @@ type Order = {
   orderItems: OrderItem[];
   isScheduled?: boolean;
   scheduledFor?: Date | null;
+  checkoutAdditionalItems?: Array<{ name: string; price: number }> | null;
 };
 
 interface PageProps {
@@ -166,6 +167,7 @@ async function getOrders(searchParams: Awaited<PageProps['searchParams']>) {
     deliveryArea: order.deliveryArea,
     isScheduled: order.isScheduled,
     scheduledFor: order.scheduledFor,
+    checkoutAdditionalItems: order.checkoutAdditionalItems ? (order.checkoutAdditionalItems as Array<{ name: string; price: number }>) : null,
     orderItems: order.orderItems.map(item => ({
       id: item.id,
       name: item.name,

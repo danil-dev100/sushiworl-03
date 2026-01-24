@@ -55,6 +55,7 @@ type Order = {
   orderItems: OrderItem[];
   isScheduled?: boolean;
   scheduledFor?: string | Date | null;
+  checkoutAdditionalItems?: Array<{ name: string; price: number }> | null;
 };
 
 type OrdersTableProps = {
@@ -507,6 +508,21 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                     );
                   })}
                 </ul>
+                {order.checkoutAdditionalItems && order.checkoutAdditionalItems.length > 0 && (
+                  <div className="mt-3 pt-2 border-t border-[#ead9cd] dark:border-[#4a3c30]">
+                    <p className="text-xs font-semibold uppercase text-[#a16b45] mb-1">
+                      Adicionais
+                    </p>
+                    <ul className="space-y-1">
+                      {order.checkoutAdditionalItems.map((item, idx) => (
+                        <li key={idx} className="flex items-center justify-between text-xs">
+                          <span className="text-[#333333] dark:text-[#f5f1e9]">{item.name}</span>
+                          <span className="text-[#a16b45]">{formatCurrency(item.price)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {order.deliveryAddress && (

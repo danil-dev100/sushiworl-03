@@ -135,19 +135,24 @@ export class FlowExecutionService {
    * Verifica se o trigger corresponde ao contexto do evento
    */
   private async checkTriggerMatch(triggerNode: any, context: FlowExecutionContext): Promise<boolean> {
-    // Suporta tanto 'event' quanto 'eventType' para retrocompatibilidade
-    const triggerEventType = triggerNode.data?.eventType || triggerNode.data?.event;
-    const isFirstOrder = triggerNode.data?.isFirstOrder; // Nova propriedade
+    // Suporta tanto 'event' quanto 'eventType' e 'triggerType' para retrocompatibilidade
+    const triggerEventType = triggerNode.data?.eventType || triggerNode.data?.event || triggerNode.data?.triggerType;
+    // Suporta isFirstOrder diretamente ou dentro de conditions
+    const isFirstOrder = triggerNode.data?.isFirstOrder ?? triggerNode.data?.conditions?.isFirstOrder;
 
     console.log(`🔍 Verificando trigger match: trigger=${triggerEventType}, disparado=${context.triggeredEvent}`);
 
+    // Mapear eventos equivalentes (order_completed = order_created)
+    const normalizedTrigger = triggerEventType === 'order_completed' ? 'order_created' : triggerEventType;
+    const normalizedEvent = context.triggeredEvent === 'order_completed' ? 'order_created' : context.triggeredEvent;
+
     // Verificar se o evento disparado corresponde ao evento do trigger
-    if (triggerEventType !== context.triggeredEvent) {
-      console.log(`❌ Evento não corresponde: ${triggerEventType} !== ${context.triggeredEvent}`);
+    if (normalizedTrigger !== normalizedEvent) {
+      console.log(`❌ Evento não corresponde: ${normalizedTrigger} !== ${normalizedEvent}`);
       return false;
     }
 
-    switch (triggerEventType) {
+    switch (normalizedTrigger) {
       case 'order_created':
       case 'order_scheduled': // Também validar para pedidos agendados
         if (!context.orderId) return false;
@@ -189,6 +194,9 @@ export class FlowExecutionService {
       case 'user_registered':
         return !!context.userId;
       case 'order_delivered':
+        return !!context.orderId;
+      case 'scheduled_order_reminder':
+        // Lembrete de pedido agendado - apenas valida se tem orderId
         return !!context.orderId;
       default:
         return false;

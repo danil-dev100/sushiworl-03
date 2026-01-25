@@ -67,6 +67,7 @@ export default function RootLayout({
           {children}
           <Toaster />
         </SessionProvider>
+        <SpeedInsights />
       </body>
     </html>
   );

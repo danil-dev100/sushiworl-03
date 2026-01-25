@@ -519,7 +519,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                         opt.choices.map((choice, idx) => (
                           <li key={`${opt.optionId}-${choice.choiceId}-${idx}`} className="flex items-center justify-between text-xs">
                             <span className="text-[#333333] dark:text-[#f5f1e9]">
-                              {choice.quantity && choice.quantity > 1 ? `${choice.quantity}x ` : ''}{opt.optionName}: {choice.choiceName}
+                              {choice.quantity ? `${choice.quantity}x ` : ''}{opt.optionName}: {choice.choiceName}
                             </span>
                             <span className="text-[#a16b45]">
                               {choice.price > 0 ? formatCurrency(choice.price * (choice.quantity || 1)) : 'Grátis'}

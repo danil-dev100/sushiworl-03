@@ -157,10 +157,16 @@ export class FlowExecutionService {
       case 'order_scheduled': // Também validar para pedidos agendados
         if (!context.orderId) return false;
 
-        // Contar pedidos do cliente (incluindo o atual)
+        // Normalizar email para comparação case-insensitive
+        const normalizedEmail = context.email?.toLowerCase().trim();
+
+        // Contar pedidos do cliente (incluindo o atual) - busca case-insensitive
         const orderCount = await prisma.order.count({
           where: {
-            customerEmail: context.email,
+            customerEmail: {
+              equals: normalizedEmail,
+              mode: 'insensitive'
+            },
             status: { not: 'CANCELLED' },
           }
         });
@@ -593,7 +599,7 @@ export class FlowExecutionService {
           if (globalOpts && globalOpts.length > 0) {
             const opcoesGlobais = globalOpts.flatMap(opt =>
               opt.choices.map(choice => {
-                const qty = choice.quantity && choice.quantity > 1 ? `${choice.quantity}x ` : '';
+                const qty = choice.quantity ? `${choice.quantity}x ` : '';
                 const price = choice.price > 0 ? ` - €${(choice.price * (choice.quantity || 1)).toFixed(2)}` : ' (Grátis)';
                 return `• ${qty}${opt.optionName}: ${choice.choiceName}${price}`;
               })

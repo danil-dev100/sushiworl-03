@@ -34,6 +34,7 @@ interface GlobalOptionSelection {
     choiceId: string;
     choiceName: string;
     price: number;
+    quantity?: number;
   }[];
 }
 

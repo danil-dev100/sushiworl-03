@@ -157,22 +157,26 @@ export class FlowExecutionService {
       case 'order_scheduled': // Também validar para pedidos agendados
         if (!context.orderId) return false;
 
-        // Normalizar email para comparação case-insensitive
-        const normalizedEmail = context.email?.toLowerCase().trim();
+        // Validar email
+        if (!context.email) {
+          console.log(`[Flow Execution] ❌ Email não fornecido no contexto, ignorando verificação de primeira compra`);
+          return true; // Permitir fluxo se não houver email (assume não é primeira compra)
+        }
 
-        // Contar pedidos do cliente (incluindo o atual) - busca case-insensitive
-        const orderCount = await prisma.order.count({
-          where: {
-            customerEmail: {
-              equals: normalizedEmail,
-              mode: 'insensitive'
-            },
-            status: { not: 'CANCELLED' },
-          }
-        });
+        // Normalizar email para comparação case-insensitive
+        const normalizedEmail = context.email.toLowerCase().trim();
+
+        // Contar pedidos do cliente usando query raw para garantir case-insensitive
+        const countResult = await prisma.$queryRaw<[{ count: bigint }]>`
+          SELECT COUNT(*) as count
+          FROM "Order"
+          WHERE LOWER("customerEmail") = LOWER(${normalizedEmail})
+          AND status != 'CANCELLED'
+        `;
+        const orderCount = Number(countResult[0]?.count || 0);
 
         const isFirstPurchase = orderCount === 1;
-        console.log(`[Flow Execution] Email ${context.email}: ${orderCount} pedido(s), primeira compra: ${isFirstPurchase}`);
+        console.log(`[Flow Execution] 📧 Email: ${normalizedEmail}, Pedidos: ${orderCount}, Primeira compra: ${isFirstPurchase}`);
 
         // Se o trigger especifica que deve ser primeiro pedido
         if (isFirstOrder === true) {

@@ -113,6 +113,7 @@ Para tarefas específicas, consulte as skills em `.cursor/skills/skills/`:
 - `nextjs-supabase-auth` - Autenticação Supabase
 - `email-systems` - Sistemas de email
 - `email-sequence` - Fluxos de email marketing
+- `twilio-communications` - SMS e WhatsApp (Twilio)
 
 ### APIs
 - `api-patterns` - Padrões de API REST

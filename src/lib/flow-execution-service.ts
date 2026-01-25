@@ -302,7 +302,7 @@ export class FlowExecutionService {
 
   private async executeEmailNode(node: any, context: FlowExecutionContext): Promise<string | null> {
     const templateId = node.data?.templateId;
-    const subject = node.data?.subject;
+    let subject = node.data?.subject || '';
     // Support both 'content' and 'customContent' field names
     const customContent = node.data?.content || node.data?.customContent;
 
@@ -312,8 +312,12 @@ export class FlowExecutionService {
 
     let htmlContent = '';
 
-    if (templateId) {
-      // Buscar template
+    // Priorizar customContent sobre templateId para evitar duplicação
+    if (customContent) {
+      // Use custom content directly (it's already HTML from the builder)
+      htmlContent = await this.replaceTemplateVariables(customContent, context);
+    } else if (templateId) {
+      // Buscar template apenas se não houver customContent
       const template = await prisma.emailTemplate.findUnique({
         where: { id: templateId }
       });
@@ -328,11 +332,8 @@ export class FlowExecutionService {
       htmlContent = await this.replaceTemplateVariables(htmlContent, context);
     }
 
-    if (customContent) {
-      // Use custom content directly (it's already HTML from the builder)
-      let processedContent = await this.replaceTemplateVariables(customContent, context);
-      htmlContent = htmlContent ? htmlContent + '\n\n' + processedContent : processedContent;
-    }
+    // Substituir variáveis no assunto também
+    subject = await this.replaceTemplateVariables(subject, context);
 
     console.log(`📧 Enviando email para ${context.email} - Assunto: ${subject}`);
 
@@ -593,37 +594,39 @@ export class FlowExecutionService {
             : String(order.deliveryAddress || '');
           content = content.replace(/\{\{endereco_entrega\}\}/g, address);
 
-          // Lista de produtos
-          let listaProdutos = order.orderItems
-            .map(item => `• ${item.quantity}x ${item.name} - €${item.priceAtTime.toFixed(2)}`)
-            .join('\n');
+          // Lista de produtos - formato HTML para melhor visualização
+          const produtosHtml = order.orderItems
+            .map(item => `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;">${item.quantity}x ${item.name}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">€${item.priceAtTime.toFixed(2)}</td></tr>`)
+            .join('');
+
+          let listaProdutosHtml = `<table style="width:100%;border-collapse:collapse;margin:8px 0;"><tbody>${produtosHtml}</tbody></table>`;
 
           // Adicionar globalOptions ao email
           const globalOpts = order.globalOptions as Array<{ optionId: string; optionName: string; choices: Array<{ choiceId: string; choiceName: string; price: number; quantity?: number }> }> | null;
           if (globalOpts && globalOpts.length > 0) {
-            const opcoesGlobais = globalOpts.flatMap(opt =>
+            const opcoesHtml = globalOpts.flatMap(opt =>
               opt.choices.map(choice => {
                 const qty = choice.quantity ? `${choice.quantity}x ` : '';
-                const price = choice.price > 0 ? ` - €${(choice.price * (choice.quantity || 1)).toFixed(2)}` : ' (Grátis)';
-                return `• ${qty}${opt.optionName}: ${choice.choiceName}${price}`;
+                const price = choice.price > 0 ? `€${(choice.price * (choice.quantity || 1)).toFixed(2)}` : 'Grátis';
+                return `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;">${qty}${choice.choiceName}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">${price}</td></tr>`;
               })
-            ).join('\n');
-            if (opcoesGlobais) {
-              listaProdutos += '\n\n📦 Opções:\n' + opcoesGlobais;
+            ).join('');
+            if (opcoesHtml) {
+              listaProdutosHtml += `<div style="margin-top:12px;"><strong style="color:#FF6B00;">📦 Opções:</strong><table style="width:100%;border-collapse:collapse;margin:8px 0;"><tbody>${opcoesHtml}</tbody></table></div>`;
             }
           }
 
           // Adicionar checkoutAdditionalItems ao email
           const additionalItems = order.checkoutAdditionalItems as Array<{ name: string; price: number }> | null;
           if (additionalItems && additionalItems.length > 0) {
-            const itensAdicionais = additionalItems
-              .map(item => `• ${item.name} - €${item.price.toFixed(2)}`)
-              .join('\n');
-            listaProdutos += '\n\n🛍️ Itens Adicionais:\n' + itensAdicionais;
+            const adicionaisHtml = additionalItems
+              .map(item => `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;">${item.name}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">€${item.price.toFixed(2)}</td></tr>`)
+              .join('');
+            listaProdutosHtml += `<div style="margin-top:12px;"><strong style="color:#FF6B00;">🛍️ Itens Adicionais:</strong><table style="width:100%;border-collapse:collapse;margin:8px 0;"><tbody>${adicionaisHtml}</tbody></table></div>`;
           }
 
-          content = content.replace(/\{\{lista_produtos\}\}/g, listaProdutos);
-          content = content.replace(/\{\{orderItems\}\}/g, listaProdutos);
+          content = content.replace(/\{\{lista_produtos\}\}/g, listaProdutosHtml);
+          content = content.replace(/\{\{orderItems\}\}/g, listaProdutosHtml);
 
           // Valores adicionais
           content = content.replace(/\{\{orderTotal\}\}/g, order.total.toFixed(2));

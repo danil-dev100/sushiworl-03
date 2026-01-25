@@ -499,7 +499,8 @@ export default function CheckoutPage() {
         choices: opt.choices.map(c => ({
           choiceId: c.choiceId,
           choiceName: c.choiceName,
-          price: c.price
+          price: c.price,
+          quantity: c.quantity || 1
         }))
       }));
 

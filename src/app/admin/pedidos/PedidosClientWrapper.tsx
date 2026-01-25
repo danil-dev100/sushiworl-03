@@ -118,18 +118,9 @@ export function PedidosClientWrapper({
     };
   }, [currentStatus, allOrders, initialData]);
 
-  console.log('🎨 [ClientWrapper] Renderizando:', {
-    currentStatus: currentStatus || 'default (hoje)',
-    displayCount: mergedData.orders.length,
-    source: 'UNIFIED (Realtime + Polling)',
-    realtimeConnected: isConnected,
-    totalOrders: allOrders.length,
-    filteredOrders: mergedData.orders.length
-  });
-
   // Função vazia para compatibilidade (não usamos mais)
   const refreshOrders = async () => {
-    console.log('[ClientWrapper] refreshOrders chamado (noop - Realtime gerencia automaticamente)');
+    // noop - Realtime gerencia automaticamente
   };
 
   return (
@@ -137,21 +128,6 @@ export function PedidosClientWrapper({
       {/* Toggle de Status do Restaurante */}
       <div className="mx-6 mt-6 mb-4 flex justify-end">
         <RestaurantStatusToggle />
-      </div>
-
-      {/* DEBUG - Remover depois de funcionar */}
-      <div className="mx-6 mb-4 p-4 bg-green-500 text-white rounded-lg">
-        <p className="font-bold text-lg">✅ HOOK UNIFICADO ATIVO</p>
-        <p className="mt-1">Status atual: <strong>{currentStatus || 'default (hoje)'}</strong></p>
-        <p>Fonte de dados: <strong>UNIFIED (Realtime + Polling)</strong></p>
-        <p>Conexão Realtime: <strong>{isConnected ? '🟢 CONECTADO' : '🔴 DESCONECTADO'}</strong></p>
-        <p>Total de pedidos: <strong>{allOrders.length}</strong></p>
-        <p>Total filtrado: <strong>{mergedData.orders.length}</strong></p>
-        {mergedData.orders.length > 0 && (
-          <p className="text-sm mt-1">
-            IDs: {mergedData.orders.map(o => o.id.slice(-6)).join(', ')}
-          </p>
-        )}
       </div>
 
       <OrdersPageContent

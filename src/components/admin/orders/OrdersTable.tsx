@@ -142,10 +142,29 @@ function formatSelectedOptions(options?: Record<string, unknown> | null): string
   }
 
   try {
+    // Se for um array de opções (estrutura do carrinho)
+    if (Array.isArray(options)) {
+      return options
+        .flatMap((opt: any) => {
+          if (opt.choices && Array.isArray(opt.choices)) {
+            return opt.choices.map((c: any) => {
+              const qty = c.quantity ? `${c.quantity}x ` : '';
+              return `${qty}${c.choiceName || c.name}`;
+            });
+          }
+          return opt.choiceName || opt.name || '';
+        })
+        .filter(Boolean)
+        .join(', ');
+    }
+
     // Se for um array de choices
     if (Array.isArray(options.choices)) {
       return options.choices
-        .map((choice: any) => choice.choiceName || choice.name)
+        .map((choice: any) => {
+          const qty = choice.quantity ? `${choice.quantity}x ` : '';
+          return `${qty}${choice.choiceName || choice.name}`;
+        })
         .filter(Boolean)
         .join(', ');
     }
@@ -164,8 +183,11 @@ function formatSelectedOptions(options?: Record<string, unknown> | null): string
           const obj = value as Record<string, any>;
           if (obj.choiceName) return obj.choiceName;
           if (obj.name) return obj.name;
+          // Não retornar [object Object]
+          return null;
         }
-        return value;
+        if (typeof value === 'string') return value;
+        return null;
       })
       .filter(Boolean)
       .join(', ');

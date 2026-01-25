@@ -63,6 +63,8 @@ type Order = {
   orderItems: OrderItem[];
   isScheduled?: boolean;
   scheduledFor?: string | Date | null;
+  checkoutAdditionalItems?: Array<{ name: string; price: number }> | null;
+  globalOptions?: Array<{ optionId: string; optionName: string; choices: Array<{ choiceId: string; choiceName: string; price: number; quantity?: number }> }> | null;
 };
 
 type OrdersTableProps = {
@@ -179,10 +181,29 @@ function formatSelectedOptions(options?: Record<string, unknown> | null): string
   }
 
   try {
+    // Se for um array de opções (estrutura do carrinho)
+    if (Array.isArray(options)) {
+      return options
+        .flatMap((opt: any) => {
+          if (opt.choices && Array.isArray(opt.choices)) {
+            return opt.choices.map((c: any) => {
+              const qty = c.quantity ? `${c.quantity}x ` : '';
+              return `${qty}${c.choiceName || c.name}`;
+            });
+          }
+          return opt.choiceName || opt.name || '';
+        })
+        .filter(Boolean)
+        .join(', ');
+    }
+
     // Se for um array de choices
     if (Array.isArray(options.choices)) {
       return options.choices
-        .map((choice: any) => choice.choiceName || choice.name)
+        .map((choice: any) => {
+          const qty = choice.quantity ? `${choice.quantity}x ` : '';
+          return `${qty}${choice.choiceName || choice.name}`;
+        })
         .filter(Boolean)
         .join(', ');
     }
@@ -201,8 +222,11 @@ function formatSelectedOptions(options?: Record<string, unknown> | null): string
           const obj = value as Record<string, any>;
           if (obj.choiceName) return obj.choiceName;
           if (obj.name) return obj.name;
+          // Não retornar [object Object]
+          return null;
         }
-        return value;
+        if (typeof value === 'string') return value;
+        return null;
       })
       .filter(Boolean)
       .join(', ');
@@ -808,6 +832,33 @@ export function ScheduledOrdersTable({ orders }: OrdersTableProps) {
                           );
                         })}
                       </ul>
+                      {(order.checkoutAdditionalItems && order.checkoutAdditionalItems.length > 0) || (order.globalOptions && order.globalOptions.length > 0) ? (
+                        <div className="mt-3 pt-2 border-t border-[#ead9cd] dark:border-[#4a3c30]">
+                          <p className="text-xs font-semibold uppercase text-[#a16b45] mb-1">
+                            Adicionais
+                          </p>
+                          <ul className="space-y-1">
+                            {order.globalOptions?.map((opt) => (
+                              opt.choices.map((choice, idx) => (
+                                <li key={`${opt.optionId}-${choice.choiceId}-${idx}`} className="flex items-center justify-between text-xs">
+                                  <span className="text-[#333333] dark:text-[#f5f1e9]">
+                                    {choice.quantity ? `${choice.quantity}x ` : ''}{opt.optionName}: {choice.choiceName}
+                                  </span>
+                                  <span className="text-[#a16b45]">
+                                    {choice.price > 0 ? formatCurrency(choice.price * (choice.quantity || 1)) : 'Grátis'}
+                                  </span>
+                                </li>
+                              ))
+                            ))}
+                            {order.checkoutAdditionalItems?.map((item, idx) => (
+                              <li key={`checkout-${idx}`} className="flex items-center justify-between text-xs">
+                                <span className="text-[#333333] dark:text-[#f5f1e9]">{item.name}</span>
+                                <span className="text-[#a16b45]">{formatCurrency(item.price)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
                     </div>
 
                     {order.deliveryAddress && (

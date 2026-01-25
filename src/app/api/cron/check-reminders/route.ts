@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { flowExecutionService } from '@/lib/flow-execution-service';
+import { emailService } from '@/lib/email-service';
 
 // Vercel Cron - roda a cada 5 minutos
 export const dynamic = 'force-dynamic';
@@ -32,11 +33,17 @@ export async function GET(request: NextRequest) {
     // Encontrar o tempo de lembrete configurado nos fluxos
     let reminderMinutes = 60; // Padrão: 1 hora antes
 
+    let reminderEmailNode: any = null;
+    let reminderFlow: any = null;
+
     for (const flow of activeFlows) {
       const nodes = (flow.flow as any)?.nodes || [];
+      const edges = (flow.flow as any)?.edges || [];
       const triggerNode = nodes.find((n: any) => n.type === 'trigger');
+      const eventType = triggerNode?.data?.eventType || triggerNode?.data?.event;
 
-      if (triggerNode?.data?.eventType === 'scheduled_order_reminder' || triggerNode?.data?.event === 'scheduled_order_reminder') {
+      // Verificar fluxos de pedido agendado (order_scheduled) ou lembrete específico
+      if (eventType === 'scheduled_order_reminder' || eventType === 'order_scheduled') {
         // Verificar se há um nó de delay no fluxo
         const delayNode = nodes.find((n: any) => n.type === 'delay' || n.type === 'wait');
         if (delayNode?.data) {
@@ -50,6 +57,13 @@ export async function GET(request: NextRequest) {
             case 'hours':
               reminderMinutes = duration * 60;
               break;
+          }
+
+          // Encontrar o email node APÓS o delay (para enviar como lembrete)
+          const edgeAfterDelay = edges.find((e: any) => e.source === delayNode.id);
+          if (edgeAfterDelay) {
+            reminderEmailNode = nodes.find((n: any) => n.id === edgeAfterDelay.target && n.type === 'email');
+            reminderFlow = flow;
           }
         }
         break;
@@ -88,19 +102,54 @@ export async function GET(request: NextRequest) {
       try {
         console.log(`[Cron] Enviando lembrete para pedido #${order.orderNumber} (${order.customerEmail})`);
 
-        // Disparar evento de lembrete
-        await flowExecutionService.triggerEvent('scheduled_order_reminder', {
-          userId: order.userId || undefined,
-          email: order.customerEmail,
-          orderId: order.id,
-          eventData: {
-            orderNumber: order.orderNumber,
-            total: order.total,
-            itemsCount: order.orderItems.length,
-            customerName: order.customerName,
-            scheduledFor: order.scheduledFor,
-          }
-        });
+        // Se encontrou o nó de email do lembrete no fluxo, usar diretamente
+        if (reminderEmailNode && reminderFlow) {
+          const emailContent = reminderEmailNode.data?.content || reminderEmailNode.data?.customContent || '';
+          let emailSubject = reminderEmailNode.data?.subject || '⏰ Lembrete: Seu Pedido Será Entregue em Breve!';
+
+          // Substituir variáveis no conteúdo e assunto
+          const scheduledDateTime = order.scheduledFor ? new Date(order.scheduledFor) : null;
+          const scheduledDate = scheduledDateTime?.toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' }) || '';
+          const scheduledTime = scheduledDateTime?.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) || '';
+
+          const replaceVars = (text: string) => {
+            return text
+              .replace(/\{\{customerName\}\}/g, order.customerName || '')
+              .replace(/\{\{nome_cliente\}\}/g, order.customerName || '')
+              .replace(/\{\{orderNumber\}\}/g, order.orderNumber?.toString() || '')
+              .replace(/\{\{numero_pedido\}\}/g, order.orderNumber?.toString() || '')
+              .replace(/\{\{scheduledDate\}\}/g, scheduledDate)
+              .replace(/\{\{scheduledTime\}\}/g, scheduledTime)
+              .replace(/\{\{valor_total\}\}/g, `€${order.total.toFixed(2)}`)
+              .replace(/\{\{orderTotal\}\}/g, order.total.toFixed(2));
+          };
+
+          const finalContent = replaceVars(emailContent);
+          const finalSubject = replaceVars(emailSubject);
+
+          await emailService.sendEmail({
+            to: order.customerEmail,
+            subject: finalSubject,
+            html: finalContent,
+          });
+
+          console.log(`[Cron] ✅ Email de lembrete enviado via fluxo para pedido #${order.orderNumber}`);
+        } else {
+          // Fallback: disparar evento de lembrete (precisa de fluxo separado)
+          await flowExecutionService.triggerEvent('scheduled_order_reminder', {
+            userId: order.userId || undefined,
+            email: order.customerEmail,
+            orderId: order.id,
+            eventData: {
+              orderNumber: order.orderNumber,
+              total: order.total,
+              itemsCount: order.orderItems.length,
+              customerName: order.customerName,
+              scheduledFor: order.scheduledFor,
+            }
+          });
+          console.log(`[Cron] ✅ Evento de lembrete disparado para pedido #${order.orderNumber}`);
+        }
 
         // Marcar lembrete como enviado
         await prisma.order.update({
@@ -114,8 +163,6 @@ export async function GET(request: NextRequest) {
           email: order.customerEmail,
           status: 'sent'
         });
-
-        console.log(`[Cron] ✅ Lembrete enviado para pedido #${order.orderNumber}`);
 
       } catch (error) {
         console.error(`[Cron] Erro ao enviar lembrete para pedido #${order.orderNumber}:`, error);

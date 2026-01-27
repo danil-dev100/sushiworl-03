@@ -63,6 +63,7 @@ type OrdersData = {
     delivering: number;
     delivered: number;
     cancelled: number;
+    scheduled: number;
   };
 };
 

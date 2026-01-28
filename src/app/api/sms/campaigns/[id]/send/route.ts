@@ -229,21 +229,17 @@ async function getTargetCustomers(audienceType: string) {
   return customers;
 }
 
-// Função para enviar SMS
+// Função para enviar SMS usando o serviço centralizado
 async function sendSMS(
   settings: any,
   to: string,
   message: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  // Formatar número
-  let phone = to.replace(/\D/g, '');
-  if (!phone.startsWith('+')) {
-    if (phone.startsWith('55')) {
-      phone = '+' + phone;
-    } else {
-      phone = '+55' + phone;
-    }
-  }
+  // Importar o serviço de SMS
+  const { normalizePhoneNumber } = await import('@/lib/sms-service');
+
+  // Normalizar número (agora usa +351 como padrão para Portugal)
+  const phone = normalizePhoneNumber(to);
 
   if (settings.provider === 'twilio') {
     try {

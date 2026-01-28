@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { flowExecutionService } from '@/lib/flow-execution-service';
+import { smsAutomationExecutor } from '@/lib/sms-automation-executor';
 
 export class TriggersService {
   private static instance: TriggersService;
@@ -207,7 +208,7 @@ export class TriggersService {
 
       console.log(`[Triggers Service] Disparando evento: ${eventType} para pedido #${order.orderNumber}`);
 
-      await flowExecutionService.triggerEvent(eventType, {
+      const eventContext = {
         userId: order.userId || undefined,
         email: order.customerEmail,
         orderId: order.id,
@@ -216,9 +217,19 @@ export class TriggersService {
           total: order.total,
           itemsCount: order.orderItems.length,
           customerName: order.customerName,
+          customerPhone: order.customerPhone,
           isScheduled: order.isScheduled,
           scheduledFor: order.scheduledFor,
         }
+      };
+
+      // Dispara para Email Marketing
+      await flowExecutionService.triggerEvent(eventType, eventContext);
+
+      // Dispara para SMS Marketing
+      await smsAutomationExecutor.triggerEvent(eventType, {
+        ...eventContext,
+        phone: order.customerPhone,
       });
 
     } catch (error) {
@@ -237,13 +248,23 @@ export class TriggersService {
 
       if (!user) return;
 
-      await flowExecutionService.triggerEvent('user_registered', {
+      const eventContext = {
         userId: user.id,
         email: user.email,
         eventData: {
           name: user.name,
+          customerName: user.name,
           registrationDate: user.createdAt,
         }
+      };
+
+      // Dispara para Email Marketing
+      await flowExecutionService.triggerEvent('user_registered', eventContext);
+
+      // Dispara para SMS Marketing
+      await smsAutomationExecutor.triggerEvent('user_registered', {
+        ...eventContext,
+        phone: user.phone || undefined,
       });
 
     } catch (error) {
@@ -266,7 +287,7 @@ export class TriggersService {
 
       if (!order) return;
 
-      await flowExecutionService.triggerEvent('order_delivered', {
+      const eventContext = {
         userId: order.userId || undefined,
         email: order.customerEmail,
         orderId: order.id,
@@ -275,7 +296,17 @@ export class TriggersService {
           total: order.total,
           deliveredAt: order.deliveredAt,
           customerName: order.customerName,
+          customerPhone: order.customerPhone,
         }
+      };
+
+      // Dispara para Email Marketing
+      await flowExecutionService.triggerEvent('order_delivered', eventContext);
+
+      // Dispara para SMS Marketing
+      await smsAutomationExecutor.triggerEvent('order_delivered', {
+        ...eventContext,
+        phone: order.customerPhone,
       });
 
     } catch (error) {
@@ -287,7 +318,14 @@ export class TriggersService {
    * Método para teste - dispara um trigger manualmente
    */
   async testTrigger(eventType: string, context: any): Promise<void> {
+    // Dispara para Email Marketing
     await flowExecutionService.triggerEvent(eventType, context);
+
+    // Dispara para SMS Marketing
+    await smsAutomationExecutor.triggerEvent(eventType, {
+      ...context,
+      phone: context.phone || context.eventData?.customerPhone,
+    });
   }
 
   /**

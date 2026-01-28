@@ -12,6 +12,12 @@ const remotePatterns: RemotePattern[] = [
     hostname: 'lh3.googleusercontent.com',
     pathname: '/aida-public/**',
   },
+  // Supabase Storage - domínio fixo como fallback
+  {
+    protocol: 'https',
+    hostname: 'wmuprrgmczfkihqvqrph.supabase.co',
+    pathname: '/storage/v1/object/public/**',
+  },
 ];
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

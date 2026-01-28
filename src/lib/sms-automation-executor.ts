@@ -219,12 +219,68 @@ export class SmsAutomationExecutor {
       return;
     }
 
-    // Substituir variáveis na mensagem
+    // Buscar dados completos do pedido se houver orderId
+    let orderData: any = null;
+    if (context.orderId) {
+      orderData = await prisma.order.findUnique({
+        where: { id: context.orderId },
+        include: { orderItems: true },
+      });
+    }
+
+    // Formatar data do pedido
+    const dataFormatada = orderData?.createdAt
+      ? new Date(orderData.createdAt).toLocaleDateString('pt-PT', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : '';
+
+    // Mapear método de pagamento
+    const paymentMethodMap: Record<string, string> = {
+      'CASH': 'Dinheiro',
+      'CREDIT_CARD': 'Cartão de Crédito',
+      'MBWAY': 'MB WAY',
+      'MULTIBANCO': 'Multibanco',
+    };
+
+    // Formatar endereço
+    const address = orderData?.deliveryAddress
+      ? (typeof orderData.deliveryAddress === 'object'
+          ? (orderData.deliveryAddress as any).fullAddress || ''
+          : String(orderData.deliveryAddress))
+      : '';
+
+    // Substituir variáveis na mensagem - MESMAS variáveis do email
     const variables: Record<string, string | number | undefined> = {
+      // Variáveis de cliente
       NOME: context.eventData?.customerName || 'Cliente',
       customerName: context.eventData?.customerName || 'Cliente',
-      orderNumber: context.eventData?.orderNumber,
-      orderTotal: context.eventData?.total ? `€${context.eventData.total.toFixed(2)}` : '',
+      nome_cliente: context.eventData?.customerName || 'Cliente',
+
+      // Variáveis de pedido
+      orderNumber: context.eventData?.orderNumber || orderData?.orderNumber,
+      numero_pedido: context.eventData?.orderNumber || orderData?.orderNumber,
+      pedido_id: context.orderId || '',
+
+      // Valores
+      orderTotal: orderData?.total ? `€${orderData.total.toFixed(2)}` : (context.eventData?.total ? `€${context.eventData.total.toFixed(2)}` : ''),
+      valor_total: orderData?.total ? `€${orderData.total.toFixed(2)}` : (context.eventData?.total ? `€${context.eventData.total.toFixed(2)}` : ''),
+      subtotal: orderData?.subtotal ? `€${orderData.subtotal.toFixed(2)}` : '',
+      deliveryFee: orderData?.deliveryFee ? `€${orderData.deliveryFee.toFixed(2)}` : '',
+
+      // Data e pagamento
+      data_pedido: dataFormatada,
+      forma_pagamento: orderData?.paymentMethod ? (paymentMethodMap[orderData.paymentMethod] || orderData.paymentMethod) : '',
+
+      // Endereço
+      endereco_entrega: address,
+      deliveryAddress: address,
+
+      // Outros
       estimatedTime: context.eventData?.estimatedTime || '30-45 min',
     };
 

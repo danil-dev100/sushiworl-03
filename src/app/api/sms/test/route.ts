@@ -60,17 +60,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!settings.fromNumber) {
-      return NextResponse.json(
-        { error: 'Número de origem não configurado.' },
-        { status: 400 }
-      );
-    }
-
     let result;
 
     // Enviar SMS baseado no provedor
     if (settings.provider === 'twilio') {
+      // Twilio requer número de origem
+      if (!settings.fromNumber) {
+        return NextResponse.json(
+          { error: 'Número de origem é obrigatório para Twilio.' },
+          { status: 400 }
+        );
+      }
+
       if (!settings.twilioAccountSid || !settings.twilioAuthToken) {
         return NextResponse.json(
           { error: 'Credenciais do Twilio não configuradas.' },
@@ -93,9 +94,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // D7 Networks: fromNumber é opcional (pode ser Sender ID alfanumérico ou vazio)
       result = await sendD7SMS({
         apiKey: settings.d7ApiKey,
-        from: settings.fromNumber,
+        from: settings.fromNumber || 'SMSINFO', // Fallback para Sender ID padrão se não configurado
         to,
         message,
       });

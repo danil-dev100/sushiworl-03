@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions, canManageMarketing } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import axios from 'axios';
 
 // Schema de validação
 const testSmsSchema = z.object({
@@ -152,6 +153,7 @@ async function sendTwilioSMS({
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
     // Usar Twilio SDK
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const twilio = require('twilio');
     const client = twilio(accountSid, authToken);
 
@@ -199,7 +201,7 @@ async function sendD7SMS({
   message: string;
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const axios = require('axios');
+    console.log('[D7] Iniciando envio de SMS:', { to, from, messageLength: message.length });
 
     const response = await axios.post(
       'https://api.d7networks.com/messages/v1/send',
@@ -215,7 +217,6 @@ async function sendD7SMS({
         ],
         message_globals: {
           originator: from,
-          report_url: '', // Webhook opcional para status
         },
       },
       {
@@ -227,6 +228,8 @@ async function sendD7SMS({
       }
     );
 
+    console.log('[D7] Resposta recebida:', { status: response.status, data: response.data });
+
     if (response.status === 200 || response.status === 201) {
       return {
         success: true,
@@ -236,21 +239,37 @@ async function sendD7SMS({
 
     return {
       success: false,
-      error: response.data?.message || 'Erro ao enviar SMS via D7',
+      error: response.data?.message || response.data?.detail || 'Erro ao enviar SMS via D7',
     };
   } catch (error: any) {
-    console.error('[D7] Erro:', error);
+    console.error('[D7] Erro completo:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      code: error.code,
+    });
 
+    // Erros específicos da API D7
     if (error.response?.status === 401) {
-      return { success: false, error: 'API Key do D7 inválida' };
+      return { success: false, error: 'API Key do D7 inválida ou expirada' };
     }
     if (error.response?.status === 400) {
-      return { success: false, error: error.response.data?.message || 'Dados inválidos' };
+      const detail = error.response.data?.detail || error.response.data?.message;
+      return { success: false, error: detail || 'Dados inválidos na requisição' };
+    }
+    if (error.response?.status === 403) {
+      return { success: false, error: 'Acesso negado - verifique suas permissões no D7' };
+    }
+    if (error.response?.status === 422) {
+      return { success: false, error: 'Formato de número de telefone inválido' };
+    }
+    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+      return { success: false, error: 'Não foi possível conectar à API do D7' };
     }
 
     return {
       success: false,
-      error: error.message || 'Erro ao enviar SMS via D7',
+      error: error.response?.data?.detail || error.response?.data?.message || error.message || 'Erro desconhecido ao enviar SMS',
     };
   }
 }

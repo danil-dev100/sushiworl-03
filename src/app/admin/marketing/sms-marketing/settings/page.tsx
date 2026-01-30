@@ -145,11 +145,6 @@ export default function SMSMarketingSettingsPage() {
       return;
     }
 
-    if (!testNumber.startsWith('+')) {
-      toast.error('Número deve começar com + (ex: +351912345678)');
-      return;
-    }
-
     // Validar configurações antes de testar
     if (settings.provider === 'twilio') {
       if (!settings.twilioAccountSid.trim() || !settings.twilioAuthToken.trim()) {
@@ -433,8 +428,11 @@ export default function SMSMarketingSettingsPage() {
                 id="testNumber"
                 value={testNumber}
                 onChange={(e) => setTestNumber(e.target.value)}
-                placeholder="+351912345678"
+                placeholder="934 841 148"
               />
+              <p className="text-xs text-gray-500">
+                Pode usar formato: 934841148, 934 841 148 ou +351934841148
+              </p>
             </div>
             <Button
               onClick={handleTestSMS}

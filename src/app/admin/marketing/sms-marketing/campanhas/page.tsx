@@ -57,8 +57,10 @@ interface SmsCampaign {
   failedCount: number;
   targetAudience?: {
     type: string;
+    contactListId?: string;
     filters?: Record<string, any>;
   };
+  contactListId?: string;
   promotionId?: string;
   promotion?: {
     id: string;
@@ -80,6 +82,15 @@ interface Promotion {
   isActive: boolean;
 }
 
+interface ContactList {
+  id: string;
+  name: string;
+  description?: string;
+  totalContacts: number;
+  validContacts: number;
+  contactCount: number;
+}
+
 interface AudienceStats {
   total: number;
   withPhone: number;
@@ -89,6 +100,7 @@ export default function SmsCampanhasPage() {
   const router = useRouter();
   const [campaigns, setCampaigns] = useState<SmsCampaign[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [contactLists, setContactLists] = useState<ContactList[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -104,7 +116,8 @@ export default function SmsCampanhasPage() {
     name: '',
     message: '',
     promotionId: '',
-    audienceType: 'all', // 'all', 'active', 'inactive', 'new'
+    contactListId: '', // ID da lista de contatos importada
+    audienceType: 'all', // 'all', 'active', 'inactive', 'new', 'list'
     scheduleType: 'now', // 'now', 'scheduled'
     scheduledFor: '',
     includePromoCode: true,
@@ -116,6 +129,7 @@ export default function SmsCampanhasPage() {
   useEffect(() => {
     loadCampaigns();
     loadPromotions();
+    loadContactLists();
     checkSmsConfig();
   }, []);
 
@@ -196,6 +210,18 @@ export default function SmsCampanhasPage() {
     }
   };
 
+  const loadContactLists = async () => {
+    try {
+      const response = await fetch('/api/sms/contact-lists');
+      if (response.ok) {
+        const data = await response.json();
+        setContactLists(data.lists || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar listas de contatos:', error);
+    }
+  };
+
   const loadAudienceStats = async (audienceType: string) => {
     try {
       const response = await fetch(`/api/sms/campaigns/audience-stats?type=${audienceType}`);
@@ -213,6 +239,7 @@ export default function SmsCampanhasPage() {
       name: '',
       message: '',
       promotionId: '',
+      contactListId: '',
       audienceType: 'all',
       scheduleType: 'now',
       scheduledFor: '',
@@ -232,6 +259,7 @@ export default function SmsCampanhasPage() {
       name: campaign.name,
       message: campaign.message,
       promotionId: campaign.promotionId || '',
+      contactListId: campaign.targetAudience?.contactListId || '',
       audienceType: campaign.targetAudience?.type || 'all',
       scheduleType: campaign.scheduledFor ? 'scheduled' : 'now',
       scheduledFor: campaign.scheduledFor ? format(new Date(campaign.scheduledFor), "yyyy-MM-dd'T'HH:mm") : '',
@@ -256,8 +284,10 @@ export default function SmsCampanhasPage() {
         name: formData.name,
         message: previewMessage, // Usar mensagem com cupom já inserido
         promotionId: formData.promotionId || null,
+        contactListId: formData.audienceType === 'list' ? formData.contactListId : null,
         targetAudience: {
           type: formData.audienceType,
+          contactListId: formData.audienceType === 'list' ? formData.contactListId : undefined,
         },
         scheduledFor: formData.scheduleType === 'scheduled' ? formData.scheduledFor : null,
         status: sendNow ? 'sending' : (formData.scheduleType === 'scheduled' ? 'scheduled' : 'draft'),
@@ -344,6 +374,7 @@ export default function SmsCampanhasPage() {
       name: `${campaign.name} (Cópia)`,
       message: campaign.message,
       promotionId: campaign.promotionId || '',
+      contactListId: campaign.targetAudience?.contactListId || '',
       audienceType: campaign.targetAudience?.type || 'all',
       scheduleType: 'now',
       scheduledFor: '',
@@ -381,12 +412,13 @@ export default function SmsCampanhasPage() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const getAudienceLabel = (type: string) => {
+  const getAudienceLabel = (type: string, listName?: string) => {
     const labels: Record<string, string> = {
       all: 'Todos os Clientes',
       active: 'Clientes Ativos (compraram nos últimos 30 dias)',
       inactive: 'Clientes Inativos (não compram há 60+ dias)',
       new: 'Novos Clientes (últimos 7 dias)',
+      list: listName ? `Lista: ${listName}` : 'Lista de Contatos',
     };
     return labels[type] || type;
   };
@@ -828,7 +860,7 @@ export default function SmsCampanhasPage() {
               <Label>Público-alvo</Label>
               <Select
                 value={formData.audienceType}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, audienceType: value }))}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, audienceType: value, contactListId: value === 'list' ? prev.contactListId : '' }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -858,11 +890,63 @@ export default function SmsCampanhasPage() {
                       Novos Clientes (últimos 7 dias)
                     </div>
                   </SelectItem>
+                  {contactLists.length > 0 && (
+                    <SelectItem value="list">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-blue-600" />
+                        Lista de Contatos Importada
+                      </div>
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500">
-                Estimativa: {audienceStats.withPhone} clientes com telefone cadastrado (de {audienceStats.total} total)
-              </p>
+
+              {/* Seleção de Lista de Contatos */}
+              {formData.audienceType === 'list' && (
+                <div className="mt-2">
+                  <Label className="text-sm">Selecionar Lista</Label>
+                  <Select
+                    value={formData.contactListId}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, contactListId: value }))}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Escolha uma lista de contatos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {contactLists.map((list) => (
+                        <SelectItem key={list.id} value={list.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{list.name}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {list.validContacts} contatos válidos
+                            </Badge>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {formData.contactListId && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {contactLists.find(l => l.id === formData.contactListId)?.validContacts || 0} contatos válidos serão incluídos
+                    </p>
+                  )}
+                  <Button
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    className="p-0 h-auto text-xs text-blue-600"
+                    onClick={() => router.push('/admin/marketing/sms-marketing/listas')}
+                  >
+                    Gerenciar listas de contatos
+                  </Button>
+                </div>
+              )}
+
+              {formData.audienceType !== 'list' && (
+                <p className="text-xs text-gray-500">
+                  Estimativa: {audienceStats.withPhone} clientes com telefone cadastrado (de {audienceStats.total} total)
+                </p>
+              )}
             </div>
 
             {/* Agendamento */}

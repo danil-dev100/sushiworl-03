@@ -24,7 +24,8 @@ import {
   Smartphone,
   Settings,
   Gift,
-  Ticket
+  Ticket,
+  Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -251,6 +252,14 @@ export default function SMSMarketingPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/admin/marketing/sms-marketing/listas')}
+            className="border-blue-200 text-blue-700 hover:bg-blue-50"
+          >
+            <Users className="h-4 w-4 mr-2" />
+            Listas de Contatos
+          </Button>
           <Button
             variant="outline"
             onClick={() => router.push('/admin/marketing/sms-marketing/campanhas')}

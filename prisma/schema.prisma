@@ -871,7 +871,11 @@ model SmsCampaign {
   // Agendamento
   scheduledAt DateTime?
 
-  // Segmentação
+  // Lista de contatos (opcional)
+  contactListId String?
+  contactList   SmsContactList? @relation("CampaignContactList", fields: [contactListId], references: [id], onDelete: SetNull)
+
+  // Segmentação (alternativa à lista de contatos)
   targetAudience Json? // Filtros de audiência
 
   // Estatísticas
@@ -884,6 +888,8 @@ model SmsCampaign {
   updatedAt DateTime @updatedAt
 
   logs SmsCampaignLog[]
+
+  @@index([contactListId])
 }
 
 model SmsCampaignLog {
@@ -948,6 +954,64 @@ model SmsAutomationLog {
 
   @@index([automationId])
   @@index([executedAt])
+}
+
+// ============================================
+// MARKETING - LISTAS DE CONTATOS SMS
+// ============================================
+
+model SmsContactList {
+  id String @id @default(cuid())
+
+  name        String
+  description String?
+
+  // Estatísticas
+  totalContacts  Int @default(0)
+  validContacts  Int @default(0)
+  invalidContacts Int @default(0)
+
+  // Controle
+  isActive  Boolean @default(true)
+  createdBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contacts  SmsContact[]
+  campaigns SmsCampaign[] @relation("CampaignContactList")
+}
+
+model SmsContact {
+  id     String @id @default(cuid())
+  listId String
+
+  // Dados do contato
+  phoneNumber String
+  name        String?
+  email       String?
+
+  // Campos customizados (JSON para flexibilidade)
+  customFields Json?
+
+  // Status
+  isValid   Boolean @default(true)
+  isOptedOut Boolean @default(false) // Se pediu para sair da lista
+
+  // Estatísticas
+  messagesSent     Int @default(0)
+  messagesDelivered Int @default(0)
+  lastMessageAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  list SmsContactList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, phoneNumber])
+  @@index([listId])
+  @@index([phoneNumber])
+  @@index([isValid])
 }
 
 // ============================================

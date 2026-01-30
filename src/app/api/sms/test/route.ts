@@ -34,14 +34,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { to, message } = validationResult.data;
+    let { to, message } = validationResult.data;
 
-    // Validar formato do número
+    // Limpar número (remover espaços e caracteres especiais)
+    to = to.replace(/[\s\-\(\)]/g, '');
+
+    // Se não começar com +, adicionar +351 (Portugal) automaticamente
     if (!to.startsWith('+')) {
-      return NextResponse.json(
-        { error: 'Número deve estar no formato internacional (começando com +)' },
-        { status: 400 }
-      );
+      // Se começar com 00, substituir por +
+      if (to.startsWith('00')) {
+        to = '+' + to.substring(2);
+      }
+      // Se começar com 9 (número português), adicionar +351
+      else if (to.startsWith('9')) {
+        to = '+351' + to;
+      }
+      // Outros casos, tentar adicionar +351
+      else {
+        to = '+351' + to;
+      }
     }
 
     // Buscar configurações de SMS

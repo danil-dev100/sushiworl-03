@@ -10,7 +10,7 @@ const smsSettingsSchema = z.object({
   twilioAccountSid: z.string().optional(),
   twilioAuthToken: z.string().optional(),
   d7ApiKey: z.string().optional(),
-  fromNumber: z.string().min(1, 'Número de origem é obrigatório'),
+  fromNumber: z.string().optional().default(''),
   maxSmsPerHour: z.string().transform((val) => parseInt(val) || 100),
   isActive: z.boolean(),
 });
@@ -74,6 +74,20 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+      // Número de origem é obrigatório para Twilio
+      if (!data.fromNumber || !data.fromNumber.trim()) {
+        return NextResponse.json(
+          { error: 'Número de origem é obrigatório para Twilio' },
+          { status: 400 }
+        );
+      }
+      // Validar formato do número para Twilio
+      if (!data.fromNumber.startsWith('+')) {
+        return NextResponse.json(
+          { error: 'Número de origem deve começar com + (formato internacional)' },
+          { status: 400 }
+        );
+      }
     } else if (data.provider === 'd7') {
       if (!data.d7ApiKey) {
         return NextResponse.json(
@@ -81,14 +95,16 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-    }
-
-    // Validar formato do número
-    if (!data.fromNumber.startsWith('+')) {
-      return NextResponse.json(
-        { error: 'Número de origem deve começar com + (formato internacional)' },
-        { status: 400 }
-      );
+      // Para D7, fromNumber é opcional, mas se fornecido e parecer número, validar formato
+      if (data.fromNumber && data.fromNumber.trim() && data.fromNumber.match(/^\d/)) {
+        // Se começa com dígito, deve ter o + na frente
+        if (!data.fromNumber.startsWith('+')) {
+          return NextResponse.json(
+            { error: 'Número de origem deve começar com + (formato internacional)' },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     // Buscar configuração existente
@@ -105,7 +121,7 @@ export async function POST(request: NextRequest) {
           twilioAccountSid: data.twilioAccountSid || null,
           twilioAuthToken: data.twilioAuthToken || null,
           d7ApiKey: data.d7ApiKey || null,
-          fromNumber: data.fromNumber,
+          fromNumber: data.fromNumber?.trim() || null,
           maxSmsPerHour: data.maxSmsPerHour,
           isActive: data.isActive,
         },
@@ -118,7 +134,7 @@ export async function POST(request: NextRequest) {
           twilioAccountSid: data.twilioAccountSid || null,
           twilioAuthToken: data.twilioAuthToken || null,
           d7ApiKey: data.d7ApiKey || null,
-          fromNumber: data.fromNumber,
+          fromNumber: data.fromNumber?.trim() || null,
           maxSmsPerHour: data.maxSmsPerHour,
           isActive: data.isActive,
         },

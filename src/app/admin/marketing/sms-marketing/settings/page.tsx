@@ -100,13 +100,19 @@ export default function SMSMarketingSettingsPage() {
       }
     }
 
-    if (!settings.fromNumber.trim()) {
-      toast.error('Número de origem é obrigatório');
-      return;
-    }
-
-    // Validar formato do número
-    if (!settings.fromNumber.startsWith('+')) {
+    // Número de origem é obrigatório apenas para Twilio
+    if (settings.provider === 'twilio') {
+      if (!settings.fromNumber.trim()) {
+        toast.error('Número de origem é obrigatório para Twilio');
+        return;
+      }
+      // Validar formato do número
+      if (!settings.fromNumber.startsWith('+')) {
+        toast.error('Número de origem deve começar com + (ex: +351912345678)');
+        return;
+      }
+    } else if (settings.fromNumber.trim() && !settings.fromNumber.startsWith('+')) {
+      // Para D7, se fornecido, deve estar no formato correto
       toast.error('Número de origem deve começar com + (ex: +351912345678)');
       return;
     }
@@ -157,7 +163,8 @@ export default function SMSMarketingSettingsPage() {
       }
     }
 
-    if (!settings.fromNumber.trim()) {
+    // Número de origem obrigatório apenas para Twilio
+    if (settings.provider === 'twilio' && !settings.fromNumber.trim()) {
       toast.error('Configure o número de origem antes de testar');
       return;
     }
@@ -334,15 +341,20 @@ export default function SMSMarketingSettingsPage() {
 
           {/* From Number */}
           <div className="space-y-2">
-            <Label htmlFor="fromNumber">Número de Origem (From) *</Label>
+            <Label htmlFor="fromNumber">
+              Número de Origem (From) {settings.provider === 'twilio' ? '*' : '(Opcional)'}
+            </Label>
             <Input
               id="fromNumber"
               value={settings.fromNumber}
               onChange={(e) => setSettings({ ...settings, fromNumber: e.target.value })}
-              placeholder="+351912345678"
+              placeholder={settings.provider === 'd7' ? 'SushiWorld ou +351912345678' : '+351912345678'}
             />
             <p className="text-xs text-gray-500">
-              Número virtual do seu provedor (formato internacional com +)
+              {settings.provider === 'd7'
+                ? 'Opcional para D7: pode usar Sender ID alfanumérico (ex: SushiWorld) ou deixar vazio'
+                : 'Número virtual do seu provedor (formato internacional com +)'
+              }
             </p>
           </div>
 

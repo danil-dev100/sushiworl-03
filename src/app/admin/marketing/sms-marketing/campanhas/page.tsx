@@ -58,6 +58,7 @@ interface SmsCampaign {
   targetAudience?: {
     type: string;
     contactListId?: string;
+    treatAsFirstPurchase?: boolean;
     filters?: Record<string, any>;
   };
   contactListId?: string;
@@ -121,6 +122,7 @@ export default function SmsCampanhasPage() {
     scheduleType: 'now', // 'now', 'scheduled'
     scheduledFor: '',
     includePromoCode: true,
+    treatAsFirstPurchase: false, // Tratar lista como primeira compra
   });
 
   const [audienceStats, setAudienceStats] = useState<AudienceStats>({ total: 0, withPhone: 0 });
@@ -244,6 +246,7 @@ export default function SmsCampanhasPage() {
       scheduleType: 'now',
       scheduledFor: '',
       includePromoCode: true,
+      treatAsFirstPurchase: false,
     });
     setEditingCampaign(null);
   };
@@ -264,6 +267,7 @@ export default function SmsCampanhasPage() {
       scheduleType: campaign.scheduledFor ? 'scheduled' : 'now',
       scheduledFor: campaign.scheduledFor ? format(new Date(campaign.scheduledFor), "yyyy-MM-dd'T'HH:mm") : '',
       includePromoCode: true,
+      treatAsFirstPurchase: campaign.targetAudience?.treatAsFirstPurchase || false,
     });
     setShowNewCampaignModal(true);
   };
@@ -288,6 +292,7 @@ export default function SmsCampanhasPage() {
         targetAudience: {
           type: formData.audienceType,
           contactListId: formData.audienceType === 'list' ? formData.contactListId : undefined,
+          treatAsFirstPurchase: formData.audienceType === 'list' ? formData.treatAsFirstPurchase : false,
         },
         scheduledFor: formData.scheduleType === 'scheduled' ? formData.scheduledFor : null,
         status: sendNow ? 'sending' : (formData.scheduleType === 'scheduled' ? 'scheduled' : 'draft'),
@@ -379,6 +384,7 @@ export default function SmsCampanhasPage() {
       scheduleType: 'now',
       scheduledFor: '',
       includePromoCode: true,
+      treatAsFirstPurchase: campaign.targetAudience?.treatAsFirstPurchase || false,
     });
     setEditingCampaign(null);
     setShowNewCampaignModal(true);
@@ -419,6 +425,15 @@ export default function SmsCampanhasPage() {
       inactive: 'Clientes Inativos (não compram há 60+ dias)',
       new: 'Novos Clientes (últimos 7 dias)',
       list: listName ? `Lista: ${listName}` : 'Lista de Contatos',
+      // Novos públicos baseados em timing de compra
+      first_purchase_24h: '24h após primeira compra',
+      first_purchase_72h: '3 dias após primeira compra',
+      last_purchase_7d: '7 dias após última compra',
+      last_purchase_14d: '14 dias após última compra',
+      last_purchase_21d: '21 dias após última compra',
+      inactive_30d: '30 dias sem compra',
+      inactive_45d: '45 dias sem compra',
+      inactive_60d: '60 dias sem compra',
     };
     return labels[type] || type;
   };
@@ -866,22 +881,17 @@ export default function SmsCampanhasPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  {/* Públicos Gerais */}
                   <SelectItem value="all">
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
-                      Todos os Clientes
+                      Todos os Clientes (com compra)
                     </div>
                   </SelectItem>
                   <SelectItem value="active">
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4 text-green-600" />
-                      Clientes Ativos (compraram nos últimos 30 dias)
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="inactive">
-                    <div className="flex items-center gap-2">
-                      <RefreshCw className="h-4 w-4 text-orange-600" />
-                      Clientes Inativos (não compram há 60+ dias)
+                      Clientes Ativos (últimos 30 dias)
                     </div>
                   </SelectItem>
                   <SelectItem value="new">
@@ -890,6 +900,62 @@ export default function SmsCampanhasPage() {
                       Novos Clientes (últimos 7 dias)
                     </div>
                   </SelectItem>
+
+                  {/* Pós-Compra (Follow-up) */}
+                  <SelectItem value="first_purchase_24h">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-blue-600" />
+                      24h após primeira compra
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="first_purchase_72h">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-blue-600" />
+                      3 dias após primeira compra
+                    </div>
+                  </SelectItem>
+
+                  {/* Reengajamento */}
+                  <SelectItem value="last_purchase_7d">
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4 text-yellow-600" />
+                      7 dias após última compra
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="last_purchase_14d">
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4 text-yellow-600" />
+                      14 dias após última compra
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="last_purchase_21d">
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4 text-yellow-600" />
+                      21 dias após última compra
+                    </div>
+                  </SelectItem>
+
+                  {/* Inativos (Win-back) */}
+                  <SelectItem value="inactive_30d">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-orange-600" />
+                      30 dias sem compra
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="inactive_45d">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-orange-600" />
+                      45 dias sem compra
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="inactive_60d">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-red-600" />
+                      60 dias sem compra
+                    </div>
+                  </SelectItem>
+
+                  {/* Lista Importada */}
                   {contactLists.length > 0 && (
                     <SelectItem value="list">
                       <div className="flex items-center gap-2">
@@ -926,9 +992,26 @@ export default function SmsCampanhasPage() {
                     </SelectContent>
                   </Select>
                   {formData.contactListId && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      {contactLists.find(l => l.id === formData.contactListId)?.validContacts || 0} contatos válidos serão incluídos
-                    </p>
+                    <>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {contactLists.find(l => l.id === formData.contactListId)?.validContacts || 0} contatos válidos serão incluídos
+                      </p>
+                      <div className="flex items-center gap-2 mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                        <Switch
+                          id="treatAsFirstPurchase"
+                          checked={formData.treatAsFirstPurchase}
+                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, treatAsFirstPurchase: checked }))}
+                        />
+                        <div className="flex-1">
+                          <Label htmlFor="treatAsFirstPurchase" className="text-sm font-medium text-purple-900">
+                            Tratar como primeira compra
+                          </Label>
+                          <p className="text-xs text-purple-700">
+                            Dar benefícios de primeiro cliente (mesmo que já tenha comprado antes)
+                          </p>
+                        </div>
+                      </div>
+                    </>
                   )}
                   <Button
                     type="button"

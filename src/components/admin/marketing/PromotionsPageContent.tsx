@@ -68,20 +68,25 @@ import {
   BarChart2,
   Droplet,
   ClipboardCopy,
+  ExternalLink,
   Eye,
   EyeOff,
   Gift,
   Info,
+  Link2,
   Loader2,
+  MessageSquare,
   Palette,
   Pencil,
   Percent,
   Plus,
   Search,
   Settings2,
+  ShoppingBag,
   Sparkles,
   Trash2,
   Type,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -144,11 +149,45 @@ type HomeHeroSettings = {
   bannerHeight: number;
 };
 
+type PopupConfig = {
+  title: string;
+  message: string;
+  buttonEnabled: boolean;
+  buttonText: string;
+  buttonLink: string;
+  buttonLinkType: 'page' | 'product' | 'external';
+  productId?: string | null;
+  backgroundColor: string;
+  textColor: string;
+  buttonColor: string;
+  buttonTextColor: string;
+};
+
+type PopupSettings = {
+  enabled: boolean;
+  config: PopupConfig;
+};
+
+const DEFAULT_POPUP_CONFIG: PopupConfig = {
+  title: '',
+  message: '',
+  buttonEnabled: false,
+  buttonText: 'Ver Mais',
+  buttonLink: '/',
+  buttonLinkType: 'page',
+  productId: null,
+  backgroundColor: '#FFFFFF',
+  textColor: '#333333',
+  buttonColor: '#FF6B00',
+  buttonTextColor: '#FFFFFF',
+};
+
 type PromotionsPageContentProps = {
   initialPromotions: PromotionWithRelations[];
   products: ProductSummary[];
   currentUser: CurrentUser;
   homeHero: HomeHeroSettings;
+  initialPopup: PopupSettings;
 };
 
 const EMPTY_SELECT_VALUE = '__none__';
@@ -279,6 +318,7 @@ export function PromotionsPageContent({
   products,
   currentUser,
   homeHero,
+  initialPopup,
 }: PromotionsPageContentProps) {
   const [promotions, setPromotions] = useState(
     initialPromotions.map((promo) => normalizePromotion(promo))
@@ -297,10 +337,22 @@ export function PromotionsPageContent({
   const [isDeleting, setIsDeleting] = useState(false);
   const [processingIds, setProcessingIds] = useState<string[]>([]);
 
+  // Popup state
+  const [popupEnabled, setPopupEnabled] = useState(initialPopup.enabled);
+  const [popupConfig, setPopupConfig] = useState<PopupConfig>(initialPopup.config);
+  const [popupBaseline, setPopupBaseline] = useState<PopupSettings>(initialPopup);
+  const [isSavingPopup, setIsSavingPopup] = useState(false);
+
   useEffect(() => {
     setHomeHeroBaseline(homeHero);
     setHomeHeroState(homeHero);
   }, [homeHero]);
+
+  useEffect(() => {
+    setPopupEnabled(initialPopup.enabled);
+    setPopupConfig(initialPopup.config);
+    setPopupBaseline(initialPopup);
+  }, [initialPopup]);
 
   const filteredPromotions = useMemo(() => {
     if (!searchTerm) return promotions;
@@ -659,6 +711,42 @@ export function PromotionsPageContent({
           hasChanges={heroHasChanges}
         />
       </section>
+
+      <SitePopupConfigurator
+        enabled={popupEnabled}
+        config={popupConfig}
+        products={products}
+        onEnabledChange={setPopupEnabled}
+        onConfigChange={(partial) => setPopupConfig((prev) => ({ ...prev, ...partial }))}
+        onReset={() => {
+          setPopupEnabled(false);
+          setPopupConfig(DEFAULT_POPUP_CONFIG);
+        }}
+        onSave={async () => {
+          setIsSavingPopup(true);
+          try {
+            const response = await fetch('/api/admin/settings/popup', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ enabled: popupEnabled, config: popupConfig }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data?.error || 'Erro ao salvar popup');
+            setPopupBaseline({ enabled: data.enabled, config: data.config });
+            toast.success(popupEnabled ? 'Popup ativado com sucesso!' : 'Popup desativado!');
+          } catch (error) {
+            console.error(error);
+            toast.error(error instanceof Error ? error.message : 'Erro ao salvar popup');
+          } finally {
+            setIsSavingPopup(false);
+          }
+        }}
+        isSaving={isSavingPopup}
+        hasChanges={
+          JSON.stringify({ enabled: popupEnabled, config: popupConfig }) !==
+          JSON.stringify(popupBaseline)
+        }
+      />
 
       <section className="overflow-hidden rounded-xl border border-[#ead9cd] bg-white shadow-sm">
         <div className="flex flex-col gap-2 border-b border-[#ead9cd] p-6 pb-4">
@@ -1182,6 +1270,370 @@ function HomeBannerConfigurator({
         </div>
       </div>
     </div>
+  );
+}
+
+// ============================================
+// SITE POPUP CONFIGURATOR
+// ============================================
+
+type SitePopupConfiguratorProps = {
+  enabled: boolean;
+  config: PopupConfig;
+  products: ProductSummary[];
+  onEnabledChange: (enabled: boolean) => void;
+  onConfigChange: (partial: Partial<PopupConfig>) => void;
+  onReset: () => void;
+  onSave: () => void;
+  isSaving: boolean;
+  hasChanges: boolean;
+};
+
+function SitePopupConfigurator({
+  enabled,
+  config,
+  products,
+  onEnabledChange,
+  onConfigChange,
+  onReset,
+  onSave,
+  isSaving,
+  hasChanges,
+}: SitePopupConfiguratorProps) {
+  return (
+    <section className="rounded-xl border border-[#ead9cd] bg-white p-6 shadow-sm">
+      <div className="flex flex-col gap-2 border-b border-[#ead9cd] pb-6 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-[#333333]">Popup do Site</h2>
+            <InfoHint text="Configure um popup que aparece quando os clientes abrem qualquer página do site. Ideal para avisos importantes, promoções especiais ou comunicar férias/pausas no serviço." />
+          </div>
+          <p className="mt-1 text-sm text-[#a16b45]">
+            Crie mensagens personalizadas que aparecem ao abrir o site. Use para promoções, avisos ou comunicar pausas no serviço.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-[#a16b45]">
+            {enabled ? 'Popup ativo' : 'Popup inativo'}
+          </span>
+          <Switch
+            checked={enabled}
+            onCheckedChange={onEnabledChange}
+          />
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr,1fr]">
+        {/* Formulário de configuração */}
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-[#333333]">
+              <Type className="h-4 w-4 text-[#FF6B00]" />
+              Título (opcional)
+            </label>
+            <Input
+              value={config.title}
+              onChange={(e) => onConfigChange({ title: e.target.value })}
+              placeholder="Ex: Aviso Importante"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-[#333333]">
+              <MessageSquare className="h-4 w-4 text-[#FF6B00]" />
+              Mensagem
+            </label>
+            <Textarea
+              value={config.message}
+              onChange={(e) => onConfigChange({ message: e.target.value })}
+              placeholder="Ex: Estamos de férias de 20/12 a 05/01. Voltaremos com novidades!"
+              className="min-h-[100px]"
+            />
+            <p className="text-xs text-[#a16b45]">
+              Esta mensagem será exibida no popup para todos os visitantes do site.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-[#ead9cd] p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-semibold text-[#333333]">Botão de ação</label>
+                <p className="text-xs text-[#a16b45]">
+                  Adicione um botão que leva a uma página, produto ou link externo.
+                </p>
+              </div>
+              <Switch
+                checked={config.buttonEnabled}
+                onCheckedChange={(checked) => onConfigChange({ buttonEnabled: checked })}
+              />
+            </div>
+
+            {config.buttonEnabled && (
+              <div className="space-y-4 pt-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-[#333333]">Texto do botão</label>
+                    <Input
+                      value={config.buttonText}
+                      onChange={(e) => onConfigChange({ buttonText: e.target.value })}
+                      placeholder="Ver Mais"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-[#333333]">Tipo de link</label>
+                    <Select
+                      value={config.buttonLinkType}
+                      onValueChange={(value: 'page' | 'product' | 'external') =>
+                        onConfigChange({ buttonLinkType: value, productId: null, buttonLink: '/' })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="page">
+                          <div className="flex items-center gap-2">
+                            <Link2 className="h-4 w-4" />
+                            Página do site
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="product">
+                          <div className="flex items-center gap-2">
+                            <ShoppingBag className="h-4 w-4" />
+                            Produto específico
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="external">
+                          <div className="flex items-center gap-2">
+                            <ExternalLink className="h-4 w-4" />
+                            Link externo
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {config.buttonLinkType === 'page' && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-[#333333]">Página de destino</label>
+                    <Select
+                      value={config.buttonLink}
+                      onValueChange={(value) => onConfigChange({ buttonLink: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma página" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="/">Página Inicial</SelectItem>
+                        <SelectItem value="/cardapio">Cardápio</SelectItem>
+                        <SelectItem value="/checkout">Checkout</SelectItem>
+                        <SelectItem value="/promocoes">Promoções</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {config.buttonLinkType === 'product' && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-[#333333]">Produto</label>
+                    <Select
+                      value={config.productId || ''}
+                      onValueChange={(value) => onConfigChange({ productId: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um produto" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {products.map((product) => (
+                          <SelectItem key={product.id} value={product.id}>
+                            {product.name} ({product.category})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {config.buttonLinkType === 'external' && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-[#333333]">URL externa</label>
+                    <Input
+                      value={config.buttonLink}
+                      onChange={(e) => onConfigChange({ buttonLink: e.target.value })}
+                      placeholder="https://exemplo.com"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-semibold text-[#333333]">
+                <Palette className="h-4 w-4 text-[#FF6B00]" />
+                Cor de fundo
+              </label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="color"
+                  value={config.backgroundColor}
+                  onChange={(e) => onConfigChange({ backgroundColor: e.target.value })}
+                  className="h-10 w-12 cursor-pointer p-1"
+                />
+                <Input
+                  value={config.backgroundColor}
+                  onChange={(e) => onConfigChange({ backgroundColor: e.target.value })}
+                  maxLength={7}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-semibold text-[#333333]">
+                <Type className="h-4 w-4 text-[#FF6B00]" />
+                Cor do texto
+              </label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="color"
+                  value={config.textColor}
+                  onChange={(e) => onConfigChange({ textColor: e.target.value })}
+                  className="h-10 w-12 cursor-pointer p-1"
+                />
+                <Input
+                  value={config.textColor}
+                  onChange={(e) => onConfigChange({ textColor: e.target.value })}
+                  maxLength={7}
+                />
+              </div>
+            </div>
+          </div>
+
+          {config.buttonEnabled && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-[#333333]">Cor do botão</label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="color"
+                    value={config.buttonColor}
+                    onChange={(e) => onConfigChange({ buttonColor: e.target.value })}
+                    className="h-10 w-12 cursor-pointer p-1"
+                  />
+                  <Input
+                    value={config.buttonColor}
+                    onChange={(e) => onConfigChange({ buttonColor: e.target.value })}
+                    maxLength={7}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-[#333333]">Cor do texto do botão</label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="color"
+                    value={config.buttonTextColor}
+                    onChange={(e) => onConfigChange({ buttonTextColor: e.target.value })}
+                    className="h-10 w-12 cursor-pointer p-1"
+                  />
+                  <Input
+                    value={config.buttonTextColor}
+                    onChange={(e) => onConfigChange({ buttonTextColor: e.target.value })}
+                    maxLength={7}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onReset}
+              disabled={isSaving}
+            >
+              Restaurar padrão
+            </Button>
+            <Button
+              type="button"
+              onClick={onSave}
+              className="bg-[#FF6B00] text-white hover:bg-[#FF6B00]/90"
+              disabled={!hasChanges || isSaving}
+            >
+              {isSaving ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Salvando...
+                </span>
+              ) : (
+                'Salvar alterações'
+              )}
+            </Button>
+            {!hasChanges && (
+              <span className="text-xs text-[#a16b45]">
+                Sem alterações pendentes.
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Preview do popup */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-[#333333]">
+            <Eye className="h-4 w-4 text-[#FF6B00]" />
+            Pré-visualização
+          </div>
+          <div className="relative rounded-lg border border-[#ead9cd] bg-[#f5f1e9] p-8">
+            {/* Simulação de overlay escuro */}
+            <div className="absolute inset-0 rounded-lg bg-black/30" />
+
+            {/* Popup preview */}
+            <div
+              className="relative mx-auto max-w-sm rounded-xl p-6 shadow-xl"
+              style={{ backgroundColor: config.backgroundColor }}
+            >
+              {/* Botão de fechar */}
+              <button className="absolute right-3 top-3 rounded-full p-1 transition hover:bg-black/10">
+                <X className="h-5 w-5" style={{ color: config.textColor }} />
+              </button>
+
+              {config.title && (
+                <h3
+                  className="mb-3 text-lg font-bold"
+                  style={{ color: config.textColor }}
+                >
+                  {config.title}
+                </h3>
+              )}
+
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: config.textColor }}
+              >
+                {config.message || 'Sua mensagem aparecerá aqui...'}
+              </p>
+
+              {config.buttonEnabled && (
+                <button
+                  className="mt-4 w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition hover:opacity-90"
+                  style={{
+                    backgroundColor: config.buttonColor,
+                    color: config.buttonTextColor,
+                  }}
+                >
+                  {config.buttonText || 'Ver Mais'}
+                </button>
+              )}
+            </div>
+          </div>
+          <p className="text-xs text-[#a16b45] text-center">
+            O popup aparecerá centralizado com um fundo escuro quando ativo.
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }
 

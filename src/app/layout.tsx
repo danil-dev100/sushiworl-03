@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { PixelScripts } from "@/components/tracking/PixelScripts";
 import { PWAInstaller } from "@/components/pwa/PWAInstaller";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SitePopup } from "@/components/site/SitePopup";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -68,6 +69,7 @@ export default function RootLayout({
         <SessionProvider>
           {children}
           <Toaster />
+          <SitePopup />
         </SessionProvider>
         <SpeedInsights />
       </body>

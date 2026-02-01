@@ -44,6 +44,43 @@ function parseHomeHero(settings: any) {
   };
 }
 
+export type PopupConfig = {
+  title: string;
+  message: string;
+  buttonEnabled: boolean;
+  buttonText: string;
+  buttonLink: string;
+  buttonLinkType: 'page' | 'product' | 'external';
+  productId?: string | null;
+  backgroundColor: string;
+  textColor: string;
+  buttonColor: string;
+  buttonTextColor: string;
+};
+
+const DEFAULT_POPUP_CONFIG: PopupConfig = {
+  title: '',
+  message: '',
+  buttonEnabled: false,
+  buttonText: 'Ver Mais',
+  buttonLink: '/',
+  buttonLinkType: 'page',
+  productId: null,
+  backgroundColor: '#FFFFFF',
+  textColor: '#333333',
+  buttonColor: '#FF6B00',
+  buttonTextColor: '#FFFFFF',
+};
+
+function parsePopupSettings(settings: any): { enabled: boolean; config: PopupConfig } {
+  const popupConfig = settings?.popupConfig as PopupConfig | null;
+
+  return {
+    enabled: settings?.popupEnabled ?? false,
+    config: popupConfig ?? DEFAULT_POPUP_CONFIG,
+  };
+}
+
 export default async function PromocoesPage() {
   const session = await getServerSession(authOptions);
 
@@ -89,6 +126,8 @@ export default async function PromocoesPage() {
     prisma.settings.findFirst(),
   ]);
 
+  const popupSettings = parsePopupSettings(settings);
+
   return (
     <PromotionsPageContent
       currentUser={{
@@ -99,6 +138,7 @@ export default async function PromocoesPage() {
       initialPromotions={promotions}
       products={products}
       homeHero={parseHomeHero(settings)}
+      initialPopup={popupSettings}
     />
   );
 }

@@ -143,6 +143,12 @@ export function useOrdersRealtime(
   // ============================================
 
   const fetchCompleteOrder = useCallback(async (orderId: string): Promise<Order | null> => {
+    // Verificar se Supabase está configurado
+    if (!supabase) {
+      console.warn('[UNIFIED] Supabase não configurado, não é possível buscar pedido');
+      return null;
+    }
+
     try {
       const { data, error } = await supabase
         .from('Order')
@@ -280,6 +286,12 @@ export function useOrdersRealtime(
       return;
     }
 
+    // Verificar se Supabase está configurado
+    if (!supabase) {
+      console.warn('[UNIFIED] ⚠️ Supabase não configurado, Realtime desabilitado');
+      return;
+    }
+
     // Prevenir múltiplas conexões
     if (channelRef.current) {
       console.log('[UNIFIED] ⚠️ Canal já existe');
@@ -389,7 +401,7 @@ export function useOrdersRealtime(
 
     return () => {
       console.log('[UNIFIED] 🛑 Desconectando Realtime...');
-      if (channelRef.current) {
+      if (channelRef.current && supabase) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }

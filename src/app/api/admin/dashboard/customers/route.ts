@@ -37,6 +37,8 @@ export async function GET(request: NextRequest) {
       status: {
         notIn: ['CANCELLED'],
       },
+      // Excluir pedidos de teste para mostrar apenas clientes reais
+      isTest: false,
     };
 
     if (startDate || endDate) {
@@ -59,6 +61,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    console.log('[Customers API] Total de pedidos encontrados:', orders.length);
+
     // Agregar dados por cliente (usando email ou telefone como identificador único)
     const customerMap = new Map<string, {
       name: string;
@@ -71,10 +75,18 @@ export async function GET(request: NextRequest) {
     }>();
 
     orders.forEach((order) => {
-      // Usar email como chave primária, ou telefone se email não existir
-      const key = order.customerEmail || order.customerPhone || order.customerName;
+      // Normalizar valores: tratar strings vazias como null
+      const email = order.customerEmail?.trim() || null;
+      const phone = order.customerPhone?.trim() || null;
+      const name = order.customerName?.trim() || null;
 
-      if (!key) return;
+      // Usar email como chave primária, ou telefone se email não existir, ou nome como último recurso
+      const key = email || phone || name;
+
+      if (!key) {
+        console.log('[Customers API] Pedido sem identificador de cliente:', order);
+        return;
+      }
 
       const existing = customerMap.get(key);
 
@@ -92,15 +104,15 @@ export async function GET(request: NextRequest) {
         if (order.createdAt > existing.lastOrderDate) {
           existing.lastOrderDate = order.createdAt;
           // Atualizar dados mais recentes
-          if (order.customerName) existing.name = order.customerName;
-          if (order.customerPhone) existing.phone = order.customerPhone;
+          if (name) existing.name = name;
+          if (phone) existing.phone = phone;
           if (address) existing.address = address;
         }
       } else {
         customerMap.set(key, {
-          name: order.customerName || '',
-          email: order.customerEmail || '',
-          phone: order.customerPhone || '',
+          name: name || '',
+          email: email || '',
+          phone: phone || '',
           address: address,
           orderCount: 1,
           totalSpent: order.total,
@@ -108,6 +120,8 @@ export async function GET(request: NextRequest) {
         });
       }
     });
+
+    console.log('[Customers API] Total de clientes agregados:', customerMap.size);
 
     // Converter para array e ordenar por total gasto (maiores primeiro)
     const customers = Array.from(customerMap.values())
@@ -174,6 +188,8 @@ export async function POST(request: NextRequest) {
       status: {
         notIn: ['CANCELLED'],
       },
+      // Excluir pedidos de teste para mostrar apenas clientes reais
+      isTest: false,
     };
 
     if (startDate || endDate) {
@@ -208,7 +224,12 @@ export async function POST(request: NextRequest) {
     }>();
 
     orders.forEach((order) => {
-      const key = order.customerEmail || order.customerPhone || order.customerName;
+      // Normalizar valores: tratar strings vazias como null
+      const email = order.customerEmail?.trim() || null;
+      const phone = order.customerPhone?.trim() || null;
+      const name = order.customerName?.trim() || null;
+
+      const key = email || phone || name;
       if (!key) return;
 
       const existing = customerMap.get(key);
@@ -225,15 +246,15 @@ export async function POST(request: NextRequest) {
         existing.totalSpent += order.total;
         if (order.createdAt > existing.lastOrderDate) {
           existing.lastOrderDate = order.createdAt;
-          if (order.customerName) existing.name = order.customerName;
-          if (order.customerPhone) existing.phone = order.customerPhone;
+          if (name) existing.name = name;
+          if (phone) existing.phone = phone;
           if (address) existing.address = address;
         }
       } else {
         customerMap.set(key, {
-          name: order.customerName || '',
-          email: order.customerEmail || '',
-          phone: order.customerPhone || '',
+          name: name || '',
+          email: email || '',
+          phone: phone || '',
           address: address,
           orderCount: 1,
           totalSpent: order.total,

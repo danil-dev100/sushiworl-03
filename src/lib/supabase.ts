@@ -1,14 +1,23 @@
 // src/lib/supabase.ts
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+// Criar cliente Supabase apenas se as variáveis estiverem disponíveis
+// Isso evita erros em contextos onde as variáveis não estão definidas
+let supabase: SupabaseClient | null = null;
+
+if (supabaseUrl && supabaseAnonKey) {
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+} else {
+  // Log apenas no servidor para evitar poluir console do cliente
+  if (typeof window === 'undefined') {
+    console.warn('[Supabase] Variáveis de ambiente não configuradas - funcionalidades de storage desabilitadas');
+  }
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export { supabase };
 
 // ============================================
 // TIPOS
@@ -43,6 +52,17 @@ export const BUCKETS = {
 // ============================================
 
 /**
+ * Verifica se o Supabase está configurado
+ */
+function ensureSupabaseConfigured(): boolean {
+  if (!supabase) {
+    console.warn('[Supabase] Cliente não configurado - verifique as variáveis de ambiente');
+    return false;
+  }
+  return true;
+}
+
+/**
  * Faz upload de um arquivo para o Supabase Storage
  * @param file - Arquivo a ser enviado (File ou Blob)
  * @param bucket - Nome do bucket ('products', 'banners', 'promotions')
@@ -54,12 +74,16 @@ export async function uploadFile(
   bucket: BucketName,
   path?: string
 ): Promise<UploadResult> {
+  if (!ensureSupabaseConfigured()) {
+    return { success: false, error: 'Supabase não configurado' };
+  }
+
   try {
     // Gerar nome único se path não for fornecido
     const fileName = path || generateUniqueFileName(file);
-    
+
     // Fazer upload
-    const { data, error } = await supabase.storage
+    const { data, error } = await supabase!.storage
       .from(bucket)
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -75,7 +99,7 @@ export async function uploadFile(
     }
 
     // Obter URL pública
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = supabase!.storage
       .from(bucket)
       .getPublicUrl(data.path);
 
@@ -119,8 +143,12 @@ export async function updateFile(
   bucket: BucketName,
   path: string
 ): Promise<UploadResult> {
+  if (!ensureSupabaseConfigured()) {
+    return { success: false, error: 'Supabase não configurado' };
+  }
+
   try {
-    const { data, error } = await supabase.storage
+    const { data, error } = await supabase!.storage
       .from(bucket)
       .upload(path, file, {
         cacheControl: '3600',
@@ -134,7 +162,7 @@ export async function updateFile(
       };
     }
 
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = supabase!.storage
       .from(bucket)
       .getPublicUrl(data.path);
 
@@ -165,8 +193,12 @@ export async function deleteFile(
   bucket: BucketName,
   path: string
 ): Promise<DeleteResult> {
+  if (!ensureSupabaseConfigured()) {
+    return { success: false, error: 'Supabase não configurado' };
+  }
+
   try {
-    const { error } = await supabase.storage.from(bucket).remove([path]);
+    const { error } = await supabase!.storage.from(bucket).remove([path]);
 
     if (error) {
       return {
@@ -196,8 +228,12 @@ export async function deleteMultipleFiles(
   bucket: BucketName,
   paths: string[]
 ): Promise<DeleteResult> {
+  if (!ensureSupabaseConfigured()) {
+    return { success: false, error: 'Supabase não configurado' };
+  }
+
   try {
-    const { error } = await supabase.storage.from(bucket).remove(paths);
+    const { error } = await supabase!.storage.from(bucket).remove(paths);
 
     if (error) {
       return {
@@ -257,8 +293,12 @@ export async function deleteFileByUrl(url: string): Promise<DeleteResult> {
  * @returns Lista de arquivos
  */
 export async function listFiles(bucket: BucketName, folder?: string) {
+  if (!ensureSupabaseConfigured()) {
+    return { success: false, error: 'Supabase não configurado', files: [] };
+  }
+
   try {
-    const { data, error } = await supabase.storage
+    const { data, error } = await supabase!.storage
       .from(bucket)
       .list(folder, {
         limit: 100,
@@ -294,6 +334,10 @@ export async function listFiles(bucket: BucketName, folder?: string) {
  * @returns URL pública
  */
 export function getPublicUrl(bucket: BucketName, path: string): string {
+  if (!supabase) {
+    console.warn('[Supabase] Cliente não configurado');
+    return '';
+  }
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
@@ -379,6 +423,11 @@ export function fileToBase64(file: File): Promise<string> {
 export async function ensureBucketsExist() {
   if (typeof window !== 'undefined') {
     console.warn('ensureBucketsExist deve ser executado apenas no servidor');
+    return;
+  }
+
+  if (!supabase) {
+    console.warn('[Supabase] Cliente não configurado - impossível verificar buckets');
     return;
   }
 

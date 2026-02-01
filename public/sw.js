@@ -5,7 +5,7 @@
  * - Tracking de eventos
  */
 
-const CACHE_NAME = 'sushiworld-v2';
+const CACHE_NAME = 'sushiworld-v3';
 const STATIC_ASSETS = [
   '/',
   '/cardapio',
@@ -56,15 +56,24 @@ self.addEventListener('fetch', (event) => {
   // Ignorar requisições de API
   if (event.request.url.includes('/api/')) return;
 
+  // Ignorar requisições de mídia que podem ter range requests (status 206)
+  const url = new URL(event.request.url);
+  const isMediaRequest = /\.(mp3|mp4|wav|ogg|webm|m4a|aac)$/i.test(url.pathname);
+  if (isMediaRequest) return;
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Clonar response para cache
-        const responseToCache = response.clone();
+        // Só fazer cache de respostas completas (status 200)
+        // Status 206 (Partial Content) não pode ser cacheado
+        if (response.status === 200) {
+          // Clonar response para cache
+          const responseToCache = response.clone();
 
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
 
         return response;
       })

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
@@ -17,6 +17,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Viewport exportado separadamente (Next.js 14+)
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#FF6B00",
+};
+
 export const metadata: Metadata = {
   title: "SushiWorld - Delivery de Sushi em Santa Iria",
   description: "O melhor sushi de Santa Iria. Peça online e receba em casa!",
@@ -33,13 +42,6 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "Sushi World",
-  },
-  themeColor: "#FF6B00",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
   },
 };
 

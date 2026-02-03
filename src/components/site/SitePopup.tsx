@@ -239,21 +239,21 @@ export function SitePopup() {
     };
   }, [isAnimating]);
 
+  // Sanitizar mensagem para prevenir XSS (DEVE estar antes do return condicional!)
+  const sanitizedMessage = useMemo(
+    () => popup ? sanitizeMessage(popup.message, popup.buttonColor || '#FF6B00') : '',
+    [popup?.message, popup?.buttonColor]
+  );
+
+  // Determinar se tem imagem (do popup ou do produto) - com validação de segurança
+  const rawImageUrl = popup?.imageUrl || popup?.product?.imageUrl;
+  const imageUrl = getSafeImageUrl(rawImageUrl);
+  const hasImage = !!imageUrl;
+
   // Não renderizar se não há popup ou está carregando
   if (isLoading || !popup || !isAnimating) {
     return null;
   }
-
-  // Determinar se tem imagem (do popup ou do produto) - com validação de segurança
-  const rawImageUrl = popup.imageUrl || popup.product?.imageUrl;
-  const imageUrl = getSafeImageUrl(rawImageUrl);
-  const hasImage = !!imageUrl;
-
-  // Sanitizar mensagem para prevenir XSS
-  const sanitizedMessage = useMemo(
-    () => sanitizeMessage(popup.message, popup.buttonColor || '#FF6B00'),
-    [popup.message, popup.buttonColor]
-  );
 
   return (
     <div

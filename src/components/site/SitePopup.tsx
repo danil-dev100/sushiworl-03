@@ -109,10 +109,6 @@ type ApiResponse = {
   popup: PopupData | null;
 };
 
-// Chave para localStorage
-const POPUP_DISMISSED_KEY = 'sushiworld_popup_dismissed';
-const POPUP_DISMISSED_DURATION = 24 * 60 * 60 * 1000; // 24 horas
-
 export function SitePopup() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -120,34 +116,9 @@ export function SitePopup() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Verificar se o popup foi fechado recentemente
-  const wasRecentlyDismissed = useCallback(() => {
-    if (typeof window === 'undefined') return false;
-
-    const dismissedAt = localStorage.getItem(POPUP_DISMISSED_KEY);
-    if (!dismissedAt) return false;
-
-    const dismissedTime = parseInt(dismissedAt, 10);
-    const now = Date.now();
-
-    // Se passou mais de 24h, limpar e mostrar novamente
-    if (now - dismissedTime > POPUP_DISMISSED_DURATION) {
-      localStorage.removeItem(POPUP_DISMISSED_KEY);
-      return false;
-    }
-
-    return true;
-  }, []);
-
   // Buscar dados do popup
   useEffect(() => {
     const fetchPopup = async () => {
-      // Não buscar se já foi fechado recentemente
-      if (wasRecentlyDismissed()) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
         const response = await fetch('/api/popup', {
           cache: 'no-store',
@@ -176,14 +147,13 @@ export function SitePopup() {
     };
 
     fetchPopup();
-  }, [wasRecentlyDismissed]);
+  }, []);
 
-  // Fechar popup e salvar no localStorage
+  // Fechar popup
   const handleClose = useCallback(() => {
     setIsOpen(false);
     setTimeout(() => {
       setIsAnimating(false);
-      localStorage.setItem(POPUP_DISMISSED_KEY, Date.now().toString());
     }, 300);
   }, []);
 

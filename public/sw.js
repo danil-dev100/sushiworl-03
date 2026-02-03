@@ -56,8 +56,12 @@ self.addEventListener('fetch', (event) => {
   // Ignorar requisições de API
   if (event.request.url.includes('/api/')) return;
 
-  // Ignorar requisições de mídia que podem ter range requests (status 206)
   const url = new URL(event.request.url);
+
+  // Ignorar requisições de domínios externos (para evitar problemas de CSP)
+  if (url.origin !== self.location.origin) return;
+
+  // Ignorar requisições de mídia que podem ter range requests (status 206)
   const isMediaRequest = /\.(mp3|mp4|wav|ogg|webm|m4a|aac)$/i.test(url.pathname);
   if (isMediaRequest) return;
 

@@ -152,6 +152,7 @@ type HomeHeroSettings = {
 type PopupConfig = {
   title: string;
   message: string;
+  imageUrl?: string | null;
   buttonEnabled: boolean;
   buttonText: string;
   buttonLink: string;
@@ -161,6 +162,7 @@ type PopupConfig = {
   textColor: string;
   buttonColor: string;
   buttonTextColor: string;
+  footerText?: string | null;
 };
 
 type PopupSettings = {
@@ -171,6 +173,7 @@ type PopupSettings = {
 const DEFAULT_POPUP_CONFIG: PopupConfig = {
   title: '',
   message: '',
+  imageUrl: null,
   buttonEnabled: false,
   buttonText: 'Ver Mais',
   buttonLink: '/',
@@ -180,6 +183,7 @@ const DEFAULT_POPUP_CONFIG: PopupConfig = {
   textColor: '#333333',
   buttonColor: '#FF6B00',
   buttonTextColor: '#FFFFFF',
+  footerText: null,
 };
 
 type PromotionsPageContentProps = {
@@ -1351,6 +1355,23 @@ function SitePopupConfigurator({
             />
             <p className="text-xs text-[#a16b45]">
               Esta mensagem será exibida no popup para todos os visitantes do site.
+              Use **texto** para negrito e `código` para destacar cupons.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-[#333333]">
+              <Droplet className="h-4 w-4 text-[#FF6B00]" />
+              Imagem (opcional)
+            </label>
+            <ImageUpload
+              value={config.imageUrl || ''}
+              onChange={(url) => onConfigChange({ imageUrl: url || null })}
+              bucket="promotions"
+              folder="popup"
+            />
+            <p className="text-xs text-[#a16b45]">
+              Adicione uma imagem que aparecerá ao lado do texto. Recomendado: 400x400px.
             </p>
           </div>
 
@@ -1547,6 +1568,21 @@ function SitePopupConfigurator({
             </div>
           )}
 
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-[#333333]">
+              <Info className="h-4 w-4 text-[#FF6B00]" />
+              Texto de rodapé (opcional)
+            </label>
+            <Input
+              value={config.footerText || ''}
+              onChange={(e) => onConfigChange({ footerText: e.target.value || null })}
+              placeholder="Ex: Oferta válida por tempo limitado"
+            />
+            <p className="text-xs text-[#a16b45]">
+              Texto pequeno que aparece abaixo do botão.
+            </p>
+          </div>
+
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button
               type="button"
@@ -1585,47 +1621,72 @@ function SitePopupConfigurator({
             <Eye className="h-4 w-4 text-[#FF6B00]" />
             Pré-visualização
           </div>
-          <div className="relative rounded-lg border border-[#ead9cd] bg-[#f5f1e9] p-8">
+          <div className="relative rounded-lg border border-[#ead9cd] bg-[#f5f1e9] p-6">
             {/* Simulação de overlay escuro */}
             <div className="absolute inset-0 rounded-lg bg-black/30" />
 
             {/* Popup preview */}
             <div
-              className="relative mx-auto max-w-sm rounded-xl p-6 shadow-xl"
+              className={cn(
+                'relative mx-auto max-w-md rounded-2xl shadow-xl overflow-hidden flex',
+                config.imageUrl ? 'flex-row' : 'flex-col'
+              )}
               style={{ backgroundColor: config.backgroundColor }}
             >
               {/* Botão de fechar */}
-              <button className="absolute right-3 top-3 rounded-full p-1 transition hover:bg-black/10">
-                <X className="h-5 w-5" style={{ color: config.textColor }} />
+              <button className="absolute right-3 top-3 z-10 rounded-full p-1.5 bg-black/10 transition hover:bg-black/20">
+                <X className="h-4 w-4" style={{ color: config.textColor }} />
               </button>
 
-              {config.title && (
-                <h3
-                  className="mb-3 text-lg font-bold"
+              {/* Imagem */}
+              {config.imageUrl && (
+                <div className="w-1/2 shrink-0">
+                  <div
+                    className="w-full h-full min-h-[180px] bg-center bg-no-repeat bg-cover"
+                    style={{ backgroundImage: `url("${config.imageUrl}")` }}
+                  />
+                </div>
+              )}
+
+              {/* Conteúdo */}
+              <div className={cn('p-5 flex flex-col justify-center', config.imageUrl ? 'w-1/2' : 'w-full text-center')}>
+                {config.title && (
+                  <h3
+                    className="text-xl font-extrabold leading-tight"
+                    style={{ color: config.buttonColor }}
+                  >
+                    {config.title}
+                  </h3>
+                )}
+
+                <p
+                  className="mt-3 text-xs leading-relaxed"
                   style={{ color: config.textColor }}
                 >
-                  {config.title}
-                </h3>
-              )}
+                  {config.message || 'Sua mensagem aparecerá aqui...'}
+                </p>
 
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: config.textColor }}
-              >
-                {config.message || 'Sua mensagem aparecerá aqui...'}
-              </p>
+                {config.buttonEnabled && (
+                  <button
+                    className="mt-5 w-full rounded-lg px-4 py-2.5 text-xs font-bold transition hover:opacity-90"
+                    style={{
+                      backgroundColor: config.buttonColor,
+                      color: config.buttonTextColor,
+                    }}
+                  >
+                    {config.buttonText || 'Ver Mais'}
+                  </button>
+                )}
 
-              {config.buttonEnabled && (
-                <button
-                  className="mt-4 w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition hover:opacity-90"
-                  style={{
-                    backgroundColor: config.buttonColor,
-                    color: config.buttonTextColor,
-                  }}
-                >
-                  {config.buttonText || 'Ver Mais'}
-                </button>
-              )}
+                {config.footerText && (
+                  <p
+                    className="mt-3 text-[8px] uppercase tracking-widest opacity-40"
+                    style={{ color: config.textColor }}
+                  >
+                    {config.footerText}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
           <p className="text-xs text-[#a16b45] text-center">

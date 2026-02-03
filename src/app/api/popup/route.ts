@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db';
 type PopupConfig = {
   title: string;
   message: string;
+  imageUrl?: string | null;
   buttonEnabled: boolean;
   buttonText: string;
   buttonLink: string;
@@ -14,6 +15,7 @@ type PopupConfig = {
   textColor: string;
   buttonColor: string;
   buttonTextColor: string;
+  footerText?: string | null;
 };
 
 // GET - Buscar popup ativo para o frontend (público)

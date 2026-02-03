@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache';
 export type PopupConfig = {
   title: string;
   message: string;
+  imageUrl?: string | null;
   buttonEnabled: boolean;
   buttonText: string;
   buttonLink: string;
@@ -17,6 +18,7 @@ export type PopupConfig = {
   textColor: string;
   buttonColor: string;
   buttonTextColor: string;
+  footerText?: string | null;
 };
 
 const DEFAULT_SETTINGS = {
@@ -30,6 +32,7 @@ const DEFAULT_SETTINGS = {
 const DEFAULT_POPUP_CONFIG: PopupConfig = {
   title: '',
   message: '',
+  imageUrl: null,
   buttonEnabled: false,
   buttonText: 'Ver Mais',
   buttonLink: '/',
@@ -39,6 +42,7 @@ const DEFAULT_POPUP_CONFIG: PopupConfig = {
   textColor: '#333333',
   buttonColor: '#FF6B00',
   buttonTextColor: '#FFFFFF',
+  footerText: null,
 };
 
 function sanitizeColor(value: unknown, fallback: string): string {
@@ -52,6 +56,9 @@ function buildPopupPayload(body: any): PopupConfig {
   return {
     title: typeof body?.title === 'string' ? body.title.trim() : '',
     message: typeof body?.message === 'string' ? body.message.trim() : '',
+    imageUrl: typeof body?.imageUrl === 'string' && body.imageUrl.trim()
+      ? body.imageUrl.trim()
+      : null,
     buttonEnabled: Boolean(body?.buttonEnabled),
     buttonText: typeof body?.buttonText === 'string' && body.buttonText.trim()
       ? body.buttonText.trim()
@@ -67,6 +74,9 @@ function buildPopupPayload(body: any): PopupConfig {
     textColor: sanitizeColor(body?.textColor, '#333333'),
     buttonColor: sanitizeColor(body?.buttonColor, '#FF6B00'),
     buttonTextColor: sanitizeColor(body?.buttonTextColor, '#FFFFFF'),
+    footerText: typeof body?.footerText === 'string' && body.footerText.trim()
+      ? body.footerText.trim()
+      : null,
   };
 }
 

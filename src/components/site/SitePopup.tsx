@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Bell, AlertCircle, Gift, Info } from 'lucide-react';
+import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type PopupData = {
   title: string;
   message: string;
+  imageUrl?: string | null;
   buttonEnabled: boolean;
   buttonText: string;
   buttonLink: string;
@@ -17,6 +18,7 @@ type PopupData = {
   textColor: string;
   buttonColor: string;
   buttonTextColor: string;
+  footerText?: string | null;
   product?: {
     id: string;
     name: string;
@@ -162,26 +164,9 @@ export function SitePopup() {
     return null;
   }
 
-  // Determinar ícone baseado no título ou contexto
-  const getIcon = () => {
-    const titleLower = popup.title?.toLowerCase() || '';
-    const messageLower = popup.message?.toLowerCase() || '';
-
-    if (titleLower.includes('férias') || titleLower.includes('ferias') || titleLower.includes('fechado') ||
-        messageLower.includes('férias') || messageLower.includes('ferias') || messageLower.includes('fechado')) {
-      return AlertCircle;
-    }
-    if (titleLower.includes('promoção') || titleLower.includes('desconto') || titleLower.includes('oferta') ||
-        messageLower.includes('promoção') || messageLower.includes('desconto') || messageLower.includes('oferta')) {
-      return Gift;
-    }
-    if (titleLower.includes('aviso') || titleLower.includes('atenção') || titleLower.includes('importante')) {
-      return Bell;
-    }
-    return Info;
-  };
-
-  const IconComponent = getIcon();
+  // Determinar se tem imagem (do popup ou do produto)
+  const imageUrl = popup.imageUrl || popup.product?.imageUrl;
+  const hasImage = !!imageUrl;
 
   return (
     <div
@@ -189,7 +174,7 @@ export function SitePopup() {
         'fixed inset-0 z-[9999] flex items-center justify-center p-4',
         'transition-all duration-300 ease-out',
         isOpen
-          ? 'bg-black/70 backdrop-blur-md'
+          ? 'bg-black/60 backdrop-blur-[2px]'
           : 'bg-black/0 backdrop-blur-none'
       )}
       onClick={handleOverlayClick}
@@ -200,56 +185,54 @@ export function SitePopup() {
       {/* Card do Popup */}
       <div
         className={cn(
-          'relative w-full max-w-[420px] overflow-hidden rounded-3xl shadow-2xl',
-          'transform transition-all duration-500 ease-out',
+          'relative w-full max-w-lg overflow-hidden rounded-2xl shadow-2xl',
+          'transform transition-all duration-300 ease-out',
+          'flex flex-col md:flex-row',
           isOpen
-            ? 'scale-100 opacity-100 translate-y-0'
-            : 'scale-90 opacity-0 translate-y-8'
+            ? 'scale-100 opacity-100'
+            : 'scale-95 opacity-0'
         )}
         style={{ backgroundColor: popup.backgroundColor }}
       >
-        {/* Barra decorativa no topo */}
-        <div
-          className="h-2 w-full"
-          style={{ backgroundColor: popup.buttonColor || '#FF6B00' }}
-        />
-
         {/* Botão de fechar */}
         <button
           onClick={handleClose}
           className={cn(
-            'absolute right-4 top-6 z-10',
+            'absolute top-3 right-3 z-10',
             'flex h-8 w-8 items-center justify-center rounded-full',
-            'bg-black/5 transition-all duration-200',
-            'hover:bg-black/10 hover:scale-110 active:scale-95'
+            'bg-black/10 transition-colors',
+            'hover:bg-black/20'
           )}
           aria-label="Fechar popup"
         >
           <X
-            className="h-4 w-4"
+            className="h-5 w-5"
             style={{ color: popup.textColor }}
           />
         </button>
 
-        {/* Conteúdo */}
-        <div className="px-8 pb-8 pt-6">
-          {/* Ícone */}
-          <div
-            className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
-            style={{ backgroundColor: `${popup.buttonColor}15` }}
-          >
-            <IconComponent
-              className="h-7 w-7"
-              style={{ color: popup.buttonColor || '#FF6B00' }}
+        {/* Imagem lateral (se houver) */}
+        {hasImage && (
+          <div className="w-full md:w-1/2 h-48 md:h-auto shrink-0">
+            <div
+              className="w-full h-full bg-center bg-no-repeat bg-cover min-h-[200px]"
+              style={{ backgroundImage: `url("${imageUrl}")` }}
             />
           </div>
+        )}
 
+        {/* Conteúdo */}
+        <div className={cn(
+          'flex flex-col justify-center p-6 md:p-8',
+          hasImage ? 'w-full md:w-1/2' : 'w-full',
+          hasImage ? 'text-center md:text-left' : 'text-center'
+        )}>
           {/* Título */}
           {popup.title && (
             <h2
               id="popup-title"
-              className="mb-3 text-2xl font-bold tracking-tight"
-              style={{ color: popup.textColor }}
+              className="text-2xl md:text-3xl font-extrabold leading-tight"
+              style={{ color: popup.buttonColor || '#FF6B00' }}
             >
               {popup.title}
             </h2>
@@ -257,48 +240,52 @@ export function SitePopup() {
 
           {/* Mensagem */}
           <p
-            className="text-base leading-relaxed whitespace-pre-wrap opacity-90"
+            className="mt-4 text-sm md:text-base leading-relaxed whitespace-pre-wrap"
             style={{ color: popup.textColor }}
-          >
-            {popup.message}
-          </p>
+            dangerouslySetInnerHTML={{
+              __html: popup.message.replace(
+                /\*\*(.*?)\*\*/g,
+                '<span class="font-bold">$1</span>'
+              ).replace(
+                /`(.*?)`/g,
+                `<span class="bg-[${popup.buttonColor || '#FF6B00'}]/10 px-1 py-0.5 rounded font-bold" style="color: ${popup.buttonColor || '#FF6B00'}">$1</span>`
+              )
+            }}
+          />
 
           {/* Botão de ação */}
           {popup.buttonEnabled && (
-            <button
-              onClick={handleButtonClick}
-              className={cn(
-                'mt-6 w-full rounded-xl px-6 py-3.5',
-                'text-base font-semibold',
-                'transform transition-all duration-200',
-                'hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]',
-                'focus:outline-none focus:ring-2 focus:ring-offset-2'
-              )}
-              style={{
-                backgroundColor: popup.buttonColor,
-                color: popup.buttonTextColor,
-                boxShadow: `0 4px 14px ${popup.buttonColor}40`,
-              }}
-            >
-              {popup.buttonText}
-            </button>
+            <div className="mt-8">
+              <button
+                onClick={handleButtonClick}
+                className={cn(
+                  'w-full flex cursor-pointer items-center justify-center',
+                  'overflow-hidden rounded-lg h-12 px-6',
+                  'text-base font-bold',
+                  'transition-all duration-200',
+                  'hover:shadow-lg active:scale-95'
+                )}
+                style={{
+                  backgroundColor: popup.buttonColor,
+                  color: popup.buttonTextColor,
+                  boxShadow: `0 4px 14px ${popup.buttonColor}30`,
+                }}
+              >
+                {popup.buttonText}
+              </button>
+            </div>
           )}
 
-          {/* Texto de fechar */}
-          <button
-            onClick={handleClose}
-            className="mt-4 w-full text-center text-sm opacity-60 transition-opacity hover:opacity-100"
-            style={{ color: popup.textColor }}
-          >
-            Fechar e continuar navegando
-          </button>
+          {/* Texto de rodapé */}
+          {popup.footerText && (
+            <p
+              className="mt-4 text-[10px] uppercase tracking-widest text-center md:text-left opacity-40"
+              style={{ color: popup.textColor }}
+            >
+              {popup.footerText}
+            </p>
+          )}
         </div>
-
-        {/* Decoração de canto */}
-        <div
-          className="absolute -bottom-20 -right-20 h-40 w-40 rounded-full opacity-10"
-          style={{ backgroundColor: popup.buttonColor || '#FF6B00' }}
-        />
       </div>
     </div>
   );

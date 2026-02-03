@@ -1,9 +1,84 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// ============================================
+// FUNÇÕES DE SANITIZAÇÃO (SEGURANÇA)
+// ============================================
+
+/**
+ * Sanitiza texto removendo tags HTML perigosas
+ * Permite apenas formatação segura: negrito e código
+ */
+function sanitizeMessage(message: string, accentColor: string): string {
+  // 1. Escapar HTML perigoso primeiro
+  const escaped = message
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+
+  // 2. Aplicar formatação segura (negrito e código)
+  return escaped
+    .replace(
+      /\*\*(.*?)\*\*/g,
+      '<span class="font-bold">$1</span>'
+    )
+    .replace(
+      /`(.*?)`/g,
+      `<span class="inline-block bg-orange-100 px-1 py-0.5 rounded font-bold text-orange-600">$1</span>`
+    );
+}
+
+/**
+ * Valida se a URL é segura (HTTP/HTTPS)
+ */
+function isValidUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Valida se é uma URL de imagem segura
+ */
+function getSafeImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (!isValidUrl(url)) return null;
+  // Bloquear data: URIs e javascript:
+  if (url.startsWith('data:') || url.startsWith('javascript:')) return null;
+  return url;
+}
+
+/**
+ * Valida link do botão
+ */
+function getSafeButtonLink(
+  link: string,
+  linkType: 'page' | 'product' | 'external'
+): string {
+  // Links internos: devem começar com /
+  if (linkType === 'page' || linkType === 'product') {
+    if (link.startsWith('/')) return link;
+    return '/';
+  }
+
+  // Links externos: devem ser HTTP/HTTPS
+  if (linkType === 'external') {
+    if (isValidUrl(link)) return link;
+    return '#';
+  }
+
+  return '/';
+}
 
 type PopupData = {
   title: string;
@@ -112,17 +187,22 @@ export function SitePopup() {
     }, 300);
   }, []);
 
-  // Navegar para o link do botão
+  // Navegar para o link do botão - com validação de segurança
   const handleButtonClick = useCallback(() => {
     if (!popup) return;
+
+    // Validar link antes de navegar
+    const safeLink = getSafeButtonLink(popup.buttonLink, popup.buttonLinkType);
+    if (safeLink === '#') return; // Link inválido, não navegar
 
     handleClose();
 
     setTimeout(() => {
       if (popup.buttonLinkType === 'external') {
-        window.open(popup.buttonLink, '_blank');
+        // Links externos: abrir em nova aba com noopener/noreferrer
+        window.open(safeLink, '_blank', 'noopener,noreferrer');
       } else {
-        router.push(popup.buttonLink);
+        router.push(safeLink);
       }
     }, 300);
   }, [popup, handleClose, router]);
@@ -164,9 +244,16 @@ export function SitePopup() {
     return null;
   }
 
-  // Determinar se tem imagem (do popup ou do produto)
-  const imageUrl = popup.imageUrl || popup.product?.imageUrl;
+  // Determinar se tem imagem (do popup ou do produto) - com validação de segurança
+  const rawImageUrl = popup.imageUrl || popup.product?.imageUrl;
+  const imageUrl = getSafeImageUrl(rawImageUrl);
   const hasImage = !!imageUrl;
+
+  // Sanitizar mensagem para prevenir XSS
+  const sanitizedMessage = useMemo(
+    () => sanitizeMessage(popup.message, popup.buttonColor || '#FF6B00'),
+    [popup.message, popup.buttonColor]
+  );
 
   return (
     <div
@@ -238,19 +325,11 @@ export function SitePopup() {
             </h2>
           )}
 
-          {/* Mensagem */}
+          {/* Mensagem - sanitizada para prevenir XSS */}
           <p
             className="mt-4 text-sm md:text-base leading-relaxed whitespace-pre-wrap"
             style={{ color: popup.textColor }}
-            dangerouslySetInnerHTML={{
-              __html: popup.message.replace(
-                /\*\*(.*?)\*\*/g,
-                '<span class="font-bold">$1</span>'
-              ).replace(
-                /`(.*?)`/g,
-                `<span class="bg-[${popup.buttonColor || '#FF6B00'}]/10 px-1 py-0.5 rounded font-bold" style="color: ${popup.buttonColor || '#FF6B00'}">$1</span>`
-              )
-            }}
+            dangerouslySetInnerHTML={{ __html: sanitizedMessage }}
           />
 
           {/* Botão de ação */}

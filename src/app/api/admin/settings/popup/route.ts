@@ -52,21 +52,75 @@ function sanitizeColor(value: unknown, fallback: string): string {
   return fallback;
 }
 
+/**
+ * Valida se a URL é segura (HTTP/HTTPS apenas)
+ */
+function sanitizeUrl(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null;
+
+  const url = value.trim();
+
+  // Bloquear protocolos perigosos
+  if (url.startsWith('javascript:') || url.startsWith('data:') || url.startsWith('vbscript:')) {
+    return null;
+  }
+
+  // Para URLs absolutas, validar protocolo
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    try {
+      new URL(url);
+      return url;
+    } catch {
+      return null;
+    }
+  }
+
+  // URLs relativas começando com / são permitidas
+  if (url.startsWith('/')) {
+    return url;
+  }
+
+  return null;
+}
+
+/**
+ * Sanitiza texto removendo caracteres potencialmente perigosos
+ */
+function sanitizeText(value: unknown, maxLength: number = 1000): string {
+  if (typeof value !== 'string') return '';
+
+  return value
+    .trim()
+    .slice(0, maxLength)
+    // Remover null bytes e caracteres de controle (exceto newlines)
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+}
+
 function buildPopupPayload(body: any): PopupConfig {
+  // Determinar tipo de link primeiro para validação
+  const buttonLinkType = ['page', 'product', 'external'].includes(body?.buttonLinkType)
+    ? body.buttonLinkType
+    : 'page';
+
+  // Sanitizar link baseado no tipo
+  let buttonLink = '/';
+  if (buttonLinkType === 'external') {
+    // Links externos devem ser URLs absolutas válidas
+    buttonLink = sanitizeUrl(body?.buttonLink) || '#';
+  } else {
+    // Links internos devem começar com /
+    const rawLink = typeof body?.buttonLink === 'string' ? body.buttonLink.trim() : '/';
+    buttonLink = rawLink.startsWith('/') ? rawLink : '/';
+  }
+
   return {
-    title: typeof body?.title === 'string' ? body.title.trim() : '',
-    message: typeof body?.message === 'string' ? body.message.trim() : '',
-    imageUrl: typeof body?.imageUrl === 'string' && body.imageUrl.trim()
-      ? body.imageUrl.trim()
-      : null,
+    title: sanitizeText(body?.title, 200),
+    message: sanitizeText(body?.message, 2000),
+    imageUrl: sanitizeUrl(body?.imageUrl),
     buttonEnabled: Boolean(body?.buttonEnabled),
-    buttonText: typeof body?.buttonText === 'string' && body.buttonText.trim()
-      ? body.buttonText.trim()
-      : 'Ver Mais',
-    buttonLink: typeof body?.buttonLink === 'string' ? body.buttonLink.trim() : '/',
-    buttonLinkType: ['page', 'product', 'external'].includes(body?.buttonLinkType)
-      ? body.buttonLinkType
-      : 'page',
+    buttonText: sanitizeText(body?.buttonText, 50) || 'Ver Mais',
+    buttonLink,
+    buttonLinkType,
     productId: typeof body?.productId === 'string' && body.productId.trim()
       ? body.productId.trim()
       : null,
@@ -74,9 +128,7 @@ function buildPopupPayload(body: any): PopupConfig {
     textColor: sanitizeColor(body?.textColor, '#333333'),
     buttonColor: sanitizeColor(body?.buttonColor, '#FF6B00'),
     buttonTextColor: sanitizeColor(body?.buttonTextColor, '#FFFFFF'),
-    footerText: typeof body?.footerText === 'string' && body.footerText.trim()
-      ? body.footerText.trim()
-      : null,
+    footerText: sanitizeText(body?.footerText, 200) || null,
   };
 }
 

@@ -1362,16 +1362,30 @@ function SitePopupConfigurator({
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-semibold text-[#333333]">
               <Droplet className="h-4 w-4 text-[#FF6B00]" />
-              Imagem (opcional)
+              URL da Imagem (opcional)
             </label>
-            <ImageUpload
+            <Input
               value={config.imageUrl || ''}
-              onChange={(url) => onConfigChange({ imageUrl: url || null })}
-              bucket="promotions"
-              folder="popup"
+              onChange={(e) => onConfigChange({ imageUrl: e.target.value || null })}
+              placeholder="https://exemplo.com/imagem.jpg"
             />
+            {config.imageUrl && (
+              <div className="mt-2 relative w-32 h-32 rounded-lg overflow-hidden border border-[#ead9cd]">
+                <div
+                  className="w-full h-full bg-center bg-cover bg-no-repeat"
+                  style={{ backgroundImage: `url("${config.imageUrl}")` }}
+                />
+                <button
+                  type="button"
+                  onClick={() => onConfigChange({ imageUrl: null })}
+                  className="absolute top-1 right-1 p-1 rounded-full bg-black/50 hover:bg-black/70 transition"
+                >
+                  <X className="h-3 w-3 text-white" />
+                </button>
+              </div>
+            )}
             <p className="text-xs text-[#a16b45]">
-              Adicione uma imagem que aparecerá ao lado do texto. Recomendado: 400x400px.
+              Cole a URL de uma imagem (HTTPS). Recomendado: 400x400px.
             </p>
           </div>
 

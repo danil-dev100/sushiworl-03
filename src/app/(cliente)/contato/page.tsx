@@ -48,11 +48,11 @@ export default function ContatoPage() {
               <Phone className="w-8 h-8 text-[#FF6B00] flex-shrink-0" />
               <div>
                 <h3 className="text-lg font-bold text-[#333333] dark:text-[#f5f1e9]">Telefone</h3>
-                <a 
-                  className="text-[#333333] dark:text-[#f5f1e9]/90 hover:text-[#FF6B00] transition-colors" 
-                  href="tel:+351934841148"
+                <a
+                  className="text-[#333333] dark:text-[#f5f1e9]/90 hover:text-[#FF6B00] transition-colors"
+                  href="tel:+351932722005"
                 >
-                  +351 934 841 148
+                  +351 932 722 005
                 </a>
               </div>
             </div>

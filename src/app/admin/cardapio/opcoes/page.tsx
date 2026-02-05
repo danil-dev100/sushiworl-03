@@ -187,6 +187,26 @@ export default function GlobalOptionsPage() {
                       </span>
                     </div>
 
+                    {/* Atribuições Ativas */}
+                    {option.assignments?.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Aplicado em:</span>
+                        {option.assignments.slice(0, 5).map((assignment: any) => (
+                          <Badge key={assignment.id} variant="outline" className="font-normal bg-blue-50 text-blue-700 border-blue-200">
+                            {assignment.assignmentType === 'SITE_WIDE' && '🌐 '}
+                            {assignment.assignmentType === 'PRODUCT' && '📦 '}
+                            {assignment.assignmentType === 'CATEGORY' && '📁 '}
+                            {assignment.targetName || 'Todo o Site'}
+                          </Badge>
+                        ))}
+                        {option.assignments.length > 5 && (
+                          <Badge variant="outline" className="font-normal">
+                            +{option.assignments.length - 5} mais
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+
                     {/* Escolhas */}
                     {option.choices?.length > 0 && (
                       <div className="flex flex-wrap gap-2">

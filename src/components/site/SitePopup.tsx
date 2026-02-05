@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -115,9 +115,19 @@ export function SitePopup() {
   const [popup, setPopup] = useState<PopupData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
-  // Buscar dados do popup
+  // Não mostrar popup em páginas de admin
+  const isAdminPage = pathname?.startsWith('/admin');
+
+  // Buscar dados do popup (apenas em páginas de cliente)
   useEffect(() => {
+    // Não buscar popup em páginas de admin
+    if (isAdminPage) {
+      setIsLoading(false);
+      return;
+    }
+
     const fetchPopup = async () => {
       try {
         const response = await fetch('/api/popup', {
@@ -147,7 +157,7 @@ export function SitePopup() {
     };
 
     fetchPopup();
-  }, []);
+  }, [isAdminPage]);
 
   // Fechar popup
   const handleClose = useCallback(() => {
@@ -220,8 +230,8 @@ export function SitePopup() {
   const imageUrl = getSafeImageUrl(rawImageUrl);
   const hasImage = !!imageUrl;
 
-  // Não renderizar se não há popup ou está carregando
-  if (isLoading || !popup || !isAnimating) {
+  // Não renderizar em páginas de admin ou se não há popup
+  if (isAdminPage || isLoading || !popup || !isAnimating) {
     return null;
   }
 

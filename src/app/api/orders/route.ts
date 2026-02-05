@@ -172,10 +172,57 @@ export async function POST(request: NextRequest) {
     const settings = await prisma.settings.findFirst();
     const vatRate = settings?.vatRate || 13;
 
+    // Validar opções globais obrigatórias
+    if (items && items.length > 0) {
+      const productIds = items.map((i: { productId: string }) => i.productId);
+
+      // Buscar opções globais obrigatórias aplicáveis aos produtos do pedido
+      const requiredGlobalOptions = await prisma.globalOption.findMany({
+        where: {
+          type: 'REQUIRED',
+          isActive: true,
+          assignments: {
+            some: {
+              OR: [
+                { assignmentType: 'SITE_WIDE' },
+                { assignmentType: 'PRODUCT', targetId: { in: productIds } },
+              ],
+            },
+          },
+        },
+        include: {
+          assignments: true,
+        },
+      });
+
+      // Verificar se todas as opções obrigatórias foram selecionadas
+      const missingRequired: string[] = [];
+      for (const option of requiredGlobalOptions) {
+        const selection = globalOptions?.find((s: { optionId: string }) => s.optionId === option.id);
+        const minSelection = option.assignments[0]?.minSelection || 1;
+
+        if (!selection || !selection.choices || selection.choices.length < minSelection) {
+          missingRequired.push(option.name);
+        }
+      }
+
+      if (missingRequired.length > 0) {
+        return NextResponse.json(
+          {
+            error: `Opções obrigatórias não selecionadas: ${missingRequired.join(', ')}`,
+            missingOptions: missingRequired,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // Calcular totais
     const additionalTotal = additionalItems?.reduce((acc: number, item: { price: number }) => acc + item.price, 0) || 0;
-    const globalOptionsTotal = globalOptions?.reduce((acc: number, opt: { choices: { price: number }[] }) =>
-      acc + opt.choices.reduce((sum: number, choice: { price: number }) => sum + choice.price, 0), 0) || 0;
+    // Calcular total das opções globais (price * quantity)
+    const globalOptionsTotal = globalOptions?.reduce((acc: number, opt: { choices: { price: number; quantity?: number }[] }) =>
+      acc + opt.choices.reduce((sum: number, choice: { price: number; quantity?: number }) =>
+        sum + (choice.price * (choice.quantity || 1)), 0), 0) || 0;
     const itemsSubtotal = subtotal || items.reduce((acc: number, item: { price: number; quantity: number }) => acc + (item.price * item.quantity), 0);
     const vatAmount = Number((itemsSubtotal * (vatRate / 100)).toFixed(2));
 

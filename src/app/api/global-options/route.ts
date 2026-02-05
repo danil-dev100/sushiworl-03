@@ -29,9 +29,37 @@ export async function GET() {
       orderBy: { sortOrder: 'asc' }
     });
 
+    // Buscar nomes dos produtos para atribuições do tipo PRODUCT
+    const productIds = options
+      .flatMap(o => o.assignments)
+      .filter(a => a.assignmentType === 'PRODUCT' && a.targetId)
+      .map(a => a.targetId as string);
+
+    const products = productIds.length > 0
+      ? await prisma.product.findMany({
+          where: { id: { in: productIds } },
+          select: { id: true, name: true }
+        })
+      : [];
+
+    const productMap = new Map(products.map(p => [p.id, p.name]));
+
+    // Adicionar nome do produto às atribuições
+    const optionsWithNames = options.map(option => ({
+      ...option,
+      assignments: option.assignments.map(assignment => ({
+        ...assignment,
+        targetName: assignment.assignmentType === 'PRODUCT' && assignment.targetId
+          ? productMap.get(assignment.targetId) || assignment.targetId
+          : assignment.assignmentType === 'SITE_WIDE'
+            ? 'Todo o Site'
+            : assignment.targetId
+      }))
+    }));
+
     console.log(`[Global Options GET] ✅ ${options.length} opções encontradas`);
 
-    return NextResponse.json({ success: true, options });
+    return NextResponse.json({ success: true, options: optionsWithNames });
   } catch (error) {
     console.error('[Global Options GET] ❌ Erro:', error);
     return NextResponse.json(

@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Trash2, Plus, Minus, Gift } from 'lucide-react';
+import { Trash2, Plus, Minus, Gift, AlertCircle } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 interface CartAdditionalItem {
   id: string;
@@ -60,6 +62,7 @@ export default function CarrinhoPage() {
   const [isCheckingDelivery, setIsCheckingDelivery] = useState(true);
   const [globalOptions, setGlobalOptions] = useState<GlobalOption[]>([]);
   const [selectedGlobalOptions, setSelectedGlobalOptions] = useState<SelectedGlobalOption[]>(cartGlobalOptions || []);
+  const router = useRouter();
 
   // TODO: Buscar taxa de IVA das configurações do banco de dados
   const taxaIVA = 13; // Taxa de IVA em percentual (13% conforme especificado)
@@ -368,6 +371,50 @@ export default function CarrinhoPage() {
   const getChoiceQuantity = (optionId: string, choiceId: string) => {
     const selection = selectedGlobalOptions.find(s => s.optionId === optionId);
     return selection?.choices.find(c => c.choiceId === choiceId)?.quantity || 0;
+  };
+
+  // Validar se todas as opções obrigatórias foram selecionadas
+  const validateRequiredOptions = () => {
+    const requiredOptions = globalOptions.filter(opt => opt.type === 'REQUIRED');
+    const missingOptions: string[] = [];
+
+    requiredOptions.forEach(opt => {
+      const selection = selectedGlobalOptions.find(s => s.optionId === opt.id);
+      const selectedCount = selection?.choices.length || 0;
+
+      // Verificar se atende o mínimo de seleções (default 1 para obrigatórios)
+      const minRequired = opt.minSelection || 1;
+      if (selectedCount < minRequired) {
+        missingOptions.push(opt.name);
+      }
+    });
+
+    return {
+      isValid: missingOptions.length === 0,
+      missingOptions
+    };
+  };
+
+  const { isValid: requiredOptionsValid, missingOptions } = validateRequiredOptions();
+
+  // Handler para ir ao checkout - valida opções obrigatórias
+  const handleCheckout = () => {
+    if (!requiredOptionsValid) {
+      toast.error(
+        <div className="flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Selecione as opções obrigatórias</p>
+            <p className="text-sm mt-1">
+              {missingOptions.map(opt => `• ${opt}`).join('\n')}
+            </p>
+          </div>
+        </div>,
+        { duration: 4000 }
+      );
+      return;
+    }
+    router.push('/checkout');
   };
 
   // Calcular quanto falta para entrega grátis
@@ -694,12 +741,13 @@ export default function CarrinhoPage() {
                     <div className="mb-6 flex justify-end text-xs text-[#a16b45]">
                       <span>(IVA incluído)</span>
                     </div>
-                    <Link
-                      href="/checkout"
+
+                    <button
+                      onClick={handleCheckout}
                       className="w-full flex items-center justify-center rounded-lg h-12 px-6 bg-[#FF6B00] text-white text-base font-bold hover:bg-[#FF6B00]/90 transition-colors"
                     >
                       Ir para o Checkout
-                    </Link>
+                    </button>
                   </div>
                 </aside>
               </div>

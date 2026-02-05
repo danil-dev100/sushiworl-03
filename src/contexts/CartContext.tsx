@@ -175,7 +175,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, 0)
   + additionalItems.reduce((sum, item) => sum + item.price, 0)
   + globalOptions.reduce((sum, option) => {
-    return sum + option.choices.reduce((choiceSum, choice) => choiceSum + choice.price, 0);
+    return sum + option.choices.reduce((choiceSum, choice) =>
+      choiceSum + (choice.price * (choice.quantity || 1)), 0);
   }, 0);
 
   return (

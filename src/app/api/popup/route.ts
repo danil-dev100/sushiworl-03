@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+// Cache: ISR com revalidação a cada 5 minutos
+// Popup promocional é dado público, cache seguro
+export const revalidate = 300;
+
 // Tipo do payload do popup
 type PopupConfig = {
   title: string;
@@ -29,11 +33,16 @@ export async function GET() {
     });
 
     // Se popup não está habilitado ou não tem configuração, retorna vazio
+    // Cache curto (1 min) para popup inativo - permite reativar rapidamente
     if (!settings?.popupEnabled || !settings?.popupConfig) {
       return NextResponse.json({
         success: true,
         active: false,
         popup: null,
+      }, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        },
       });
     }
 
@@ -45,6 +54,10 @@ export async function GET() {
         success: true,
         active: false,
         popup: null,
+      }, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        },
       });
     }
 
@@ -69,6 +82,7 @@ export async function GET() {
       }
     }
 
+    // Cache de 5 minutos para popup ativo
     return NextResponse.json({
       success: true,
       active: true,
@@ -76,9 +90,17 @@ export async function GET() {
         ...popupConfig,
         product: productInfo,
       },
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
     });
   } catch (error) {
-    console.error('[Popup] erro ao buscar popup:', error);
+    // Log de erro apenas em desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[Popup] erro ao buscar popup:', error);
+    }
+    // Em caso de erro, não cachear
     return NextResponse.json(
       {
         success: false,
@@ -86,7 +108,7 @@ export async function GET() {
         popup: null,
         error: 'Erro ao buscar popup'
       },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

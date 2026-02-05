@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Cache: ISR com revalidação a cada 5 minutos
+// Reduz invocações na Vercel mantendo dados relativamente frescos
+export const revalidate = 300;
 
 export async function GET() {
   try {
@@ -80,9 +81,18 @@ export async function GET() {
         outOfStock: product.outOfStock,
       }));
 
-    return NextResponse.json(produtosPorCategoria);
+    // Headers de cache para CDN da Vercel
+    return NextResponse.json(produtosPorCategoria, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
+    });
   } catch (error) {
     console.error('Erro ao buscar produtos:', error);
-    return NextResponse.json({}, { status: 500 });
+    // Em caso de erro, não cachear
+    return NextResponse.json({}, {
+      status: 500,
+      headers: { 'Cache-Control': 'no-store' },
+    });
   }
 }

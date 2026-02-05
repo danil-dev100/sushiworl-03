@@ -23,13 +23,17 @@ const defaultEmojis: Record<string, string> = {
   'Extras': '➕',
 };
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Cache: ISR com revalidação a cada 10 minutos
+// Categorias mudam raramente, cache mais longo é seguro
+export const revalidate = 600;
 
 // GET - Buscar categorias únicas com emojis
 export async function GET() {
   try {
-    console.log('[Categories API] Buscando categorias...');
+    // Log apenas em desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Categories API] Buscando categorias...');
+    }
 
     // Buscar categorias da tabela categories (com emojis)
     const dbCategories = await prisma.category.findMany({
@@ -77,17 +81,25 @@ export async function GET() {
         emoji,
       }));
 
-    console.log(`[Categories API] ${categories.length} categorias encontradas`);
+    // Log apenas em desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Categories API] ${categories.length} categorias encontradas`);
+    }
 
+    // Headers de cache para CDN da Vercel
     return NextResponse.json({
       success: true,
       categories
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
+      },
     });
   } catch (error) {
     console.error('[Categories API] Erro:', error);
     return NextResponse.json(
       { success: false, error: 'Erro ao buscar categorias' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }

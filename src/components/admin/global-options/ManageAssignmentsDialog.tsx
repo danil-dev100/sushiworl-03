@@ -25,6 +25,7 @@ interface Assignment {
   id: string;
   assignmentType: AssignmentType;
   targetId: string | null;
+  targetName?: string;
   minSelection: number;
   maxSelection: number;
   allowMultiple: boolean;
@@ -212,8 +213,8 @@ export function ManageAssignmentsDialog({
                             <span className="font-medium">
                               {getAssignmentLabel(assignment.assignmentType)}
                             </span>
-                            {assignment.targetId && (
-                              <Badge variant="secondary">{assignment.targetId}</Badge>
+                            {(assignment.targetName || assignment.targetId) && assignment.assignmentType !== 'SITE_WIDE' && (
+                              <Badge variant="secondary">{assignment.targetName || assignment.targetId}</Badge>
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground">

@@ -30,9 +30,49 @@ export async function GET(
       }
     });
 
+    // Buscar nomes dos produtos para atribuições do tipo PRODUCT
+    const productIds = assignments
+      .filter(a => a.assignmentType === 'PRODUCT' && a.targetId)
+      .map(a => a.targetId as string);
+
+    const products = productIds.length > 0
+      ? await prisma.product.findMany({
+          where: { id: { in: productIds } },
+          select: { id: true, name: true }
+        })
+      : [];
+
+    const productMap = new Map(products.map(p => [p.id, p.name]));
+
+    // Buscar nomes das categorias para atribuições do tipo CATEGORY
+    const categoryIds = assignments
+      .filter(a => a.assignmentType === 'CATEGORY' && a.targetId)
+      .map(a => a.targetId as string);
+
+    const categories = categoryIds.length > 0
+      ? await prisma.category.findMany({
+          where: { id: { in: categoryIds } },
+          select: { id: true, name: true }
+        })
+      : [];
+
+    const categoryMap = new Map(categories.map(c => [c.id, c.name]));
+
+    // Adicionar nome do target às atribuições
+    const assignmentsWithNames = assignments.map(assignment => ({
+      ...assignment,
+      targetName: assignment.assignmentType === 'PRODUCT' && assignment.targetId
+        ? productMap.get(assignment.targetId) || assignment.targetId
+        : assignment.assignmentType === 'CATEGORY' && assignment.targetId
+          ? categoryMap.get(assignment.targetId) || assignment.targetId
+          : assignment.assignmentType === 'SITE_WIDE'
+            ? 'Todo o Site'
+            : assignment.targetId
+    }));
+
     console.log(`[Assignment GET] ✅ ${assignments.length} atribuições encontradas`);
 
-    return NextResponse.json({ success: true, assignments });
+    return NextResponse.json({ success: true, assignments: assignmentsWithNames });
   } catch (error) {
     console.error('[Assignment GET] ❌ Erro:', error);
     return NextResponse.json(

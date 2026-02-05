@@ -51,29 +51,50 @@ interface SelectedGlobalOption {
     choiceId: string;
     choiceName: string;
     price: number;
-    quantity: number;
+    quantity?: number;
   }[];
 }
 
 export default function CarrinhoPage() {
-  const { items, additionalItems, updateQuantity, removeItem, addAdditionalItem, removeAdditionalItem, totalPrice, globalOptions: cartGlobalOptions, setGlobalOptions: setCartGlobalOptions } = useCart();
+  const { items, additionalItems, updateQuantity, removeItem, addAdditionalItem, removeAdditionalItem, globalOptions: cartGlobalOptions, setGlobalOptions: setCartGlobalOptions } = useCart();
   const [availableCartItems, setAvailableCartItems] = useState<CartAdditionalItem[]>([]);
   const [deliveryArea, setDeliveryArea] = useState<DeliveryArea | null>(null);
   const [isCheckingDelivery, setIsCheckingDelivery] = useState(true);
   const [globalOptions, setGlobalOptions] = useState<GlobalOption[]>([]);
   const [selectedGlobalOptions, setSelectedGlobalOptions] = useState<SelectedGlobalOption[]>(cartGlobalOptions || []);
+  const [isLoadingGlobalOptions, setIsLoadingGlobalOptions] = useState(true);
   const router = useRouter();
 
   // TODO: Buscar taxa de IVA das configurações do banco de dados
   const taxaIVA = 13; // Taxa de IVA em percentual (13% conforme especificado)
 
-  const subtotal = totalPrice;
+  // Calcular subtotal dos produtos (sem opcionais)
+  const subtotalProdutos = items.reduce((sum, item) => {
+    let itemTotal = item.price * item.quantity;
+    // Incluir opções específicas do produto (não as globais)
+    if (item.selectedOptions) {
+      item.selectedOptions.forEach((option) => {
+        option.choices.forEach((choice) => {
+          itemTotal += choice.price * item.quantity;
+        });
+      });
+    }
+    return sum + itemTotal;
+  }, 0);
+
+  // Calcular subtotal dos opcionais (itens adicionais + opções globais)
+  const subtotalOpcionais = additionalItems.reduce((sum, item) => sum + item.price, 0)
+    + selectedGlobalOptions.reduce((sum, option) => {
+      return sum + option.choices.reduce((choiceSum, choice) =>
+        choiceSum + (choice.price * (choice.quantity || 1)), 0);
+    }, 0);
 
   // Taxa de entrega será calculada no checkout baseado no endereço
   // No carrinho, não cobramos taxa ainda
   const taxaEntrega = 0.00;
 
-  const total = subtotal + taxaEntrega;
+  // Total geral
+  const total = subtotalProdutos + subtotalOpcionais + taxaEntrega;
 
   // Verificar área de entrega baseado no endereço do cliente
   useEffect(() => {
@@ -156,8 +177,11 @@ export default function CarrinhoPage() {
     const fetchGlobalOptions = async () => {
       if (items.length === 0) {
         setGlobalOptions([]);
+        setIsLoadingGlobalOptions(false);
         return;
       }
+
+      setIsLoadingGlobalOptions(true);
 
       try {
         // Obter productIds e categorias dos itens no carrinho
@@ -207,6 +231,8 @@ export default function CarrinhoPage() {
         }
       } catch (error) {
         console.error('[Carrinho] ❌ Erro ao buscar opções globais:', error);
+      } finally {
+        setIsLoadingGlobalOptions(false);
       }
     };
 
@@ -384,6 +410,7 @@ export default function CarrinhoPage() {
 
       // Verificar se atende o mínimo de seleções (default 1 para obrigatórios)
       const minRequired = opt.minSelection || 1;
+
       if (selectedCount < minRequired) {
         missingOptions.push(opt.name);
       }
@@ -399,6 +426,12 @@ export default function CarrinhoPage() {
 
   // Handler para ir ao checkout - valida opções obrigatórias
   const handleCheckout = () => {
+    // Aguardar carregamento das opções globais
+    if (isLoadingGlobalOptions) {
+      toast.error('Aguarde o carregamento das opções...', { duration: 2000 });
+      return;
+    }
+
     if (!requiredOptionsValid) {
       toast.error(
         <div className="flex items-start gap-2">
@@ -423,7 +456,7 @@ export default function CarrinhoPage() {
       return null;
     }
 
-    const remaining = deliveryArea.minOrderValue - subtotal;
+    const remaining = deliveryArea.minOrderValue - total;
     return remaining > 0 ? remaining : 0;
   };
 
@@ -706,31 +739,22 @@ export default function CarrinhoPage() {
                       Resumo do Pedido
                     </h3>
                     <div className="space-y-3 border-b border-[#ead9cd] dark:border-[#4a3c30] pb-4 mb-4">
+                      {/* Subtotal dos Produtos */}
                       <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
-                        <span>Subtotal</span>
-                        <span>€{subtotal.toFixed(2)}</span>
+                        <span>Produtos</span>
+                        <span>€{subtotalProdutos.toFixed(2)}</span>
                       </div>
-                      {additionalItems.map((item) => (
-                        <div key={item.id} className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
-                          <span>{item.name}</span>
-                          <span>€{item.price.toFixed(2)}</span>
+
+                      {/* Subtotal dos Opcionais (se houver) */}
+                      {subtotalOpcionais > 0 && (
+                        <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                          <span>Opcionais</span>
+                          <span>€{subtotalOpcionais.toFixed(2)}</span>
                         </div>
-                      ))}
-                      {selectedGlobalOptions.map((option) => (
-                        option.choices.map((choice) => (
-                          <div key={`${option.optionId}-${choice.choiceId}`} className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
-                            <span>
-                              {choice.quantity > 1 ? `${choice.quantity}x ` : ''}{option.optionName}: {choice.choiceName}
-                            </span>
-                            {choice.price > 0 ? (
-                              <span>€{(choice.price * (choice.quantity || 1)).toFixed(2)}</span>
-                            ) : (
-                              <span className="text-green-600 dark:text-green-400">Grátis</span>
-                            )}
-                          </div>
-                        ))
-                      ))}
-                      <div className="text-[#333333]/80 dark:text-[#f5f1e9]/80">
+                      )}
+
+                      {/* IVA info */}
+                      <div className="text-[#333333]/60 dark:text-[#f5f1e9]/60 text-sm">
                         <span>IVA ({taxaIVA}% incluído)</span>
                       </div>
                     </div>

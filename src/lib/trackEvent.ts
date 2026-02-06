@@ -51,6 +51,7 @@ interface TrackingConfig {
     type: string;
     pixelId: string | null;
     measurementId: string | null;
+    apiKey: string | null;
     isActive: boolean;
     events: string[];
   }>;
@@ -190,6 +191,79 @@ function trackGoogleAnalytics(
 }
 
 /**
+ * Dispara evento de conversão para Google Ads (client-side)
+ */
+function trackGoogleAds(
+  conversionId: string,
+  conversionLabel: string | null,
+  eventType: TrackingEventType,
+  payload: TrackingEventPayload
+): void {
+  if (typeof window === 'undefined' || !window.gtag) {
+    console.warn('[TrackEvent] Google Ads gtag não encontrado');
+    return;
+  }
+
+  // Eventos que geram conversões no Google Ads
+  const conversionEvents: Record<string, boolean> = {
+    purchase: true,
+    begin_checkout: true,
+    add_to_cart: true,
+    sign_up: true,
+  };
+
+  // Só enviar conversão para eventos relevantes
+  if (!conversionEvents[eventType]) {
+    return;
+  }
+
+  const conversionData: any = {};
+
+  if (payload.value) conversionData.value = payload.value;
+  if (payload.currency) conversionData.currency = payload.currency;
+  if (payload.orderId) conversionData.transaction_id = payload.orderId;
+
+  // send_to: 'AW-XXXXXXXXX/label' para conversão específica
+  if (conversionLabel) {
+    conversionData.send_to = `${conversionId}/${conversionLabel}`;
+  } else {
+    conversionData.send_to = conversionId;
+  }
+
+  console.log(`[TrackEvent] Google Ads (${conversionId}): conversion`, conversionData);
+  window.gtag('event', 'conversion', conversionData);
+}
+
+/**
+ * Captura e persiste parâmetros UTM/click IDs no sessionStorage
+ * para que não se percam ao navegar entre páginas
+ */
+function getPersistedUtmParams(): Record<string, string | null> {
+  const params = new URLSearchParams(window.location.search);
+  const utmKeys = ['gclid', 'fbclid', 'ttclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+
+  // Salvar novos parâmetros da URL no sessionStorage
+  utmKeys.forEach(key => {
+    const value = params.get(key);
+    if (value) {
+      sessionStorage.setItem(`_track_${key}`, value);
+    }
+  });
+
+  // Retornar valores persistidos (URL atual ou sessão anterior)
+  return {
+    gclid: params.get('gclid') || sessionStorage.getItem('_track_gclid'),
+    fbclid: params.get('fbclid') || sessionStorage.getItem('_track_fbclid'),
+    ttclid: params.get('ttclid') || sessionStorage.getItem('_track_ttclid'),
+    utmSource: params.get('utm_source') || sessionStorage.getItem('_track_utm_source'),
+    utmMedium: params.get('utm_medium') || sessionStorage.getItem('_track_utm_medium'),
+    utmCampaign: params.get('utm_campaign') || sessionStorage.getItem('_track_utm_campaign'),
+    utmTerm: params.get('utm_term') || sessionStorage.getItem('_track_utm_term'),
+    utmContent: params.get('utm_content') || sessionStorage.getItem('_track_utm_content'),
+  };
+}
+
+/**
  * Envia evento para o backend (server-side processing)
  */
 async function sendToBackend(
@@ -199,7 +273,9 @@ async function sendToBackend(
   integrations: Array<{ id: string; platform: string }>
 ): Promise<void> {
   try {
-    // Capturar informações de origem
+    // Capturar informações de origem com persistência
+    const utm = getPersistedUtmParams();
+
     const trackingData = {
       event: eventType,
       eventId,
@@ -212,17 +288,7 @@ async function sendToBackend(
         id: i.id,
         platform: i.platform,
       })),
-      // Capturar parâmetros UTM da URL
-      utm: {
-        gclid: new URLSearchParams(window.location.search).get('gclid'),
-        fbclid: new URLSearchParams(window.location.search).get('fbclid'),
-        ttclid: new URLSearchParams(window.location.search).get('ttclid'),
-        utmSource: new URLSearchParams(window.location.search).get('utm_source'),
-        utmMedium: new URLSearchParams(window.location.search).get('utm_medium'),
-        utmCampaign: new URLSearchParams(window.location.search).get('utm_campaign'),
-        utmTerm: new URLSearchParams(window.location.search).get('utm_term'),
-        utmContent: new URLSearchParams(window.location.search).get('utm_content'),
-      },
+      utm,
     };
 
     // Usar sendBeacon se disponível (mais confiável)
@@ -296,8 +362,12 @@ export async function trackEvent(
             integration.measurementId
           ) {
             trackGoogleAnalytics(integration.measurementId, eventType, payload);
+          } else if (
+            integration.platform === 'GOOGLE_ADS' &&
+            integration.measurementId
+          ) {
+            trackGoogleAds(integration.measurementId, integration.apiKey, eventType, payload);
           }
-          // Adicionar mais plataformas conforme necessário
         } catch (error) {
           console.error(`[TrackEvent] Erro ao disparar ${integration.platform}:`, error);
         }

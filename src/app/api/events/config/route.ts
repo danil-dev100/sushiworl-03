@@ -19,6 +19,7 @@ export async function GET() {
         type: true,
         pixelId: true,
         measurementId: true,
+        apiKey: true,
         isActive: true,
         config: true,
       },
@@ -31,6 +32,7 @@ export async function GET() {
       type: integration.type,
       pixelId: integration.pixelId,
       measurementId: integration.measurementId,
+      apiKey: integration.platform === 'GOOGLE_ADS' ? integration.apiKey : null,
       isActive: integration.isActive,
       events:
         // Pegar do config.events ou usar fallback padrão

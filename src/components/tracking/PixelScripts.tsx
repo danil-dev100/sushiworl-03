@@ -8,6 +8,7 @@ interface Integration {
   platform: string;
   pixelId: string | null;
   measurementId: string | null;
+  apiKey: string | null;
   isActive: boolean;
 }
 
@@ -47,6 +48,12 @@ export function PixelScripts() {
   const gtmPixels = integrations.filter(
     i => i.platform === 'GOOGLE_TAG_MANAGER' && i.measurementId
   );
+  const gadsPixels = integrations.filter(
+    i => i.platform === 'GOOGLE_ADS' && i.measurementId
+  );
+
+  // Verificar se GA4 já carrega o gtag.js (evitar duplicar o script)
+  const gtagAlreadyLoaded = gaPixels.length > 0;
 
   return (
     <>
@@ -106,6 +113,33 @@ export function PixelScripts() {
                 gtag('config', '${pixel.measurementId}', {
                   page_path: window.location.pathname,
                 });
+              `,
+            }}
+          />
+        </>
+      ))}
+
+      {/* Google Ads */}
+      {gadsPixels.map(pixel => (
+        <>
+          {/* Carregar gtag.js apenas se GA4 não estiver ativo */}
+          {!gtagAlreadyLoaded && (
+            <Script
+              key={`gads-script-${pixel.id}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${pixel.measurementId}`}
+              strategy="afterInteractive"
+            />
+          )}
+          <Script
+            key={`gads-config-${pixel.id}`}
+            id={`google-ads-${pixel.measurementId}`}
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                ${!gtagAlreadyLoaded ? "gtag('js', new Date());" : ''}
+                gtag('config', '${pixel.measurementId}');
               `,
             }}
           />

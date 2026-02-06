@@ -202,31 +202,6 @@ export default function CarrinhoPage() {
 
           if (data.success && data.options) {
             setGlobalOptions(data.options);
-
-            // Selecionar automaticamente as escolhas padrão
-            const defaultSelections: SelectedGlobalOption[] = [];
-            data.options.forEach((opt: GlobalOption) => {
-              const defaultChoices = opt.choices.filter(c => c.isDefault);
-              if (defaultChoices.length > 0) {
-                const existingSelection = selectedGlobalOptions.find(s => s.optionId === opt.id);
-                if (!existingSelection) {
-                  defaultSelections.push({
-                    optionId: opt.id,
-                    optionName: opt.name,
-                    choices: defaultChoices.map(c => ({
-                      choiceId: c.id,
-                      choiceName: c.name,
-                      price: c.price,
-                      quantity: 1
-                    }))
-                  });
-                }
-              }
-            });
-
-            if (defaultSelections.length > 0) {
-              setSelectedGlobalOptions(prev => [...prev, ...defaultSelections]);
-            }
           }
         }
       } catch (error) {

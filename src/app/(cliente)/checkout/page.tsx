@@ -665,11 +665,11 @@ export default function CheckoutPage() {
                             <span className="text-xl">🍣</span>
                           </div>
                           <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9]">
-                            {option.optionName}: {choice.choiceName}
+                            {(choice.quantity || 1) > 1 ? `${choice.quantity}x ` : ''}{option.optionName}: {choice.choiceName}
                           </span>
                         </div>
                         <span className="text-sm font-medium text-[#333333] dark:text-[#f5f1e9] flex-shrink-0">
-                          {choice.price > 0 ? `€${choice.price.toFixed(2)}` : 'Grátis'}
+                          {choice.price > 0 ? `€${(choice.price * (choice.quantity || 1)).toFixed(2)}` : 'Grátis'}
                         </span>
                       </div>
                     ))
@@ -1179,12 +1179,12 @@ export default function CheckoutPage() {
                               </div>
                               <div className="flex flex-col">
                                 <span className="font-medium text-[#333333] dark:text-[#f5f1e9]">
-                                  {option.optionName}: {choice.choiceName}
+                                  {(choice.quantity || 1) > 1 ? `${choice.quantity}x ` : ''}{option.optionName}: {choice.choiceName}
                                 </span>
                               </div>
                             </div>
                             <span className="font-medium text-[#333333] dark:text-[#f5f1e9]">
-                              {choice.price > 0 ? `€${choice.price.toFixed(2)}` : 'Grátis'}
+                              {choice.price > 0 ? `€${(choice.price * (choice.quantity || 1)).toFixed(2)}` : 'Grátis'}
                             </span>
                           </div>
                         ))

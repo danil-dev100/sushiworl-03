@@ -745,13 +745,29 @@ export default function CarrinhoPage() {
                         <span>€{subtotalProdutos.toFixed(2)}</span>
                       </div>
 
-                      {/* Subtotal dos Opcionais (se houver) */}
-                      {subtotalOpcionais > 0 && (
-                        <div className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80">
-                          <span>Opcionais</span>
-                          <span>€{subtotalOpcionais.toFixed(2)}</span>
+                      {/* Detalhes dos Opcionais */}
+                      {additionalItems.map((item) => (
+                        <div key={item.id} className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80 text-sm">
+                          <span>{item.name}</span>
+                          <span>€{item.price.toFixed(2)}</span>
                         </div>
-                      )}
+                      ))}
+
+                      {/* Detalhes das Opções Globais Selecionadas */}
+                      {selectedGlobalOptions.map((option) => (
+                        option.choices.map((choice) => (
+                          <div key={`${option.optionId}-${choice.choiceId}`} className="flex justify-between text-[#333333]/80 dark:text-[#f5f1e9]/80 text-sm">
+                            <span>
+                              {(choice.quantity || 1) > 1 ? `${choice.quantity}x ` : ''}{option.optionName}: {choice.choiceName}
+                            </span>
+                            {choice.price > 0 ? (
+                              <span>€{(choice.price * (choice.quantity || 1)).toFixed(2)}</span>
+                            ) : (
+                              <span className="text-green-600 dark:text-green-400">Grátis</span>
+                            )}
+                          </div>
+                        ))
+                      ))}
 
                       {/* IVA info */}
                       <div className="text-[#333333]/60 dark:text-[#f5f1e9]/60 text-sm">

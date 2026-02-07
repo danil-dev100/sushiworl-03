@@ -76,13 +76,13 @@ interface PixelsAdsPageContentProps {
 }
 
 const TRACKING_EVENTS = [
-  { id: 'page_view', name: 'Visualização de Página', platforms: ['ga4', 'pixel'] },
-  { id: 'sign_up', name: 'Cadastro', platforms: ['ga4', 'pixel', 'capi'] },
-  { id: 'add_to_cart', name: 'Adicionar ao Carrinho', platforms: ['ga4', 'pixel', 'capi', 'ads'] },
-  { id: 'view_cart', name: 'Visualizar Carrinho', platforms: ['ga4', 'ads'] },
-  { id: 'begin_checkout', name: 'Iniciar Checkout', platforms: ['ga4', 'pixel', 'capi', 'ads'] },
-  { id: 'purchase', name: 'Compra', platforms: ['ga4', 'pixel', 'capi', 'ads'] },
-  { id: 'cart_abandonment', name: 'Abandono de Carrinho', platforms: ['pixel', 'capi'] },
+  { id: 'page_view', name: 'Visualização de Página', platforms: ['ga4', 'pixel', 'tiktok', 'pinterest', 'taboola'] },
+  { id: 'sign_up', name: 'Cadastro', platforms: ['ga4', 'pixel', 'capi', 'tiktok', 'pinterest', 'taboola'] },
+  { id: 'add_to_cart', name: 'Adicionar ao Carrinho', platforms: ['ga4', 'pixel', 'capi', 'ads', 'tiktok', 'pinterest', 'taboola'] },
+  { id: 'view_cart', name: 'Visualizar Carrinho', platforms: ['ga4', 'ads', 'tiktok', 'pinterest'] },
+  { id: 'begin_checkout', name: 'Iniciar Checkout', platforms: ['ga4', 'pixel', 'capi', 'ads', 'tiktok', 'pinterest', 'taboola'] },
+  { id: 'purchase', name: 'Compra', platforms: ['ga4', 'pixel', 'capi', 'ads', 'tiktok', 'pinterest', 'taboola'] },
+  { id: 'cart_abandonment', name: 'Abandono de Carrinho', platforms: ['pixel', 'capi', 'tiktok'] },
 ];
 
 const PLATFORM_OPTIONS = [
@@ -340,7 +340,7 @@ export function PixelsAdsPageContent({
           eventType: eventId,
           testData: {
             value: 100,
-            currency: 'BRL',
+            currency: 'EUR',
             pageUrl: window.location.href,
           },
         }),
@@ -515,52 +515,38 @@ export function PixelsAdsPageContent({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Evento</TableHead>
-                    <TableHead className="text-center">GA4</TableHead>
-                    <TableHead className="text-center">Pixel</TableHead>
-                    <TableHead className="text-center">CAPI</TableHead>
-                    <TableHead className="text-center">Ads</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {TRACKING_EVENTS.map(event => (
-                    <TableRow key={event.id}>
-                      <TableCell className="font-medium">{event.name}</TableCell>
-                      <TableCell className="text-center">
-                        {event.platforms.includes('ga4') ? (
-                          <CheckCircle className="h-4 w-4 text-green-500 mx-auto" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-gray-300 mx-auto" />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {event.platforms.includes('pixel') ? (
-                          <CheckCircle className="h-4 w-4 text-green-500 mx-auto" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-gray-300 mx-auto" />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {event.platforms.includes('capi') ? (
-                          <CheckCircle className="h-4 w-4 text-green-500 mx-auto" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-gray-300 mx-auto" />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {event.platforms.includes('ads') ? (
-                          <CheckCircle className="h-4 w-4 text-green-500 mx-auto" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-gray-300 mx-auto" />
-                        )}
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Evento</TableHead>
+                      <TableHead className="text-center">GA4</TableHead>
+                      <TableHead className="text-center">Pixel</TableHead>
+                      <TableHead className="text-center">CAPI</TableHead>
+                      <TableHead className="text-center">Ads</TableHead>
+                      <TableHead className="text-center">TikTok</TableHead>
+                      <TableHead className="text-center">Pinterest</TableHead>
+                      <TableHead className="text-center">Taboola</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {TRACKING_EVENTS.map(event => (
+                      <TableRow key={event.id}>
+                        <TableCell className="font-medium">{event.name}</TableCell>
+                        {['ga4', 'pixel', 'capi', 'ads', 'tiktok', 'pinterest', 'taboola'].map(platform => (
+                          <TableCell key={platform} className="text-center">
+                            {event.platforms.includes(platform) ? (
+                              <CheckCircle className="h-4 w-4 text-green-500 mx-auto" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-gray-300 mx-auto" />
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

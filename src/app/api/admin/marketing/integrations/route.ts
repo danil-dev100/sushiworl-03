@@ -6,10 +6,10 @@ import { z } from 'zod';
 
 // SEGURANÇA: Schemas de validação Zod
 const IntegrationDataSchema = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   name: z.string().max(100).optional().nullable(),
-  platform: z.enum(['FACEBOOK', 'GOOGLE_ANALYTICS', 'GOOGLE_TAG_MANAGER', 'TIKTOK', 'CUSTOM']),
-  type: z.enum(['PIXEL', 'MEASUREMENT', 'TAG_MANAGER', 'CUSTOM']),
+  platform: z.enum(['FACEBOOK', 'GOOGLE_ANALYTICS', 'GOOGLE_ADS', 'GOOGLE_TAG_MANAGER', 'TIKTOK', 'TABOOLA', 'PINTEREST', 'CUSTOM']),
+  type: z.string().max(50),
   apiKey: z.string().max(500).optional().nullable(),
   apiSecret: z.string().max(500).optional().nullable(),
   pixelId: z.string().max(100).optional().nullable(),
@@ -82,6 +82,15 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'create_integration':
+        const defaultEvents = [
+          'page_view',
+          'sign_up',
+          'add_to_cart',
+          'view_cart',
+          'begin_checkout',
+          'purchase',
+          'cart_abandonment',
+        ];
         const integration = await prisma.integration.create({
           data: {
             name: data.name || null,
@@ -92,17 +101,11 @@ export async function POST(request: NextRequest) {
             pixelId: data.pixelId || null,
             measurementId: data.measurementId || null,
             accessToken: data.accessToken || null,
-            config: data.config || {},
+            config: {
+              ...(data.config || {}),
+              events: data.events || defaultEvents,
+            },
             isActive: data.isActive ?? true,
-            events: data.events || [
-              'page_view',
-              'sign_up',
-              'add_to_cart',
-              'view_cart',
-              'begin_checkout',
-              'purchase',
-              'cart_abandonment',
-            ],
           },
         });
 
@@ -124,8 +127,20 @@ export async function POST(request: NextRequest) {
         if (data.pixelId !== undefined) updateData.pixelId = data.pixelId || null;
         if (data.measurementId !== undefined) updateData.measurementId = data.measurementId || null;
         if (data.accessToken !== undefined) updateData.accessToken = data.accessToken || null;
-        if (data.config !== undefined) updateData.config = data.config;
-        if (data.events !== undefined) updateData.events = data.events;
+
+        // Mesclar config preservando events
+        if (data.config !== undefined || data.events !== undefined) {
+          const existingIntegration = await prisma.integration.findUnique({
+            where: { id: data.id },
+            select: { config: true },
+          });
+          const existingConfig = (existingIntegration?.config as Record<string, unknown>) || {};
+          updateData.config = {
+            ...existingConfig,
+            ...(data.config || {}),
+            ...(data.events !== undefined ? { events: data.events } : {}),
+          };
+        }
 
         const updatedIntegration = await prisma.integration.update({
           where: { id: data.id },

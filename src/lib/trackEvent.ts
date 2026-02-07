@@ -235,6 +235,133 @@ function trackGoogleAds(
 }
 
 /**
+ * Dispara evento para TikTok Pixel (client-side)
+ */
+function trackTikTok(
+  pixelId: string,
+  eventType: TrackingEventType,
+  payload: TrackingEventPayload
+): void {
+  if (typeof window === 'undefined' || !window.ttq) {
+    console.warn('[TrackEvent] TikTok Pixel não encontrado');
+    return;
+  }
+
+  const ttEventMap: Record<string, string> = {
+    page_view: 'ViewContent',
+    sign_up: 'CompleteRegistration',
+    add_to_cart: 'AddToCart',
+    view_cart: 'ViewContent',
+    begin_checkout: 'InitiateCheckout',
+    purchase: 'CompletePayment',
+    cart_abandonment: 'AddToCart',
+  };
+
+  const ttEventName = ttEventMap[eventType] || eventType;
+
+  const ttPayload: any = {};
+  if (payload.value) ttPayload.value = payload.value;
+  if (payload.currency) ttPayload.currency = payload.currency;
+  if (payload.items) {
+    ttPayload.contents = payload.items.map(item => ({
+      content_id: item.id || item.name,
+      content_name: item.name,
+      quantity: item.quantity || 1,
+      price: item.price || 0,
+    }));
+    ttPayload.content_type = 'product';
+  }
+
+  console.log(`[TrackEvent] TikTok (${pixelId}): ${ttEventName}`, ttPayload);
+  window.ttq.track(ttEventName, ttPayload);
+}
+
+/**
+ * Dispara evento para Pinterest Tag (client-side)
+ */
+function trackPinterest(
+  pixelId: string,
+  eventType: TrackingEventType,
+  payload: TrackingEventPayload
+): void {
+  if (typeof window === 'undefined' || !window.pintrk) {
+    console.warn('[TrackEvent] Pinterest Tag não encontrado');
+    return;
+  }
+
+  const pinEventMap: Record<string, string> = {
+    page_view: 'pagevisit',
+    sign_up: 'signup',
+    add_to_cart: 'addtocart',
+    view_cart: 'pagevisit',
+    begin_checkout: 'checkout',
+    purchase: 'checkout',
+    cart_abandonment: 'addtocart',
+  };
+
+  const pinEventName = pinEventMap[eventType] || 'custom';
+
+  const pinPayload: any = {};
+  if (payload.value) pinPayload.value = payload.value;
+  if (payload.currency) pinPayload.currency = payload.currency;
+  if (payload.orderId) pinPayload.order_id = payload.orderId;
+  if (payload.items) {
+    pinPayload.line_items = payload.items.map(item => ({
+      product_id: item.id || item.name,
+      product_name: item.name,
+      product_quantity: item.quantity || 1,
+      product_price: item.price || 0,
+      product_category: item.category || 'Food',
+    }));
+  }
+
+  console.log(`[TrackEvent] Pinterest (${pixelId}): ${pinEventName}`, pinPayload);
+  window.pintrk('track', pinEventName, pinPayload);
+}
+
+/**
+ * Dispara evento para Taboola Pixel (client-side)
+ */
+function trackTaboola(
+  accountId: string,
+  eventType: TrackingEventType,
+  payload: TrackingEventPayload
+): void {
+  if (typeof window === 'undefined' || !window._tfa) {
+    console.warn('[TrackEvent] Taboola Pixel não encontrado');
+    return;
+  }
+
+  const tblEventMap: Record<string, string> = {
+    page_view: 'page_view',
+    sign_up: 'lead',
+    add_to_cart: 'add_to_cart',
+    view_cart: 'page_view',
+    begin_checkout: 'checkout',
+    purchase: 'purchase',
+    cart_abandonment: 'add_to_cart',
+  };
+
+  const tblEventName = tblEventMap[eventType] || eventType;
+
+  const tblPayload: any = {
+    notify: 'event',
+    name: tblEventName,
+    id: Number(accountId),
+  };
+
+  if (payload.value) tblPayload.revenue = payload.value;
+  if (payload.currency) tblPayload.currency = payload.currency;
+  if (payload.orderId) tblPayload.orderid = payload.orderId;
+  if (payload.items) {
+    tblPayload.quantity = payload.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  }
+
+  console.log(`[TrackEvent] Taboola (${accountId}): ${tblEventName}`, tblPayload);
+  window._tfa.push(tblPayload);
+}
+
+/**
  * Captura e persiste parâmetros UTM/click IDs no sessionStorage
  * para que não se percam ao navegar entre páginas
  */
@@ -367,6 +494,12 @@ export async function trackEvent(
             integration.measurementId
           ) {
             trackGoogleAds(integration.measurementId, integration.apiKey, eventType, payload);
+          } else if (integration.platform === 'TIKTOK' && integration.pixelId) {
+            trackTikTok(integration.pixelId, eventType, payload);
+          } else if (integration.platform === 'PINTEREST' && integration.pixelId) {
+            trackPinterest(integration.pixelId, eventType, payload);
+          } else if (integration.platform === 'TABOOLA' && integration.pixelId) {
+            trackTaboola(integration.pixelId, eventType, payload);
           }
         } catch (error) {
           console.error(`[TrackEvent] Erro ao disparar ${integration.platform}:`, error);
@@ -397,5 +530,8 @@ declare global {
   interface Window {
     fbq?: (command: string, eventName: string, params?: any) => void;
     gtag?: (command: string, ...args: any[]) => void;
+    ttq?: { track: (eventName: string, params?: any) => void; page: () => void };
+    pintrk?: (command: string, eventName?: string, params?: any) => void;
+    _tfa?: Array<any>;
   }
 }

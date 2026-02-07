@@ -7,6 +7,7 @@ import { PixelScripts } from "@/components/tracking/PixelScripts";
 import { PWAInstaller } from "@/components/pwa/PWAInstaller";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SitePopup } from "@/components/site/SitePopup";
+import CookieConsent from "@/components/cliente/CookieConsent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -70,6 +71,7 @@ export default function RootLayout({
           {children}
           <Toaster />
           <SitePopup />
+          <CookieConsent />
         </SessionProvider>
         <SpeedInsights />
       </body>

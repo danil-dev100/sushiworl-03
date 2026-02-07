@@ -28,7 +28,7 @@ async function sendToFacebookCAPI(
             },
             custom_data: {
               value: eventData.value || 0,
-              currency: eventData.currency || 'BRL',
+              currency: eventData.currency || 'EUR',
             },
           }],
           access_token: accessToken,

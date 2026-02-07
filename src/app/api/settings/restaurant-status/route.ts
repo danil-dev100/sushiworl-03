@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { isRestaurantOpen } from '@/lib/restaurant-status';
+import { getServerSession } from 'next-auth';
+import { authOptions, canManageSettings } from '@/lib/auth';
 
 /**
  * GET /api/settings/restaurant-status
@@ -31,7 +33,6 @@ export async function GET() {
       isOpen: status.isOpen,
       reason: status.reason,
       message: status.message,
-      openingHours: settings.openingHours
     });
   } catch (error) {
     console.error('[API] Erro ao buscar status do restaurante:', error);
@@ -48,6 +49,15 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
+    // Verificar autenticação - apenas admins podem alterar status
+    const session = await getServerSession(authOptions);
+    if (!session || !canManageSettings(session.user.role)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Não autorizado'
+      }, { status: 401 });
+    }
+
     const body = await request.json();
     const { isOnline } = body;
 

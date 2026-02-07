@@ -6,6 +6,38 @@ import { triggersService } from '@/lib/triggers-service';
 import { isRestaurantOpen } from '@/lib/restaurant-status';
 import { validateScheduleDateTime } from '@/lib/scheduling';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
+import { z } from 'zod';
+
+// Schema de validação do pedido
+const orderSchema = z.object({
+  customerName: z.string().min(1).max(100),
+  customerSurname: z.string().max(100).optional().default(''),
+  customerEmail: z.string().email().max(254),
+  customerPhone: z.string().min(9).max(20),
+  address: z.string().min(5).max(500),
+  nif: z.string().max(20).optional().nullable(),
+  paymentMethod: z.string().max(30).optional(),
+  observations: z.string().max(1000).optional().nullable(),
+  items: z.array(z.object({
+    productId: z.string().min(1).max(50),
+    name: z.string().min(1).max(200),
+    quantity: z.number().int().min(1).max(50),
+    price: z.number().min(0),
+    options: z.any().optional(),
+  })).min(1).max(100),
+  subtotal: z.number().min(0).optional(),
+  deliveryFee: z.number().min(0).optional(),
+  additionalItems: z.array(z.object({
+    name: z.string().max(200),
+    price: z.number().min(0),
+  })).optional(),
+  couponCode: z.string().max(50).optional().nullable(),
+  promotionId: z.string().max(50).optional().nullable(),
+  isScheduled: z.boolean().optional(),
+  scheduledDate: z.string().max(20).optional(),
+  scheduledTime: z.string().max(10).optional(),
+  globalOptions: z.array(z.any()).optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +47,16 @@ export async function POST(request: NextRequest) {
       return rateLimitResult;
     }
     const body = await request.json();
+
+    // Validação com Zod (formato, limites, tipos)
+    const parsed = orderSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Dados inválidos. Verifique os campos do pedido.' },
+        { status: 400 }
+      );
+    }
+
     const {
       customerName,
       customerSurname,
@@ -34,16 +76,21 @@ export async function POST(request: NextRequest) {
       scheduledDate,
       scheduledTime,
       globalOptions,
-    } = body;
+    } = parsed.data;
 
     // Normalizar método de pagamento para corresponder ao ENUM do Prisma
     // MBWAY e Multibanco Na Entrega = levar maquininha de cartão = CREDIT_CARD
     const normalizedPaymentMethod = paymentMethod === 'MBWAY' ? 'CREDIT_CARD' : (paymentMethod || 'CASH');
 
-    // Validação básica
-    if (!customerName || !customerEmail || !customerPhone || !address || !items || items.length === 0) {
+    // Verificar se admin pausou manualmente - bloqueia TODOS os pedidos (imediatos e agendados)
+    const restaurantStatus = await isRestaurantOpen();
+    if (!restaurantStatus.isOpen && restaurantStatus.reason === 'offline') {
       return NextResponse.json(
-        { error: 'Dados incompletos para criar o pedido.' },
+        {
+          error: 'O restaurante está temporariamente indisponível. Tente novamente mais tarde.',
+          reason: 'offline',
+          canSchedule: false,
+        },
         { status: 400 }
       );
     }
@@ -76,19 +123,13 @@ export async function POST(request: NextRequest) {
 
       console.log('[Orders API] ✅ Pedido agendado para:', scheduledForDateTime.toISOString());
     } else {
-      // Verificar se o restaurante está aberto APENAS para pedidos imediatos
-      const restaurantStatus = await isRestaurantOpen();
-      if (!restaurantStatus.isOpen) {
-        // Se o admin pausou manualmente (offline), NÃO permite agendar
-        // Se está fora do horário (closed), permite agendar
-        const canSchedule = restaurantStatus.reason !== 'offline';
+      // Para pedidos imediatos: verificar se está fora do horário
+      if (!restaurantStatus.isOpen && restaurantStatus.reason === 'closed') {
         return NextResponse.json(
           {
-            error: restaurantStatus.reason === 'offline'
-              ? 'O restaurante está temporariamente indisponível. Tente novamente mais tarde.'
-              : (restaurantStatus.message || 'Restaurante fechado no momento'),
-            reason: restaurantStatus.reason,
-            canSchedule,
+            error: restaurantStatus.message || 'Restaurante fechado no momento',
+            reason: 'closed',
+            canSchedule: true,
           },
           { status: 400 }
         );
@@ -222,13 +263,62 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Calcular totais
+    // Verificar preços dos produtos no banco (prevenção de price tampering)
+    const productIds = items.map((i: { productId: string }) => i.productId);
+    const dbProducts = await prisma.product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true, price: true, name: true },
+    });
+
+    const productPriceMap = new Map(dbProducts.map(p => [p.id, p.price]));
+
+    // Calcular subtotal com preços reais do banco
+    let itemsSubtotal = 0;
+    for (const item of items as { productId: string; name: string; quantity: number; price: number }[]) {
+      const dbPrice = productPriceMap.get(item.productId);
+      if (dbPrice === undefined) {
+        return NextResponse.json(
+          { error: `Produto não encontrado: ${item.name}` },
+          { status: 400 }
+        );
+      }
+      // Usar preço do banco, não o enviado pelo cliente
+      item.price = dbPrice;
+      itemsSubtotal += dbPrice * item.quantity;
+    }
+
+    // Verificar preços dos itens adicionais do checkout no banco
     const additionalTotal = additionalItems?.reduce((acc: number, item: { price: number }) => acc + item.price, 0) || 0;
-    // Calcular total das opções globais (price * quantity)
-    const globalOptionsTotal = globalOptions?.reduce((acc: number, opt: { choices: { price: number; quantity?: number }[] }) =>
-      acc + opt.choices.reduce((sum: number, choice: { price: number; quantity?: number }) =>
-        sum + (choice.price * (choice.quantity || 1)), 0), 0) || 0;
-    const itemsSubtotal = subtotal || items.reduce((acc: number, item: { price: number; quantity: number }) => acc + (item.price * item.quantity), 0);
+
+    // Calcular total das opções globais com preços verificados
+    let globalOptionsTotal = 0;
+    if (globalOptions && globalOptions.length > 0) {
+      const optionIds = globalOptions.map((o: { optionId: string }) => o.optionId);
+      const dbOptions = await prisma.globalOption.findMany({
+        where: { id: { in: optionIds } },
+        select: { id: true, choices: true },
+      });
+
+      const optionChoicesMap = new Map<string, Map<string, number>>();
+      for (const opt of dbOptions) {
+        const choicesArr = opt.choices as { name: string; price: number }[];
+        const choiceMap = new Map(choicesArr.map(c => [c.name, c.price]));
+        optionChoicesMap.set(opt.id, choiceMap);
+      }
+
+      for (const opt of globalOptions as { optionId: string; choices: { name: string; price: number; quantity?: number }[] }[]) {
+        const dbChoices = optionChoicesMap.get(opt.optionId);
+        if (dbChoices) {
+          for (const choice of opt.choices) {
+            const dbChoicePrice = dbChoices.get(choice.name);
+            if (dbChoicePrice !== undefined) {
+              choice.price = dbChoicePrice; // Usar preço do banco
+            }
+            globalOptionsTotal += (choice.price * (choice.quantity || 1));
+          }
+        }
+      }
+    }
     const vatAmount = Number((itemsSubtotal * (vatRate / 100)).toFixed(2));
 
     // Validar e aplicar cupom se fornecido
@@ -589,10 +679,7 @@ export async function POST(request: NextRequest) {
     console.error('[Orders API] ❌ Stack:', error instanceof Error ? error.stack : 'No stack trace');
     console.error('[Orders API] ❌ Message:', error instanceof Error ? error.message : String(error));
     return NextResponse.json(
-      {
-        error: 'Erro ao criar pedido.',
-        details: error instanceof Error ? error.message : String(error)
-      },
+      { error: 'Erro ao criar pedido.' },
       { status: 500 }
     );
   }

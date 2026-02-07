@@ -398,6 +398,7 @@ export default function CheckoutPage() {
   }, []);
 
   // Verificar status do restaurante ao carregar a página
+  // Apenas bloqueia se admin pausou (offline). Fora do horário permite preencher e avisa ao finalizar.
   useEffect(() => {
     async function checkRestaurantStatus() {
       try {
@@ -408,18 +409,13 @@ export default function CheckoutPage() {
 
         if (data.success) {
           if (!data.isOnline) {
-            // Admin pausou os pedidos - mostrar modal de erro
+            // Admin pausou os pedidos - mostrar modal de erro imediatamente
             console.log('[Checkout] ⏸️ Restaurante pausado - mostrando modal de erro');
             setRestaurantPaused(true);
             setErrorMessage('O restaurante está temporariamente indisponível. Tente novamente mais tarde.');
             setShowErrorModal(true);
-          } else if (!data.isOpen && data.reason === 'closed') {
-            // Fora do horário - mostrar modal de agendamento proativamente
-            console.log('[Checkout] 🕐 Restaurante fechado - mostrando modal de agendamento');
-            setRestaurantClosed(true);
-            setShowScheduleModal(true);
           } else {
-            console.log('[Checkout] ✅ Restaurante aberto - checkout normal');
+            console.log('[Checkout] ✅ Checkout disponível');
           }
         }
       } catch (error) {

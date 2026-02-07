@@ -29,8 +29,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "SushiWorld - Delivery de Sushi em Santa Iria",
-  description: "O melhor sushi de Santa Iria. Peça online e receba em casa!",
+  metadataBase: new URL("https://sushiworld.pt"),
+  title: {
+    default: "SushiWorld - Delivery de Sushi em Santa Iria da Azóia",
+    template: "%s | SushiWorld",
+  },
+  description:
+    "O melhor sushi delivery em Santa Iria da Azóia. Peça online sushi fresco, combinados, hots e sashimi. Entrega rápida na sua porta!",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -45,6 +50,23 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Sushi World",
   },
+  openGraph: {
+    siteName: "SushiWorld",
+    locale: "pt_PT",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {},
 };
 
 export default function RootLayout({
@@ -53,13 +75,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-PT">
       <head>
         <link
           rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossOrigin=""
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "SushiWorld",
+              url: "https://sushiworld.pt",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: "https://sushiworld.pt/cardapio?q={search_term_string}",
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
         />
       </head>
       <body

@@ -670,6 +670,7 @@ model SocialShareConfig {
   // Configuração adicional
   siteName String?
   locale   String  @default("pt_BR")
+  config   Json?   // Plataformas ativas e configurações extras
 
   isActive Boolean @default(true)
 

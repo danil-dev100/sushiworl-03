@@ -3,8 +3,18 @@ import { Phone, Mail, MapPin, Truck } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Contato - SushiWorld | Fale Conosco',
-  description: 'Entre em contato com o SushiWorld. Atendimento exclusivo por delivery em Santa Iria.',
+  title: 'Contato - SushiWorld Santa Iria da Azóia',
+  description:
+    'Entre em contato com o SushiWorld. Atendimento exclusivo por delivery de sushi em Santa Iria da Azóia. Telefone, email e área de entrega.',
+  openGraph: {
+    title: 'Contato - SushiWorld Santa Iria da Azóia',
+    description:
+      'Fale conosco. Atendimento exclusivo por delivery em Santa Iria da Azóia.',
+    url: 'https://sushiworld.pt/contato',
+  },
+  alternates: {
+    canonical: 'https://sushiworld.pt/contato',
+  },
 };
 
 export default function ContatoPage() {

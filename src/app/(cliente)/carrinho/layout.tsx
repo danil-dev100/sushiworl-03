@@ -1,0 +1,17 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Carrinho',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export default function CarrinhoLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return children;
+}

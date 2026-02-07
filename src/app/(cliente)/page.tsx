@@ -10,21 +10,33 @@ export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
 export const metadata: Metadata = {
-  title: 'SushiWorld: Sushi Delivery em Santa Iria | Peça Online',
-  description: 'Peça o melhor sushi de Santa Iria no SushiWorld. Combinados, hots, sashimi e muito mais. Delivery rápido e saboroso. Confira nosso cardápio!',
-  keywords: 'sushi, delivery, santa iria, cardápio, peça online, comida japonesa',
+  title: 'SushiWorld Santa Iria | Sushi Delivery - Peça Online',
+  description:
+    'Peça o melhor sushi de Santa Iria da Azóia no SushiWorld. Combinados, hots, sashimi, temakis e muito mais. Delivery rápido e saboroso direto à sua porta!',
+  keywords:
+    'sushi delivery santa iria, sushi santa iria de azóia, comida japonesa santa iria, sushiworld, pedir sushi online, delivery sushi lisboa, sushi fresco, combinados sushi',
   openGraph: {
-    title: 'SushiWorld: Sushi Delivery em Santa Iria | Peça Online',
-    description: 'Peça o melhor sushi de Santa Iria no SushiWorld. Combinados, hots, sashimi e muito mais. Delivery rápido e saboroso.',
-    images: [{ url: 'https://sushiworld.pt/images/og-image.jpg' }],
+    title: 'SushiWorld Santa Iria | Sushi Delivery - Peça Online',
+    description:
+      'Peça o melhor sushi de Santa Iria da Azóia no SushiWorld. Combinados, hots, sashimi e muito mais. Delivery rápido e saboroso.',
+    images: [
+      {
+        url: '/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'SushiWorld - Sushi Delivery em Santa Iria da Azóia',
+      },
+    ],
     url: 'https://sushiworld.pt',
     type: 'website',
+    locale: 'pt_PT',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'SushiWorld: Sushi Delivery em Santa Iria | Peça Online',
-    description: 'Peça o melhor sushi de Santa Iria no SushiWorld. Combinados, hots, sashimi e muito mais.',
-    images: ['https://sushiworld.pt/images/twitter-image.jpg'],
+    title: 'SushiWorld Santa Iria | Sushi Delivery',
+    description:
+      'Peça o melhor sushi de Santa Iria no SushiWorld. Combinados, hots, sashimi e muito mais.',
+    images: ['/images/og-image.jpg'],
   },
   alternates: {
     canonical: 'https://sushiworld.pt',
@@ -128,25 +140,79 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* Structured Data */}
+      {/* Structured Data - Restaurant (Google Rich Results) */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             '@context': 'https://schema.org',
-            '@type': 'LocalBusiness',
-            name: 'SushiWorld',
-            description: 'O melhor sushi delivery em Santa Iria',
+            '@type': 'Restaurant',
+            '@id': 'https://sushiworld.pt/#restaurant',
+            name: 'SushiWorld Santa Iria',
+            description:
+              'O melhor sushi delivery em Santa Iria da Azóia. Sushi fresco, combinados, hots, sashimi e muito mais com entrega rápida.',
+            image: 'https://sushiworld.pt/images/og-image.jpg',
+            logo: 'https://sushiworld.pt/logo.webp/logo-nova-sushiworl-santa-iria-sem-fundo.webp',
+            url: 'https://sushiworld.pt',
+            telephone: '+351932722005',
+            email: 'pedidosushiworld@gmail.com',
             address: {
               '@type': 'PostalAddress',
-              addressLocality: 'Santa Iria',
+              streetAddress: 'Santa Iria da Azóia',
+              addressLocality: 'Santa Iria da Azóia',
+              addressRegion: 'Lisboa',
+              postalCode: '2690',
               addressCountry: 'PT',
             },
-            telephone: '+351 934 841 148',
-            email: 'pedidosushiworld@gmail.com',
-            url: 'https://sushiworld.pt',
-            servesCuisine: 'Japanese',
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: 38.8481,
+              longitude: -9.0886,
+            },
+            servesCuisine: ['Japonesa', 'Sushi', 'Comida Japonesa'],
             priceRange: '€€',
+            currenciesAccepted: 'EUR',
+            paymentAccepted: 'Cartão de Crédito, Cartão de Débito, MB Way',
+            acceptsReservations: false,
+            hasMenu: 'https://sushiworld.pt/cardapio',
+            menu: 'https://sushiworld.pt/cardapio',
+            areaServed: {
+              '@type': 'City',
+              name: 'Santa Iria da Azóia',
+            },
+            openingHoursSpecification: [
+              {
+                '@type': 'OpeningHoursSpecification',
+                dayOfWeek: [
+                  'Monday',
+                  'Tuesday',
+                  'Wednesday',
+                  'Thursday',
+                  'Friday',
+                  'Saturday',
+                  'Sunday',
+                ],
+                opens: '11:30',
+                closes: '22:00',
+              },
+            ],
+            sameAs: [
+              'https://www.instagram.com/sushiworld_santairia/',
+              'https://www.facebook.com/sushiworldsantairia',
+            ],
+            potentialAction: {
+              '@type': 'OrderAction',
+              target: {
+                '@type': 'EntryPoint',
+                urlTemplate: 'https://sushiworld.pt/cardapio',
+                actionPlatform: [
+                  'http://schema.org/DesktopWebPlatform',
+                  'http://schema.org/MobileWebPlatform',
+                ],
+              },
+              deliveryMethod:
+                'http://purl.org/goodrelations/v1#DeliveryModeOwnFleet',
+            },
           }),
         }}
       />

@@ -1,8 +1,12 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidade | SushiWorld',
-  description: 'Valorizamos a sua privacidade e estamos comprometidos em proteger os seus dados pessoais.',
+  title: 'Política de Privacidade',
+  description:
+    'Valorizamos a sua privacidade e estamos comprometidos em proteger os seus dados pessoais. Política de privacidade do SushiWorld.',
+  alternates: {
+    canonical: 'https://sushiworld.pt/politica-privacidade',
+  },
 };
 
 export default function PoliticaPrivacidadePage() {

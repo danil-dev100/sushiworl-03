@@ -1,8 +1,18 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Sobre Nós | SushiWorld',
-  description: 'Há mais de 5 anos levamos o verdadeiro sabor da culinária japonesa até à sua casa com todo o cuidado, frescor e dedicação.',
+  title: 'Sobre Nós - SushiWorld Santa Iria da Azóia',
+  description:
+    'Há mais de 5 anos o SushiWorld leva o verdadeiro sabor da culinária japonesa até à sua casa em Santa Iria da Azóia. Sushi fresco com entrega rápida.',
+  openGraph: {
+    title: 'Sobre Nós - SushiWorld Santa Iria',
+    description:
+      'Há mais de 5 anos levamos sushi fresco e saboroso até à sua casa em Santa Iria da Azóia.',
+    url: 'https://sushiworld.pt/sobre-nos',
+  },
+  alternates: {
+    canonical: 'https://sushiworld.pt/sobre-nos',
+  },
 };
 
 export default function SobreNosPage() {

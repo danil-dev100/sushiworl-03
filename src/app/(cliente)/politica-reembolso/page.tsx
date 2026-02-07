@@ -1,8 +1,12 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Política de Reembolso | SushiWorld',
-  description: 'Trabalhamos para garantir a melhor experiência em cada pedido. Conheça nossa política de reembolso.',
+  title: 'Política de Reembolso',
+  description:
+    'Trabalhamos para garantir a melhor experiência em cada pedido. Conheça a política de reembolso do SushiWorld.',
+  alternates: {
+    canonical: 'https://sushiworld.pt/politica-reembolso',
+  },
 };
 
 export default function PoliticaReembolsoPage() {

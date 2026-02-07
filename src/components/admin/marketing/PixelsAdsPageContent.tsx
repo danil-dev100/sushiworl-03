@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -130,7 +130,11 @@ export function PixelsAdsPageContent({
     siteName: '',
     locale: 'pt_BR',
     isActive: true,
+    platforms: ['meta', 'google', 'whatsapp', 'twitter'] as string[],
   });
+  const [imageUploading, setImageUploading] = useState(false);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Carregar logs de eventos
   useEffect(() => {
@@ -138,15 +142,28 @@ export function PixelsAdsPageContent({
     fetchSocialConfig();
   }, []);
 
-  const fetchEventLogs = async () => {
+  const fetchEventLogs = async (showFeedback = false) => {
+    setLogsLoading(true);
     try {
       const response = await fetch('/api/admin/marketing/pixels/events');
       if (response.ok) {
         const data = await response.json();
         setEventLogs(data.events || []);
+        if (showFeedback) {
+          toast({ title: 'Atualizado', description: `${(data.events || []).length} evento(s) carregado(s)` });
+        }
+      } else {
+        if (showFeedback) {
+          toast({ title: 'Erro', description: 'Erro ao buscar logs de eventos', variant: 'destructive' });
+        }
       }
     } catch (error) {
       console.error('Erro ao buscar logs:', error);
+      if (showFeedback) {
+        toast({ title: 'Erro', description: 'Erro ao buscar logs de eventos', variant: 'destructive' });
+      }
+    } finally {
+      setLogsLoading(false);
     }
   };
 
@@ -157,6 +174,7 @@ export function PixelsAdsPageContent({
         const data = await response.json();
         if (data.config) {
           setSocialConfig(data.config);
+          const configExtra = data.config.config || {};
           setSocialFormData({
             ogTitle: data.config.ogTitle || '',
             ogDescription: data.config.ogDescription || '',
@@ -167,6 +185,7 @@ export function PixelsAdsPageContent({
             siteName: data.config.siteName || '',
             locale: data.config.locale || 'pt_BR',
             isActive: data.config.isActive ?? true,
+            platforms: configExtra.platforms || ['meta', 'google', 'whatsapp', 'twitter'],
           });
         }
       }
@@ -187,6 +206,50 @@ export function PixelsAdsPageContent({
       isActive: true
     });
     setEditingIntegration(null);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('bucket', 'products');
+
+      const response = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setSocialFormData(prev => ({ ...prev, ogImage: result.url }));
+        toast({ title: 'Sucesso', description: 'Imagem enviada com sucesso' });
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao enviar imagem');
+      }
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: error instanceof Error ? error.message : 'Erro ao enviar imagem',
+        variant: 'destructive',
+      });
+    } finally {
+      setImageUploading(false);
+      if (imageInputRef.current) imageInputRef.current.value = '';
+    }
+  };
+
+  const togglePlatform = (platform: string) => {
+    setSocialFormData(prev => ({
+      ...prev,
+      platforms: prev.platforms.includes(platform)
+        ? prev.platforms.filter(p => p !== platform)
+        : [...prev.platforms, platform],
+    }));
   };
 
   const openAddDialog = () => {
@@ -260,6 +323,7 @@ export function PixelsAdsPageContent({
   const handleSaveSocialConfig = async () => {
     setIsLoading(true);
     try {
+      const { platforms, ...restFormData } = socialFormData;
       const response = await fetch('/api/admin/marketing/pixels/social-config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -267,7 +331,8 @@ export function PixelsAdsPageContent({
           action: socialConfig ? 'update' : 'create',
           data: {
             ...(socialConfig && { id: socialConfig.id }),
-            ...socialFormData,
+            ...restFormData,
+            config: { platforms },
           },
         }),
       });
@@ -564,8 +629,12 @@ export function PixelsAdsPageContent({
                   <TooltipHelper text="Histórico completo de todos os eventos enviados para plataformas de rastreamento com detalhes técnicos" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={fetchEventLogs}>
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                  <Button variant="outline" size="sm" onClick={() => fetchEventLogs(true)} disabled={logsLoading}>
+                    {logsLoading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                    )}
                     Atualizar
                   </Button>
                   <TooltipHelper text="Atualize os logs mais recentes dos eventos de rastreamento" />
@@ -870,7 +939,44 @@ export function PixelsAdsPageContent({
               Configure como seu site aparece quando compartilhado em redes sociais
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+            {/* Plataformas */}
+            <div>
+              <Label className="mb-2 block">Plataformas Ativas</Label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { id: 'meta', label: 'Meta (Facebook / Instagram)', desc: 'og:title, og:description, og:image' },
+                  { id: 'google', label: 'Google', desc: 'Structured data, og:title, og:description' },
+                  { id: 'whatsapp', label: 'WhatsApp', desc: 'og:title, og:description, og:image' },
+                  { id: 'twitter', label: 'Twitter / X', desc: 'twitter:card, twitter:title, twitter:image' },
+                ].map(platform => (
+                  <div
+                    key={platform.id}
+                    className={`border rounded-lg p-3 cursor-pointer transition-colors ${
+                      socialFormData.platforms.includes(platform.id)
+                        ? 'border-[#FF6B00] bg-orange-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => togglePlatform(platform.id)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${
+                        socialFormData.platforms.includes(platform.id)
+                          ? 'bg-[#FF6B00] border-[#FF6B00]'
+                          : 'border-gray-300'
+                      }`}>
+                        {socialFormData.platforms.includes(platform.id) && (
+                          <CheckCircle className="h-3 w-3 text-white" />
+                        )}
+                      </div>
+                      <span className="text-sm font-medium">{platform.label}</span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1 ml-6">{platform.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div>
               <Label htmlFor="ogTitle">Título (og:title)</Label>
               <Input
@@ -893,7 +999,7 @@ export function PixelsAdsPageContent({
             </div>
 
             <div>
-              <Label htmlFor="ogImage">URL da Imagem (og:image)</Label>
+              <Label htmlFor="ogImage">Imagem (og:image)</Label>
               <div className="flex gap-2">
                 <Input
                   id="ogImage"
@@ -901,13 +1007,39 @@ export function PixelsAdsPageContent({
                   onChange={e => setSocialFormData(prev => ({ ...prev, ogImage: e.target.value }))}
                   placeholder="https://seusite.com/imagem-share.jpg"
                 />
-                <Button variant="outline" size="icon">
-                  <ImageIcon className="h-4 w-4" />
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={imageUploading}
+                >
+                  {imageUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ImageIcon className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Recomendado: 1200x630 pixels
+                Recomendado: 1200x630 pixels. Cole a URL ou clique no ícone para fazer upload.
               </p>
+              {socialFormData.ogImage && (
+                <div className="mt-2 relative">
+                  <img
+                    src={socialFormData.ogImage}
+                    alt="Preview OG"
+                    className="w-full h-32 object-cover rounded border"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                </div>
+              )}
             </div>
 
             <div>
@@ -920,15 +1052,18 @@ export function PixelsAdsPageContent({
               />
             </div>
 
-            <div>
-              <Label htmlFor="twitterSite">Twitter/X @username</Label>
-              <Input
-                id="twitterSite"
-                value={socialFormData.twitterSite}
-                onChange={e => setSocialFormData(prev => ({ ...prev, twitterSite: e.target.value }))}
-                placeholder="@sushiworld"
-              />
-            </div>
+            {/* Twitter/X - só mostrar se plataforma ativa */}
+            {socialFormData.platforms.includes('twitter') && (
+              <div>
+                <Label htmlFor="twitterSite">Twitter/X @username</Label>
+                <Input
+                  id="twitterSite"
+                  value={socialFormData.twitterSite}
+                  onChange={e => setSocialFormData(prev => ({ ...prev, twitterSite: e.target.value }))}
+                  placeholder="@sushiworld"
+                />
+              </div>
+            )}
 
             <div>
               <Label htmlFor="locale">Idioma</Label>
@@ -960,17 +1095,27 @@ export function PixelsAdsPageContent({
             {/* Preview */}
             {(socialFormData.ogTitle || socialFormData.ogDescription || socialFormData.ogImage) && (
               <div className="border rounded-lg p-4 bg-gray-50">
-                <p className="text-xs text-gray-500 mb-2">Preview:</p>
+                <p className="text-xs text-gray-500 mb-2">Preview (como aparece nas redes sociais):</p>
                 {socialFormData.ogImage && (
-                  <div className="w-full h-32 bg-gray-200 rounded mb-2 flex items-center justify-center text-xs text-gray-400">
-                    [Imagem: {socialFormData.ogImage}]
-                  </div>
+                  <img
+                    src={socialFormData.ogImage}
+                    alt="Preview"
+                    className="w-full h-32 object-cover rounded mb-2"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
                 )}
                 <p className="font-semibold text-sm">{socialFormData.ogTitle || 'Título'}</p>
                 <p className="text-xs text-gray-600 line-clamp-2">
                   {socialFormData.ogDescription || 'Descrição do site...'}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">{socialFormData.siteName || 'seusite.com'}</p>
+                <div className="flex gap-1 mt-2">
+                  {socialFormData.platforms.map(p => (
+                    <Badge key={p} variant="secondary" className="text-xs capitalize">{p}</Badge>
+                  ))}
+                </div>
               </div>
             )}
           </div>

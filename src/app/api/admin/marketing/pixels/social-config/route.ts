@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
           twitterSite: data.twitterSite,
           siteName: data.siteName,
           locale: data.locale || 'pt_BR',
+          config: data.config || null,
           isActive: data.isActive ?? true,
         },
       });
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
           twitterSite: data.twitterSite,
           siteName: data.siteName,
           locale: data.locale,
+          config: data.config || null,
           isActive: data.isActive,
         },
       });

@@ -401,19 +401,25 @@ export default function CheckoutPage() {
   useEffect(() => {
     async function checkRestaurantStatus() {
       try {
+        console.log('[Checkout] 🔍 Verificando status do restaurante...');
         const res = await fetch('/api/settings/restaurant-status');
         const data = await res.json();
+        console.log('[Checkout] 🔍 Status do restaurante:', data);
 
         if (data.success) {
           if (!data.isOnline) {
             // Admin pausou os pedidos - mostrar modal de erro
+            console.log('[Checkout] ⏸️ Restaurante pausado - mostrando modal de erro');
             setRestaurantPaused(true);
             setErrorMessage('O restaurante está temporariamente indisponível. Tente novamente mais tarde.');
             setShowErrorModal(true);
           } else if (!data.isOpen && data.reason === 'closed') {
             // Fora do horário - mostrar modal de agendamento proativamente
+            console.log('[Checkout] 🕐 Restaurante fechado - mostrando modal de agendamento');
             setRestaurantClosed(true);
             setShowScheduleModal(true);
+          } else {
+            console.log('[Checkout] ✅ Restaurante aberto - checkout normal');
           }
         }
       } catch (error) {

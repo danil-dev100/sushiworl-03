@@ -122,6 +122,14 @@ export function SitePopup() {
   const isExcludedPage = pathname === '/checkout' || pathname === '/carrinho' || pathname === '/obrigado' || pathname === '/login';
   const shouldSkip = isAdminPage || isExcludedPage;
 
+  // Fechar popup ao navegar para páginas excluídas (SPA navigation)
+  useEffect(() => {
+    if (shouldSkip && (isOpen || isAnimating)) {
+      setIsOpen(false);
+      setIsAnimating(false);
+    }
+  }, [shouldSkip, isOpen, isAnimating]);
+
   // Buscar dados do popup (apenas em páginas de cliente, uma vez por sessão)
   useEffect(() => {
     if (shouldSkip) {
@@ -131,7 +139,7 @@ export function SitePopup() {
 
     // Verificar se o popup já foi exibido nesta sessão
     try {
-      if (sessionStorage.getItem('popup-dismissed')) {
+      if (sessionStorage.getItem('popup-shown')) {
         setIsLoading(false);
         return;
       }
@@ -154,6 +162,12 @@ export function SitePopup() {
 
         if (data.success && data.active && data.popup) {
           setPopup(data.popup);
+          // Marcar como exibido na sessão IMEDIATAMENTE
+          try {
+            sessionStorage.setItem('popup-shown', '1');
+          } catch {
+            // sessionStorage pode não estar disponível
+          }
           // Pequeno delay para animação suave
           setTimeout(() => {
             setIsAnimating(true);
@@ -168,16 +182,17 @@ export function SitePopup() {
     };
 
     fetchPopup();
-  }, [shouldSkip]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Fechar popup e marcar como visto na sessão
+  // Fechar popup
   const handleClose = useCallback(() => {
     setIsOpen(false);
     setTimeout(() => {
       setIsAnimating(false);
     }, 300);
     try {
-      sessionStorage.setItem('popup-dismissed', '1');
+      sessionStorage.setItem('popup-shown', '1');
     } catch {
       // sessionStorage pode não estar disponível
     }

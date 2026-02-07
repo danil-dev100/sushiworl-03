@@ -117,15 +117,26 @@ export function SitePopup() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Não mostrar popup em páginas de admin
+  // Não mostrar popup em páginas de admin, checkout, carrinho, obrigado
   const isAdminPage = pathname?.startsWith('/admin');
+  const isExcludedPage = pathname === '/checkout' || pathname === '/carrinho' || pathname === '/obrigado' || pathname === '/login';
+  const shouldSkip = isAdminPage || isExcludedPage;
 
-  // Buscar dados do popup (apenas em páginas de cliente)
+  // Buscar dados do popup (apenas em páginas de cliente, uma vez por sessão)
   useEffect(() => {
-    // Não buscar popup em páginas de admin
-    if (isAdminPage) {
+    if (shouldSkip) {
       setIsLoading(false);
       return;
+    }
+
+    // Verificar se o popup já foi exibido nesta sessão
+    try {
+      if (sessionStorage.getItem('popup-dismissed')) {
+        setIsLoading(false);
+        return;
+      }
+    } catch {
+      // sessionStorage pode não estar disponível
     }
 
     const fetchPopup = async () => {
@@ -157,14 +168,19 @@ export function SitePopup() {
     };
 
     fetchPopup();
-  }, [isAdminPage]);
+  }, [shouldSkip]);
 
-  // Fechar popup
+  // Fechar popup e marcar como visto na sessão
   const handleClose = useCallback(() => {
     setIsOpen(false);
     setTimeout(() => {
       setIsAnimating(false);
     }, 300);
+    try {
+      sessionStorage.setItem('popup-dismissed', '1');
+    } catch {
+      // sessionStorage pode não estar disponível
+    }
   }, []);
 
   // Navegar para o link do botão - com validação de segurança
@@ -230,8 +246,8 @@ export function SitePopup() {
   const imageUrl = getSafeImageUrl(rawImageUrl);
   const hasImage = !!imageUrl;
 
-  // Não renderizar em páginas de admin ou se não há popup
-  if (isAdminPage || isLoading || !popup || !isAnimating) {
+  // Não renderizar em páginas excluídas ou se não há popup
+  if (shouldSkip || isLoading || !popup || !isAnimating) {
     return null;
   }
 

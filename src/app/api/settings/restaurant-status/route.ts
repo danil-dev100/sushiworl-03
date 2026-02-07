@@ -33,6 +33,10 @@ export async function GET() {
       isOpen: status.isOpen,
       reason: status.reason,
       message: status.message,
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+      }
     });
   } catch (error) {
     console.error('[API] Erro ao buscar status do restaurante:', error);

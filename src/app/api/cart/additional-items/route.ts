@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+// Cache de 5 minutos (itens adicionais mudam raramente)
+export const revalidate = 300;
+
 /**
  * GET /api/cart/additional-items
  * Retorna itens adicionais configurados para o carrinho (PÚBLICO - sem autenticação)

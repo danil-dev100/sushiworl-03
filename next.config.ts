@@ -97,7 +97,7 @@ const nextConfig: NextConfig = {
           }
         ],
       },
-      // Headers específicos para rotas de API
+      // Headers de segurança para rotas de API
       {
         source: '/api/:path*',
         headers: [
@@ -109,6 +109,30 @@ const nextConfig: NextConfig = {
             key: 'X-Frame-Options',
             value: 'DENY'
           },
+        ],
+      },
+      // no-store apenas para rotas sensíveis (admin, auth, mutations)
+      {
+        source: '/api/admin/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0'
+          },
+        ],
+      },
+      {
+        source: '/api/auth/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0'
+          },
+        ],
+      },
+      {
+        source: '/api/orders',
+        headers: [
           {
             key: 'Cache-Control',
             value: 'no-store, max-age=0'

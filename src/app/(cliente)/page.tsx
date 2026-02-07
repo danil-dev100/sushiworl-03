@@ -5,9 +5,8 @@ import ProductSection from '@/components/cliente/ProductSection';
 import DeliveryNotice from '@/components/cliente/DeliveryNotice';
 import { prisma } from '@/lib/db';
 
-// Forçar página dinâmica para sempre buscar dados atualizados
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
+// ISR: revalida a cada 5 minutos (reduz invocações no Vercel free plan)
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: 'SushiWorld Santa Iria | Sushi Delivery - Peça Online',

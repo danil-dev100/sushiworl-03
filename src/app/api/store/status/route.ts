@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { isOpenNow, getNextOpeningTime } from '@/lib/utils';
 
-// Desabilitar cache para sempre retornar horário atualizado
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Cache de 60 segundos (reduz invocações no Vercel free plan)
+export const revalidate = 60;
 
 export async function GET() {
   try {
@@ -36,7 +35,7 @@ export async function GET() {
       openingHours,
     }, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
       }
     });
   } catch (error) {

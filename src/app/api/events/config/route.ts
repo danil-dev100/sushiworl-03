@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+// Cache de 10 minutos (pixel config muda raramente)
+export const revalidate = 600;
+
 /**
  * GET /api/events/config
  * Retorna configuração de pixels ativos para o frontend
@@ -51,6 +54,10 @@ export async function GET() {
 
     return NextResponse.json({
       integrations: formattedIntegrations,
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
+      }
     });
   } catch (error) {
     console.error('[Events Config API] Erro:', error);

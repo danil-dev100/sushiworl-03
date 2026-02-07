@@ -33,8 +33,8 @@ export function useStoreStatus() {
 
     fetchStatus();
 
-    // Verificar a cada 30 segundos para refletir mudanças rapidamente
-    const interval = setInterval(fetchStatus, 30 * 1000);
+    // Verificar a cada 5 minutos (reduz invocações no Vercel free plan)
+    const interval = setInterval(fetchStatus, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, []);

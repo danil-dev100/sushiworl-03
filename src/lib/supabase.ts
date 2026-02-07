@@ -3,6 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Criar cliente Supabase apenas se as variáveis estiverem disponíveis
 // Isso evita erros em contextos onde as variáveis não estão definidas
@@ -17,7 +18,14 @@ if (supabaseUrl && supabaseAnonKey) {
   }
 }
 
-export { supabase };
+// Cliente admin (server-side only) - ignora RLS para uploads seguros
+let supabaseAdmin: SupabaseClient | null = null;
+
+if (typeof window === 'undefined' && supabaseUrl && supabaseServiceRoleKey) {
+  supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
+}
+
+export { supabase, supabaseAdmin };
 
 // ============================================
 // TIPOS
@@ -52,10 +60,22 @@ export const BUCKETS = {
 // ============================================
 
 /**
+ * Retorna o melhor cliente Supabase disponível
+ * No servidor, usa o admin (service role) para ignorar RLS
+ * No cliente, usa o anon key
+ */
+function getStorageClient(): SupabaseClient | null {
+  if (typeof window === 'undefined' && supabaseAdmin) {
+    return supabaseAdmin;
+  }
+  return supabase;
+}
+
+/**
  * Verifica se o Supabase está configurado
  */
 function ensureSupabaseConfigured(): boolean {
-  if (!supabase) {
+  if (!getStorageClient()) {
     console.warn('[Supabase] Cliente não configurado - verifique as variáveis de ambiente');
     return false;
   }
@@ -83,7 +103,7 @@ export async function uploadFile(
     const fileName = path || generateUniqueFileName(file);
 
     // Fazer upload
-    const { data, error } = await supabase!.storage
+    const { data, error } = await getStorageClient()!.storage
       .from(bucket)
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -99,7 +119,7 @@ export async function uploadFile(
     }
 
     // Obter URL pública
-    const { data: urlData } = supabase!.storage
+    const { data: urlData } = getStorageClient()!.storage
       .from(bucket)
       .getPublicUrl(data.path);
 
@@ -148,7 +168,7 @@ export async function updateFile(
   }
 
   try {
-    const { data, error } = await supabase!.storage
+    const { data, error } = await getStorageClient()!.storage
       .from(bucket)
       .upload(path, file, {
         cacheControl: '3600',
@@ -162,7 +182,7 @@ export async function updateFile(
       };
     }
 
-    const { data: urlData } = supabase!.storage
+    const { data: urlData } = getStorageClient()!.storage
       .from(bucket)
       .getPublicUrl(data.path);
 
@@ -198,7 +218,7 @@ export async function deleteFile(
   }
 
   try {
-    const { error } = await supabase!.storage.from(bucket).remove([path]);
+    const { error } = await getStorageClient()!.storage.from(bucket).remove([path]);
 
     if (error) {
       return {
@@ -233,7 +253,7 @@ export async function deleteMultipleFiles(
   }
 
   try {
-    const { error } = await supabase!.storage.from(bucket).remove(paths);
+    const { error } = await getStorageClient()!.storage.from(bucket).remove(paths);
 
     if (error) {
       return {
@@ -298,7 +318,7 @@ export async function listFiles(bucket: BucketName, folder?: string) {
   }
 
   try {
-    const { data, error } = await supabase!.storage
+    const { data, error } = await getStorageClient()!.storage
       .from(bucket)
       .list(folder, {
         limit: 100,
@@ -334,11 +354,12 @@ export async function listFiles(bucket: BucketName, folder?: string) {
  * @returns URL pública
  */
 export function getPublicUrl(bucket: BucketName, path: string): string {
-  if (!supabase) {
+  const client = getStorageClient();
+  if (!client) {
     console.warn('[Supabase] Cliente não configurado');
     return '';
   }
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  const { data } = client.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
 

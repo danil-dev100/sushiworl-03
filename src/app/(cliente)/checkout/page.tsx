@@ -24,12 +24,17 @@ export default function CheckoutPage() {
   const [valorEntregue, setValorEntregue] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Agendamento
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<string>('');
   const [scheduledTime, setScheduledTime] = useState<string>('');
+
+  // Status do restaurante (verificação proativa)
+  const [restaurantPaused, setRestaurantPaused] = useState(false);
+  const [restaurantClosed, setRestaurantClosed] = useState(false);
 
   // Itens adicionais do checkout
   const [checkoutItems, setCheckoutItems] = useState<CheckoutAdditionalItem[]>([]);
@@ -392,6 +397,33 @@ export default function CheckoutPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Verificar status do restaurante ao carregar a página
+  useEffect(() => {
+    async function checkRestaurantStatus() {
+      try {
+        const res = await fetch('/api/settings/restaurant-status');
+        const data = await res.json();
+
+        if (data.success) {
+          if (!data.isOnline) {
+            // Admin pausou os pedidos - mostrar modal de erro
+            setRestaurantPaused(true);
+            setErrorMessage('O restaurante está temporariamente indisponível. Tente novamente mais tarde.');
+            setShowErrorModal(true);
+          } else if (!data.isOpen && data.reason === 'closed') {
+            // Fora do horário - mostrar modal de agendamento proativamente
+            setRestaurantClosed(true);
+            setShowScheduleModal(true);
+          }
+        }
+      } catch (error) {
+        console.error('[Checkout] Erro ao verificar status do restaurante:', error);
+      }
+    }
+
+    checkRestaurantStatus();
+  }, []);
+
   // Track begin_checkout event when page loads
   useEffect(() => {
     if (items.length > 0) {
@@ -568,17 +600,26 @@ export default function CheckoutPage() {
         console.log('[Checkout] 🔍 canSchedule:', errorData.canSchedule);
         console.log('[Checkout] 🔍 reason:', errorData.reason);
 
-        // Se o erro for porque o restaurante está fechado, mostrar modal de agendamento
-        if (errorData.canSchedule && (errorData.reason === 'closed' || errorData.reason === 'offline')) {
+        // Se o erro for porque o restaurante está fechado (fora do horário), mostrar modal de agendamento
+        if (errorData.canSchedule && errorData.reason === 'closed') {
           console.log('[Checkout] 📅 Abrindo modal de agendamento');
+          setRestaurantClosed(true);
           setShowScheduleModal(true);
+        } else if (errorData.reason === 'offline') {
+          // Admin pausou os pedidos - mostrar erro sem opção de agendar
+          console.log('[Checkout] ⏸️ Restaurante pausado pelo admin');
+          setRestaurantPaused(true);
+          setErrorMessage(errorData.error || 'O restaurante está temporariamente indisponível.');
+          setShowErrorModal(true);
         } else {
-          console.log('[Checkout] ❌ Mostrando modal de erro');
+          console.log('[Checkout] ❌ Mostrando modal de erro:', errorData.error);
+          setErrorMessage(errorData.error || '');
           setShowErrorModal(true);
         }
       }
     } catch (error) {
       console.error('Erro ao enviar pedido:', error);
+      setErrorMessage('Ocorreu um erro ao processar o seu pedido. Tente novamente.');
       setShowErrorModal(true);
     } finally {
       setIsSubmitting(false);
@@ -1262,7 +1303,7 @@ export default function CheckoutPage() {
         isOpen={showScheduleModal}
         onClose={() => setShowScheduleModal(false)}
         onSchedule={handleSchedule}
-        isRestaurantOpen={true}
+        isRestaurantOpen={!restaurantClosed}
       />
 
       {/* Modal de Erro */}
@@ -1274,14 +1315,23 @@ export default function CheckoutPage() {
             </div>
             <h2 className="text-2xl font-bold text-[#333333] dark:text-[#f5f1e9]">Pedido Não Confirmado</h2>
             <p className="text-[#333333]/80 dark:text-[#f5f1e9]/80">
-              Lamentamos, mas não podemos aceitar seu pedido no momento devido à alta demanda.
+              {errorMessage || 'Ocorreu um erro ao processar o seu pedido. Tente novamente.'}
             </p>
-            <button
-              onClick={() => setShowErrorModal(false)}
-              className="mt-4 h-12 w-full rounded-lg bg-[#FF6B00] font-bold text-white hover:opacity-90 transition-opacity"
-            >
-              Tentar Novamente
-            </button>
+            {restaurantPaused ? (
+              <Link
+                href="/cardapio"
+                className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-[#FF6B00] font-bold text-white hover:opacity-90 transition-opacity"
+              >
+                Voltar ao Cardápio
+              </Link>
+            ) : (
+              <button
+                onClick={() => setShowErrorModal(false)}
+                className="mt-4 h-12 w-full rounded-lg bg-[#FF6B00] font-bold text-white hover:opacity-90 transition-opacity"
+              >
+                Tentar Novamente
+              </button>
+            )}
           </div>
         </div>
       )}

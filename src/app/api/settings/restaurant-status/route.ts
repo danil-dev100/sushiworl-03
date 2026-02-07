@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { isRestaurantOpen } from '@/lib/restaurant-status';
 
 /**
  * GET /api/settings/restaurant-status
- * Retorna o status atual do restaurante (online/offline)
+ * Retorna o status atual do restaurante (online/offline + horário)
  */
 export async function GET() {
   try {
@@ -21,9 +22,15 @@ export async function GET() {
       }, { status: 404 });
     }
 
+    // Verificar status completo (online + horário)
+    const status = await isRestaurantOpen();
+
     return NextResponse.json({
       success: true,
       isOnline: settings.isOnline,
+      isOpen: status.isOpen,
+      reason: status.reason,
+      message: status.message,
       openingHours: settings.openingHours
     });
   } catch (error) {

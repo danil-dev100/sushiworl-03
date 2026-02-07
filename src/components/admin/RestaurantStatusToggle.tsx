@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Power, Loader2 } from 'lucide-react';
+import { Pause, Play, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function RestaurantStatusToggle() {
@@ -76,25 +76,27 @@ export function RestaurantStatusToggle() {
     <button
       onClick={toggleStatus}
       disabled={isLoading}
-      className={`flex items-center gap-3 px-6 py-3 rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${
+      className={`flex items-center gap-3 px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${
         isOnline
           ? 'bg-green-500 hover:bg-green-600 text-white'
-          : 'bg-red-500 hover:bg-red-600 text-white'
+          : 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
       }`}
-      title={isOnline ? 'Clique para FECHAR o restaurante' : 'Clique para ABRIR o restaurante'}
+      title={isOnline ? 'Clique para PAUSAR pedidos' : 'Clique para RETOMAR pedidos'}
     >
       {isLoading ? (
         <Loader2 className="w-5 h-5 animate-spin" />
+      ) : isOnline ? (
+        <Pause className="w-5 h-5" />
       ) : (
-        <Power className="w-5 h-5" />
+        <Play className="w-5 h-5" />
       )}
 
       <div className="text-left">
         <div className="text-sm font-bold">
-          {isOnline ? '🟢 RESTAURANTE ONLINE' : '🔴 RESTAURANTE OFFLINE'}
+          {isOnline ? 'ACEITANDO PEDIDOS' : 'PEDIDOS PAUSADOS'}
         </div>
         <div className="text-xs opacity-90">
-          {isOnline ? 'Aceitando pedidos' : 'Recusando pedidos'}
+          {isOnline ? 'Clique para pausar' : 'Clique para retomar'}
         </div>
       </div>
     </button>

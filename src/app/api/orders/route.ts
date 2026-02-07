@@ -79,11 +79,16 @@ export async function POST(request: NextRequest) {
       // Verificar se o restaurante está aberto APENAS para pedidos imediatos
       const restaurantStatus = await isRestaurantOpen();
       if (!restaurantStatus.isOpen) {
+        // Se o admin pausou manualmente (offline), NÃO permite agendar
+        // Se está fora do horário (closed), permite agendar
+        const canSchedule = restaurantStatus.reason !== 'offline';
         return NextResponse.json(
           {
-            error: restaurantStatus.message || 'Restaurante fechado no momento',
+            error: restaurantStatus.reason === 'offline'
+              ? 'O restaurante está temporariamente indisponível. Tente novamente mais tarde.'
+              : (restaurantStatus.message || 'Restaurante fechado no momento'),
             reason: restaurantStatus.reason,
-            canSchedule: true, // Indica que pode agendar
+            canSchedule,
           },
           { status: 400 }
         );

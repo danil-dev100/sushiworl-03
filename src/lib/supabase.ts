@@ -1,9 +1,11 @@
 // src/lib/supabase.ts
+// ATENÇÃO: Este ficheiro é importado por componentes client e server.
+// NÃO colocar credenciais privilegiadas aqui (service_role_key).
+// Para operações admin, usar @/lib/supabase-admin (server-only).
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Criar cliente Supabase apenas se as variáveis estiverem disponíveis
 // Isso evita erros em contextos onde as variáveis não estão definidas
@@ -18,14 +20,7 @@ if (supabaseUrl && supabaseAnonKey) {
   }
 }
 
-// Cliente admin (server-side only) - ignora RLS para uploads seguros
-let supabaseAdmin: SupabaseClient | null = null;
-
-if (typeof window === 'undefined' && supabaseUrl && supabaseServiceRoleKey) {
-  supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
-}
-
-export { supabase, supabaseAdmin };
+export { supabase };
 
 // ============================================
 // TIPOS
@@ -60,22 +55,10 @@ export const BUCKETS = {
 // ============================================
 
 /**
- * Retorna o melhor cliente Supabase disponível
- * No servidor, usa o admin (service role) para ignorar RLS
- * No cliente, usa o anon key
- */
-function getStorageClient(): SupabaseClient | null {
-  if (typeof window === 'undefined' && supabaseAdmin) {
-    return supabaseAdmin;
-  }
-  return supabase;
-}
-
-/**
  * Verifica se o Supabase está configurado
  */
 function ensureSupabaseConfigured(): boolean {
-  if (!getStorageClient()) {
+  if (!supabase) {
     console.warn('[Supabase] Cliente não configurado - verifique as variáveis de ambiente');
     return false;
   }
@@ -103,7 +86,7 @@ export async function uploadFile(
     const fileName = path || generateUniqueFileName(file);
 
     // Fazer upload
-    const { data, error } = await getStorageClient()!.storage
+    const { data, error } = await supabase!.storage
       .from(bucket)
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -119,7 +102,7 @@ export async function uploadFile(
     }
 
     // Obter URL pública
-    const { data: urlData } = getStorageClient()!.storage
+    const { data: urlData } = supabase!.storage
       .from(bucket)
       .getPublicUrl(data.path);
 
@@ -168,7 +151,7 @@ export async function updateFile(
   }
 
   try {
-    const { data, error } = await getStorageClient()!.storage
+    const { data, error } = await supabase!.storage
       .from(bucket)
       .upload(path, file, {
         cacheControl: '3600',
@@ -182,7 +165,7 @@ export async function updateFile(
       };
     }
 
-    const { data: urlData } = getStorageClient()!.storage
+    const { data: urlData } = supabase!.storage
       .from(bucket)
       .getPublicUrl(data.path);
 
@@ -218,7 +201,7 @@ export async function deleteFile(
   }
 
   try {
-    const { error } = await getStorageClient()!.storage.from(bucket).remove([path]);
+    const { error } = await supabase!.storage.from(bucket).remove([path]);
 
     if (error) {
       return {
@@ -253,7 +236,7 @@ export async function deleteMultipleFiles(
   }
 
   try {
-    const { error } = await getStorageClient()!.storage.from(bucket).remove(paths);
+    const { error } = await supabase!.storage.from(bucket).remove(paths);
 
     if (error) {
       return {
@@ -318,7 +301,7 @@ export async function listFiles(bucket: BucketName, folder?: string) {
   }
 
   try {
-    const { data, error } = await getStorageClient()!.storage
+    const { data, error } = await supabase!.storage
       .from(bucket)
       .list(folder, {
         limit: 100,
@@ -354,7 +337,7 @@ export async function listFiles(bucket: BucketName, folder?: string) {
  * @returns URL pública
  */
 export function getPublicUrl(bucket: BucketName, path: string): string {
-  const client = getStorageClient();
+  const client = supabase;
   if (!client) {
     console.warn('[Supabase] Cliente não configurado');
     return '';

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadFile, validateImageFile, type BucketName } from '@/lib/supabase';
+import { validateImageFile } from '@/lib/supabase';
+import { uploadFileAdmin, deleteFileAdmin } from '@/lib/supabase-admin';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
     // Obter o arquivo e tipo do bucket do FormData
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const bucketType = (formData.get('bucket') as BucketName) || 'products';
+    const bucket = (formData.get('bucket') as 'products' | 'banners' | 'promotions') || 'products';
 
     if (!file) {
       return NextResponse.json(
@@ -35,15 +36,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fazer upload para o Supabase Storage
-    const result = await uploadFile(file, bucketType);
-
-    if (!result.success) {
-      return NextResponse.json(
-        { error: result.error || 'Erro ao fazer upload' },
-        { status: 500 }
-      );
-    }
+    // Upload usando supabaseAdmin (server-only, ignora RLS com segurança)
+    const result = await uploadFileAdmin(file, bucket);
 
     // Retornar URL pública da imagem
     return NextResponse.json({
@@ -55,7 +49,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Erro no upload:', error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: error instanceof Error ? error.message : 'Erro interno do servidor' },
       { status: 500 }
     );
   }
@@ -82,16 +76,20 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Importar deleteFileByUrl dinamicamente para evitar erro no build
-    const { deleteFileByUrl } = await import('@/lib/supabase');
-    const result = await deleteFileByUrl(url);
+    // Extrair bucket e path da URL
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/');
+    const bucket = pathParts[pathParts.length - 2] as 'products' | 'banners' | 'promotions';
+    const fileName = pathParts[pathParts.length - 1];
 
-    if (!result.success) {
+    if (!bucket || !fileName) {
       return NextResponse.json(
-        { error: result.error || 'Erro ao deletar arquivo' },
-        { status: 500 }
+        { error: 'URL inválida' },
+        { status: 400 }
       );
     }
+
+    await deleteFileAdmin(bucket, fileName);
 
     return NextResponse.json({
       success: true,
@@ -101,7 +99,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error('Erro ao deletar:', error);
     return NextResponse.json(
-      { error: 'Erro interno do servidor' },
+      { error: error instanceof Error ? error.message : 'Erro interno do servidor' },
       { status: 500 }
     );
   }

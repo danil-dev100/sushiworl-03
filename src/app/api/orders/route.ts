@@ -13,7 +13,7 @@ const orderSchema = z.object({
   customerName: z.string().min(1).max(100),
   customerSurname: z.string().max(100).optional().default(''),
   customerEmail: z.string().email().max(254),
-  customerPhone: z.string().min(9).max(20),
+  customerPhone: z.string().min(1).max(30),
   address: z.string().min(1).max(500),
   numero: z.string().max(20).optional().default(''),
   apartamento: z.string().max(50).optional().nullable(),

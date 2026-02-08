@@ -144,7 +144,8 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
             deliveryDistance: latestOrder.deliveryArea?.name || 'A calcular',
             deliveryAddress: typeof latestOrder.deliveryAddress === 'string'
               ? latestOrder.deliveryAddress
-              : `${latestOrder.deliveryAddress?.street || ''}, ${latestOrder.deliveryAddress?.city || ''}`,
+              : latestOrder.deliveryAddress?.fullAddress
+                || `${latestOrder.deliveryAddress?.street || ''}, ${latestOrder.deliveryAddress?.city || ''}`,
             placedAt: latestOrder.createdAt,
             acceptedAt: latestOrder.acceptedAt || latestOrder.createdAt,
             completedAt: latestOrder.completedAt || new Date().toISOString(),

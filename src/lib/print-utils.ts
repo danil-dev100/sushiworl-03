@@ -45,7 +45,8 @@ export function renderOrderReceipt(
     deliveryDistance: 'A calcular',
     deliveryAddress: typeof orderData.deliveryAddress === 'string'
       ? orderData.deliveryAddress
-      : `${orderData.deliveryAddress?.street || ''}, ${orderData.deliveryAddress?.city || ''}`,
+      : orderData.deliveryAddress?.fullAddress
+        || `${orderData.deliveryAddress?.street || ''}, ${orderData.deliveryAddress?.city || ''}`,
     placedAt: orderData.createdAt,
     acceptedAt: orderData.acceptedAt || orderData.createdAt,
     completedAt: orderData.completedAt || new Date().toISOString(),

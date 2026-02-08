@@ -58,6 +58,8 @@ export default function CheckoutPage() {
     telefone: '',
     endereco: '',
     codigoPostal: '',
+    numero: '',
+    apartamento: '',
     nif: '',
     observacoes: '',
   });
@@ -511,9 +513,8 @@ export default function CheckoutPage() {
         console.log('[Checkout] ✅ Cupom revalidado com sucesso');
       }
 
-      // Construir endereço completo (CEP é opcional)
-      const addressParts = [formData.endereco, formData.codigoPostal].filter(Boolean);
-      const fullAddress = addressParts.join(', ');
+      // Construir endereço completo com número e apartamento
+      const fullAddress = [formData.endereco, formData.numero, formData.apartamento, formData.codigoPostal].filter(Boolean).join(', ');
 
       // Itens adicionais do checkout selecionados
       const selectedCheckoutItemsData = checkoutItems
@@ -544,6 +545,8 @@ export default function CheckoutPage() {
         customerEmail: formData.email,
         customerPhone: formData.telefone,
         address: fullAddress,
+        numero: formData.numero,
+        apartamento: formData.apartamento || null,
         nif: formData.nif,
         paymentMethod: paymentMethod.toUpperCase(),
         observations: formData.observacoes,
@@ -834,7 +837,7 @@ export default function CheckoutPage() {
                       </label>
                       <label className="flex flex-col">
                         <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
-                          Endereço Completo*
+                          Endereço*
                         </p>
                         <div className="relative">
                           <input
@@ -843,7 +846,7 @@ export default function CheckoutPage() {
                             value={formData.endereco}
                             onChange={handleInputChange}
                             className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] pr-12 text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
-                            placeholder="Rua, Número, Bairro"
+                            placeholder="Rua, Bairro"
                           />
                           {isValidatingAddress && (
                             <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -864,6 +867,33 @@ export default function CheckoutPage() {
                           maxLength={8}
                           className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
                           placeholder="2690-XXX"
+                        />
+                      </label>
+                      <label className="flex flex-col">
+                        <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
+                          Número*
+                        </p>
+                        <input
+                          required
+                          name="numero"
+                          value={formData.numero}
+                          onChange={handleInputChange}
+                          maxLength={10}
+                          className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
+                          placeholder="Nº"
+                        />
+                      </label>
+                      <label className="flex flex-col">
+                        <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
+                          Apartamento <span className="text-sm font-normal text-[#333333]/70 dark:text-[#f5f1e9]/70">(Opcional)</span>
+                        </p>
+                        <input
+                          name="apartamento"
+                          value={formData.apartamento}
+                          onChange={handleInputChange}
+                          maxLength={30}
+                          className="form-input h-14 w-full flex-1 resize-none overflow-hidden rounded-lg border border-[#ead9cd] dark:border-[#5a4a3e] bg-[#f5f1e9] dark:bg-[#23170f] p-[15px] text-base font-normal leading-normal placeholder-[#333333]/50 dark:placeholder-[#f5f1e9]/50 focus:border-[#FF6B00] focus:outline-0 focus:ring-0"
+                          placeholder="Apt, Andar, Porta"
                         />
                       </label>
                       <div className="sm:col-span-2">

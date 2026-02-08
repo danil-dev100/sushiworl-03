@@ -29,42 +29,41 @@ export class FlowExecutionService {
       console.log(`🔥 Evento disparado: ${eventType}`, context);
 
       // Buscar fluxos ativos que têm triggers para este evento
+      // Deduplicação usa email (funciona para guest e logado) em vez de userId
+      const identifier = context.email?.toLowerCase().trim();
       const activeFlows = await prisma.emailAutomation.findMany({
         where: {
           isActive: true,
           isDraft: false,
         },
         include: {
-          logs: {
+          logs: identifier ? {
             where: {
-              userId: context.userId,
+              email: identifier,
               trigger: eventType,
+              status: 'SUCCESS',
               executedAt: {
                 gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Últimas 24h
               },
             },
-          },
+          } : false,
         },
       });
 
       console.log(`📊 Encontrados ${activeFlows.length} fluxos ativos`);
 
       for (const flow of activeFlows) {
-        // Verificar se usuário já passou por este fluxo recentemente
-        const recentExecutions = flow.logs.filter(log =>
-          log.userId === context.userId &&
-          log.trigger === eventType &&
-          log.status === 'SUCCESS'
-        );
+        // Verificar se este email já executou este fluxo nas últimas 24h
+        const recentExecutions = Array.isArray(flow.logs) ? flow.logs : [];
 
         if (recentExecutions.length > 0) {
-          console.log(`⏭️ Usuário ${context.userId} já executou este fluxo recentemente`);
+          console.log(`⏭️ ${identifier} já executou fluxo "${flow.name}" recentemente`);
           continue;
         }
 
-        // Verificar se fluxo já está sendo executado
-        if (this.executingFlows.has(`${flow.id}-${context.userId}`)) {
-          console.log(`⏳ Fluxo ${flow.id} já está sendo executado para este usuário`);
+        // Verificar se fluxo já está sendo executado (usa email como identificador)
+        if (this.executingFlows.has(`${flow.id}-${identifier}`)) {
+          console.log(`⏳ Fluxo ${flow.id} já está sendo executado para ${identifier}`);
           continue;
         }
 
@@ -190,13 +189,8 @@ export class FlowExecutionService {
           return !isFirstPurchase;
         }
 
-        // Se não especifica (undefined), NÃO disparar para primeira compra
-        // Isso evita que fluxos genéricos disparem junto com fluxo de primeira compra
-        if (isFirstPurchase) {
-          console.log(`[Flow Execution] Fluxo sem especificação - ignorando primeira compra para evitar duplicidade`);
-          return false;
-        }
-
+        // Se não especifica (undefined), disparar para TODOS os pedidos
+        // A deduplicação por email nas últimas 24h já evita execuções duplicadas
         return true;
 
       case 'cart_abandoned':
@@ -378,10 +372,16 @@ export class FlowExecutionService {
         delayMs = delayValue * 60 * 1000;
     }
 
-    console.log(`⏰ Aguardando ${delayValue} ${delayType}...`);
+    console.log(`⏰ Delay configurado: ${delayValue} ${delayType} (${delayMs}ms)`);
 
-    // Aguardar delay
-    await new Promise(resolve => setTimeout(resolve, delayMs));
+    // Em ambiente serverless (Vercel), setTimeout não funciona para delays longos
+    // Delays até 5 segundos são executados inline; acima disso, prosseguir imediatamente
+    const MAX_INLINE_DELAY_MS = 5000;
+    if (delayMs <= MAX_INLINE_DELAY_MS) {
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    } else {
+      console.log(`⚠️ Delay de ${delayValue} ${delayType} excede limite serverless — executando próximo nó imediatamente`);
+    }
 
     return null;
   }
@@ -686,7 +686,7 @@ export class FlowExecutionService {
           automationId: flowId,
           userId: context.userId,
           email: context.email,
-          trigger: 'system', // Será definido pelo trigger real
+          trigger: context.triggeredEvent || 'system',
           nodeId: nodeId || '',
           status: status.toUpperCase() as any,
           errorMessage,

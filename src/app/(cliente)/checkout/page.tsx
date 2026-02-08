@@ -623,6 +623,11 @@ export default function CheckoutPage() {
           setRestaurantPaused(true);
           setErrorMessage(errorData.error || 'O restaurante está temporariamente indisponível.');
           setShowErrorModal(true);
+        } else if (errorData.missingOptions) {
+          // Opções obrigatórias em falta - redirecionar ao carrinho
+          console.log('[Checkout] ⚠️ Opções obrigatórias em falta:', errorData.missingOptions);
+          toast.error(`Selecione as opções obrigatórias no carrinho: ${errorData.missingOptions.join(', ')}`);
+          router.push('/carrinho');
         } else {
           console.log('[Checkout] ❌ Mostrando modal de erro:', errorData.error);
           setErrorMessage(errorData.error || '');

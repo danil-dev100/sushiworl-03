@@ -266,7 +266,21 @@ export async function POST(request: NextRequest) {
         const minSelection = option.assignments[0]?.minSelection || 1;
 
         if (!selection || !selection.choices || selection.choices.length < minSelection) {
-          missingRequired.push(option.name);
+          // Verificar também nas opções dos itens (opções de produto podem conter a seleção)
+          const optionNameLower = option.name.toLowerCase();
+          const isInItemOptions = items.some((item: { options?: any }) => {
+            if (!item.options) return false;
+            const opts = Array.isArray(item.options) ? item.options : [];
+            return opts.some((o: any) =>
+              o.name?.toLowerCase() === optionNameLower ||
+              o.optionName?.toLowerCase() === optionNameLower ||
+              o.choices?.some((c: any) => c.name?.toLowerCase() === optionNameLower)
+            );
+          });
+
+          if (!isInItemOptions) {
+            missingRequired.push(option.name);
+          }
         }
       }
 

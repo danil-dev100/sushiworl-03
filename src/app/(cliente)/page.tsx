@@ -1,12 +1,14 @@
 import { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import HeroBanner from '@/components/cliente/HeroBanner';
 import SidebarMenu from '@/components/cliente/SidebarMenu';
 import ProductSection from '@/components/cliente/ProductSection';
 import DeliveryNotice from '@/components/cliente/DeliveryNotice';
 import { prisma } from '@/lib/db';
 
-// ISR: revalida a cada 5 minutos (reduz invocações no Vercel free plan)
-export const revalidate = 300;
+// force-dynamic garante que env vars (DATABASE_URL) estão disponíveis
+// O cache é feito ao nível das queries via unstable_cache (5 min)
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'SushiWorld Santa Iria | Sushi Delivery - Peça Online',
@@ -42,9 +44,10 @@ export const metadata: Metadata = {
   },
 };
 
-// Buscar produtos em destaque - DIRETO DO PRISMA (Server Component)
-async function getFeaturedProducts() {
-  try {
+// Cache das queries do Prisma por 5 minutos (reduz chamadas ao banco no Vercel free plan)
+// unstable_cache mantém os dados no Data Cache da Vercel sem precisar de ISR
+const getCachedFeaturedProducts = unstable_cache(
+  async () => {
     const products = await prisma.product.findMany({
       where: {
         featuredOrder: { gt: 0 },
@@ -55,7 +58,6 @@ async function getFeaturedProducts() {
       take: 3,
     });
 
-    // Mapear para o formato esperado pelo ProductSection
     return products.map((product) => ({
       id: product.id,
       name: product.name,
@@ -67,15 +69,13 @@ async function getFeaturedProducts() {
       status: 'AVAILABLE' as const,
       outOfStock: false,
     }));
-  } catch (error) {
-    console.error('Erro ao buscar produtos em destaque:', error);
-    return [];
-  }
-}
+  },
+  ['featured-products'],
+  { revalidate: 300 }
+);
 
-// Buscar mais vendidos - DIRETO DO PRISMA (Server Component)
-async function getBestSellerProducts() {
-  try {
+const getCachedBestSellerProducts = unstable_cache(
+  async () => {
     const products = await prisma.product.findMany({
       where: {
         bestSellerOrder: { gt: 0 },
@@ -86,7 +86,6 @@ async function getBestSellerProducts() {
       take: 3,
     });
 
-    // Mapear para o formato esperado pelo ProductSection
     return products.map((product) => ({
       id: product.id,
       name: product.name,
@@ -98,15 +97,23 @@ async function getBestSellerProducts() {
       status: 'AVAILABLE' as const,
       outOfStock: false,
     }));
-  } catch (error) {
-    console.error('Erro ao buscar produtos mais vendidos:', error);
-    return [];
-  }
-}
+  },
+  ['bestseller-products'],
+  { revalidate: 300 }
+);
 
 export default async function HomePage() {
-  const maisVendidos = await getBestSellerProducts();
-  const destaques = await getFeaturedProducts();
+  // try/catch para não quebrar a página se o banco falhar
+  let maisVendidos: Awaited<ReturnType<typeof getCachedBestSellerProducts>> = [];
+  let destaques: Awaited<ReturnType<typeof getCachedFeaturedProducts>> = [];
+  try {
+    [maisVendidos, destaques] = await Promise.all([
+      getCachedBestSellerProducts(),
+      getCachedFeaturedProducts(),
+    ]);
+  } catch (error) {
+    console.error('Erro ao buscar produtos da homepage:', error);
+  }
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-[#f5f1e9] dark:bg-[#23170f]">

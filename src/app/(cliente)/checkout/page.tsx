@@ -513,7 +513,9 @@ export default function CheckoutPage() {
         console.log('[Checkout] ✅ Cupom revalidado com sucesso');
       }
 
-      // Construir endereço completo com número e apartamento
+      // Endereço para geocodificação (sem número/apartamento para não confundir o Nominatim)
+      const addressForGeocode = [formData.endereco, formData.codigoPostal].filter(Boolean).join(', ');
+      // Endereço completo para exibição e registro
       const fullAddress = [formData.endereco, formData.numero, formData.apartamento, formData.codigoPostal].filter(Boolean).join(', ');
 
       // Itens adicionais do checkout selecionados
@@ -545,6 +547,7 @@ export default function CheckoutPage() {
         customerEmail: formData.email,
         customerPhone: formData.telefone,
         address: fullAddress,
+        addressForGeocode: addressForGeocode,
         numero: formData.numero,
         apartamento: formData.apartamento || null,
         nif: formData.nif,

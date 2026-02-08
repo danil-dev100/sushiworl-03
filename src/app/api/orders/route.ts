@@ -15,6 +15,7 @@ const orderSchema = z.object({
   customerEmail: z.string().email().max(254),
   customerPhone: z.string().min(1).max(30),
   address: z.string().min(1).max(500),
+  addressForGeocode: z.string().max(500).optional(),
   numero: z.string().max(20).optional().default(''),
   apartamento: z.string().max(50).optional().nullable(),
   nif: z.string().max(20).optional().nullable(),
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
       customerEmail,
       customerPhone,
       address,
+      addressForGeocode,
       numero,
       apartamento,
       nif,
@@ -177,8 +179,10 @@ export async function POST(request: NextRequest) {
       }));
 
       // Usar geocodificação com contexto e prioridade
+      // Usar addressForGeocode (sem número/apartamento) para não confundir o Nominatim
+      const geocodeQuery = addressForGeocode || address;
       const { geocodeAddressWithContext } = await import('@/lib/geo-utils');
-      const geocodeResult = await geocodeAddressWithContext(address, areasData);
+      const geocodeResult = await geocodeAddressWithContext(geocodeQuery, areasData);
 
       if (!geocodeResult) {
         return NextResponse.json(

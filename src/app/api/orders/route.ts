@@ -14,7 +14,7 @@ const orderSchema = z.object({
   customerSurname: z.string().max(100).optional().default(''),
   customerEmail: z.string().email().max(254),
   customerPhone: z.string().min(9).max(20),
-  address: z.string().min(5).max(500),
+  address: z.string().min(1).max(500),
   numero: z.string().max(20).optional().default(''),
   apartamento: z.string().max(50).optional().nullable(),
   nif: z.string().max(20).optional().nullable(),
@@ -23,15 +23,16 @@ const orderSchema = z.object({
   items: z.array(z.object({
     productId: z.string().min(1).max(50),
     name: z.string().min(1).max(200),
-    quantity: z.number().int().min(1).max(50),
-    price: z.number().min(0),
+    quantity: z.coerce.number().int().min(1).max(50),
+    price: z.coerce.number().min(0),
     options: z.any().optional(),
   })).min(1).max(100),
-  subtotal: z.number().min(0).optional(),
-  deliveryFee: z.number().min(0).optional(),
+  subtotal: z.coerce.number().min(0).optional(),
+  deliveryFee: z.coerce.number().min(0).optional(),
+  discount: z.coerce.number().min(0).optional(),
   additionalItems: z.array(z.object({
     name: z.string().max(200),
-    price: z.number().min(0),
+    price: z.coerce.number().min(0),
   })).optional(),
   couponCode: z.string().max(50).optional().nullable(),
   promotionId: z.string().max(50).optional().nullable(),
@@ -53,10 +54,17 @@ export async function POST(request: NextRequest) {
     // Validação com Zod (formato, limites, tipos)
     const parsed = orderSchema.safeParse(body);
     if (!parsed.success) {
-      const fieldErrors = parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`);
-      console.error('[Orders API] Zod validation failed:', fieldErrors);
+      const fieldErrors = parsed.error.issues.map(i => ({
+        field: i.path.join('.'),
+        message: i.message,
+      }));
+      console.error('[Orders API] Zod validation failed:', JSON.stringify(fieldErrors));
       return NextResponse.json(
-        { error: 'Dados inválidos. Verifique os campos do pedido.' },
+        {
+          error: 'Dados inválidos. Verifique os campos do pedido.',
+          fields: fieldErrors.map(f => f.field),
+          details: fieldErrors,
+        },
         { status: 400 }
       );
     }

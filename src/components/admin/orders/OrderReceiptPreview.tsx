@@ -79,6 +79,7 @@ export interface OrderReceiptProps {
         choiceId: string;
         choiceName: string;
         price: number;
+        quantity?: number;
       }>;
     }>;
     total: number;
@@ -337,12 +338,17 @@ export default function OrderReceiptPreview({ order, companyInfo, config = defau
                 ))
               }
               {order.globalOptions && order.globalOptions.length > 0 && order.globalOptions.map((opt) =>
-                opt.choices.map((choice) => (
-                  <div key={`${opt.optionId}-${choice.choiceId}`} className="flex justify-between">
-                    <span className="text-gray-600">{opt.optionName}: {choice.choiceName}</span>
-                    <span className="font-medium">{choice.price > 0 ? formatCurrency(choice.price) : 'Grátis'}</span>
-                  </div>
-                ))
+                opt.choices.map((choice) => {
+                  const qty = choice.quantity || 1;
+                  const totalPrice = choice.price * qty;
+                  const qtyLabel = qty > 1 ? `${qty}x ` : '';
+                  return (
+                    <div key={`${opt.optionId}-${choice.choiceId}`} className="flex justify-between">
+                      <span className="text-gray-600">{qtyLabel}{opt.optionName}: {choice.choiceName}</span>
+                      <span className="font-medium">{totalPrice > 0 ? formatCurrency(totalPrice) : 'Grátis'}</span>
+                    </div>
+                  );
+                })
               )}
               {order.discount && order.discount > 0 && (
                 <div className="flex justify-between text-green-600">

@@ -24,7 +24,7 @@ export function renderOrderReceipt(
     : [];
 
   const globalOptionsTotal = globalOptions.reduce((sum: number, opt: any) =>
-    sum + (opt.choices?.reduce((choiceSum: number, choice: any) => choiceSum + (choice.price || 0), 0) || 0), 0
+    sum + (opt.choices?.reduce((choiceSum: number, choice: any) => choiceSum + ((choice.price || 0) * (choice.quantity || 1)), 0) || 0), 0
   );
 
   console.log('[Print Utils] 📦 Itens adicionais do checkout:', checkoutItems);
@@ -322,15 +322,20 @@ function renderSection(sectionId: string, order: any, company: any, fields: any)
           `).join('')
         : '';
 
-      // Renderizar opções globais selecionadas
+      // Renderizar opções globais selecionadas (com quantidade e preço total)
       const globalOptionsHTML = order.globalOptions && order.globalOptions.length > 0
         ? order.globalOptions.flatMap((opt: any) =>
-            opt.choices?.map((choice: any) => `
+            opt.choices?.map((choice: any) => {
+              const qty = choice.quantity || 1;
+              const totalPrice = (choice.price || 0) * qty;
+              const qtyLabel = qty > 1 ? `${qty}x ` : '';
+              return `
               <div class="flex justify-between">
-                <span class="text-gray-600">${opt.optionName}: ${choice.choiceName}</span>
-                <span class="font-medium">${choice.price > 0 ? `€ ${(choice.price || 0).toFixed(2)}` : 'Grátis'}</span>
+                <span class="text-gray-600">${qtyLabel}${opt.optionName}: ${choice.choiceName}</span>
+                <span class="font-medium">${totalPrice > 0 ? `€ ${totalPrice.toFixed(2)}` : 'Grátis'}</span>
               </div>
-            `) || []
+            `;
+            }) || []
           ).join('')
         : '';
 

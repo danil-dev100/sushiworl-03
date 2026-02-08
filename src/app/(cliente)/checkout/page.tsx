@@ -602,6 +602,10 @@ export default function CheckoutPage() {
       } else {
         const errorData = await response.json();
         console.error('[Checkout] ❌ Erro ao criar pedido:', errorData);
+        if (errorData.fields) {
+          console.error('[Checkout] 🔍 Campos inválidos:', errorData.fields);
+          console.error('[Checkout] 🔍 Detalhes:', errorData.details);
+        }
         console.log('[Checkout] 🔍 canSchedule:', errorData.canSchedule);
         console.log('[Checkout] 🔍 reason:', errorData.reason);
 

@@ -15,7 +15,7 @@ const orderSchema = z.object({
   customerEmail: z.string().email().max(254),
   customerPhone: z.string().min(9).max(20),
   address: z.string().min(5).max(500),
-  numero: z.string().min(1).max(20),
+  numero: z.string().max(20).optional().default(''),
   apartamento: z.string().max(50).optional().nullable(),
   nif: z.string().max(20).optional().nullable(),
   paymentMethod: z.string().max(30).optional(),
@@ -53,6 +53,8 @@ export async function POST(request: NextRequest) {
     // Validação com Zod (formato, limites, tipos)
     const parsed = orderSchema.safeParse(body);
     if (!parsed.success) {
+      const fieldErrors = parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`);
+      console.error('[Orders API] Zod validation failed:', fieldErrors);
       return NextResponse.json(
         { error: 'Dados inválidos. Verifique os campos do pedido.' },
         { status: 400 }

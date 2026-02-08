@@ -232,6 +232,17 @@ export class FlowExecutionService {
         // Executar nó
         const nextNodeId = await this.executeNode(currentNode, context);
 
+        // Se o nó sinalizou que deve ser enfileirado (delay longo)
+        if (nextNodeId === '__QUEUED__') {
+          const resumeNodeId = this.findNextNode(currentNodeId, edges, null);
+          if (resumeNodeId) {
+            await this.queueDelayedExecution(flowId, resumeNodeId, nodes, edges, context, (context as any).__delayMs || 0);
+          }
+          await this.logExecution(flowId, context, 'success', currentNodeId);
+          console.log('📋 Execução enfileirada para processamento posterior via cron');
+          break;
+        }
+
         // Registrar execução bem-sucedida
         await this.logExecution(flowId, context, 'success', currentNodeId);
 
@@ -374,16 +385,17 @@ export class FlowExecutionService {
 
     console.log(`⏰ Delay configurado: ${delayValue} ${delayType} (${delayMs}ms)`);
 
-    // Em ambiente serverless (Vercel), setTimeout não funciona para delays longos
-    // Delays até 5 segundos são executados inline; acima disso, prosseguir imediatamente
+    // Delays curtos (≤5s) executam inline; longos são enfileirados para o cron processar
     const MAX_INLINE_DELAY_MS = 5000;
     if (delayMs <= MAX_INLINE_DELAY_MS) {
       await new Promise(resolve => setTimeout(resolve, delayMs));
-    } else {
-      console.log(`⚠️ Delay de ${delayValue} ${delayType} excede limite serverless — executando próximo nó imediatamente`);
+      return null;
     }
 
-    return null;
+    // Sinalizar para executeNodePath enfileirar a continuação
+    (context as any).__delayMs = delayMs;
+    console.log(`📋 Delay de ${delayValue} ${delayType} será processado via cron`);
+    return '__QUEUED__';
   }
 
   private async executeConditionNode(node: any, context: FlowExecutionContext): Promise<string | null> {
@@ -701,9 +713,123 @@ export class FlowExecutionService {
     }
   }
 
+  /**
+   * Enfileira a continuação de um fluxo após um delay longo
+   * Usa EmailAutomationLog com status PENDING para armazenar o estado
+   */
+  private async queueDelayedExecution(
+    flowId: string,
+    resumeNodeId: string,
+    nodes: any[],
+    edges: any[],
+    context: FlowExecutionContext,
+    delayMs: number
+  ): Promise<void> {
+    const executeAfter = new Date(Date.now() + delayMs);
+
+    await prisma.emailAutomationLog.create({
+      data: {
+        automationId: flowId,
+        userId: context.userId,
+        email: context.email,
+        trigger: context.triggeredEvent || 'delay_queue',
+        nodeId: resumeNodeId,
+        status: 'PENDING',
+        errorMessage: JSON.stringify({
+          executeAfter: executeAfter.toISOString(),
+          context: {
+            userId: context.userId,
+            email: context.email,
+            orderId: context.orderId,
+            cartId: context.cartId,
+            triggeredEvent: context.triggeredEvent,
+          },
+          nodes,
+          edges,
+        }),
+      }
+    });
+
+    console.log(`📋 Execução enfileirada: fluxo ${flowId}, retomar nó ${resumeNodeId} após ${executeAfter.toISOString()}`);
+  }
+
+  /**
+   * Processa execuções pendentes na fila (chamado pelo cron)
+   */
+  async processQueuedExecutions(): Promise<{ processed: number; errors: number }> {
+    let processed = 0;
+    let errors = 0;
+
+    try {
+      const pendingLogs = await prisma.emailAutomationLog.findMany({
+        where: { status: 'PENDING' },
+      });
+
+      console.log(`[Queue] Encontradas ${pendingLogs.length} execuções pendentes`);
+
+      for (const log of pendingLogs) {
+        try {
+          const data = JSON.parse(log.errorMessage || '{}');
+          const executeAfter = new Date(data.executeAfter);
+
+          // Ainda não é hora de executar
+          if (executeAfter > new Date()) {
+            continue;
+          }
+
+          console.log(`[Queue] Processando execução: fluxo ${log.automationId}, nó ${log.nodeId}`);
+
+          // Marcar como em processamento (atualizar para evitar reprocessamento)
+          await prisma.emailAutomationLog.update({
+            where: { id: log.id },
+            data: { status: 'SUCCESS', errorMessage: null },
+          });
+
+          // Reconstruir o contexto
+          const context: FlowExecutionContext = {
+            userId: data.context?.userId,
+            email: data.context?.email || log.email,
+            orderId: data.context?.orderId,
+            cartId: data.context?.cartId,
+            triggeredEvent: data.context?.triggeredEvent || log.trigger,
+          };
+
+          // Retomar execução a partir do nó salvo
+          await this.executeNodePath(
+            log.automationId,
+            log.nodeId,
+            data.nodes || [],
+            data.edges || [],
+            context
+          );
+
+          processed++;
+          console.log(`[Queue] ✅ Execução processada com sucesso`);
+
+        } catch (error) {
+          errors++;
+          console.error(`[Queue] ❌ Erro ao processar execução ${log.id}:`, error);
+
+          await prisma.emailAutomationLog.update({
+            where: { id: log.id },
+            data: {
+              status: 'FAILED',
+              errorMessage: error instanceof Error ? error.message : 'Erro desconhecido',
+            },
+          });
+        }
+      }
+
+    } catch (error) {
+      console.error('[Queue] Erro geral ao processar fila:', error);
+    }
+
+    return { processed, errors };
+  }
+
   private async updateFlowStats(flowId: string): Promise<void> {
     const logs = await prisma.emailAutomationLog.findMany({
-      where: { automationId: flowId }
+      where: { automationId: flowId, status: { not: 'PENDING' } }
     });
 
     const totalExecutions = logs.length;

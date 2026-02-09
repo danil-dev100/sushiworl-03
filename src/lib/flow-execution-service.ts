@@ -49,6 +49,26 @@ export class FlowExecutionService {
 
       const identifier = context.email?.toLowerCase().trim();
 
+      // Se o evento é order_scheduled, verificar se existe fluxo dedicado
+      // Se não existir, usar fluxos order_created como fallback
+      let effectiveEventType = eventType;
+      if (eventType === 'order_scheduled') {
+        const hasScheduledFlow = activeFlows.some((f: any) => {
+          const nodes = f.flow?.nodes || [];
+          const triggerNode = nodes.find((n: any) => n.type === 'trigger');
+          if (!triggerNode) return false;
+          const te = triggerNode.data?.eventType || triggerNode.data?.event || triggerNode.data?.triggerType;
+          return te === 'order_scheduled';
+        });
+        if (hasScheduledFlow) {
+          console.log('📅 Fluxo dedicado para order_scheduled encontrado');
+        } else {
+          // Sem fluxo dedicado, usar order_created como fallback
+          console.log('📅 Sem fluxo dedicado para order_scheduled, usando order_created como fallback');
+          effectiveEventType = 'order_created';
+        }
+      }
+
       for (const flow of activeFlows) {
         // Deduplicação por pedido: evita enviar o mesmo fluxo para o mesmo pedido
         // (permite enviar para o mesmo email em pedidos diferentes)
@@ -79,7 +99,7 @@ export class FlowExecutionService {
 
         // Executar fluxo com await para capturar erros
         try {
-          await this.executeFlow(flow, { ...context, triggeredEvent: eventType });
+          await this.executeFlow(flow, { ...context, triggeredEvent: effectiveEventType });
         } catch (error) {
           console.error(`❌ Erro ao executar fluxo "${flow.name}" (${flow.id}):`, error);
         }
@@ -163,9 +183,8 @@ export class FlowExecutionService {
     const normalizedEvent = context.triggeredEvent === 'order_completed' ? 'order_created' : context.triggeredEvent;
 
     // Verificar se o evento disparado corresponde ao evento do trigger
-    // Fluxos de order_created também aceitam order_scheduled (pedidos agendados são pedidos)
-    const isMatch = normalizedTrigger === normalizedEvent
-      || (normalizedTrigger === 'order_created' && normalizedEvent === 'order_scheduled');
+    // Nota: cross-matching entre order_created e order_scheduled é gerido em triggerEvent
+    const isMatch = normalizedTrigger === normalizedEvent;
 
     if (!isMatch) {
       console.log(`❌ Evento não corresponde: ${normalizedTrigger} !== ${normalizedEvent}`);
@@ -362,6 +381,14 @@ export class FlowExecutionService {
 
     // Substituir variáveis no assunto também
     subject = await this.replaceTemplateVariables(subject, context);
+
+    // Se o conteúdo não é um documento HTML completo, converter \n para <br> e envolver em estrutura básica
+    if (htmlContent && !htmlContent.includes('<!DOCTYPE') && !htmlContent.includes('<html')) {
+      // Converter \n para <br> em texto fora de tags HTML
+      htmlContent = htmlContent.replace(/\n/g, '<br>\n');
+      // Envolver em estrutura HTML de email básica
+      htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:Arial,sans-serif;margin:0;padding:20px;background:#f5f1e9;">${htmlContent}</body></html>`;
+    }
 
     console.log(`📧 Enviando email para ${context.email} - Assunto: ${subject} - Conteúdo: ${htmlContent.length} chars`);
 

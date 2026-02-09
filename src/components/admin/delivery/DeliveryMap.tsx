@@ -690,7 +690,7 @@ export default function DeliveryMap({
 
         // Atualizar polígono
         if (drawingLayerRef.current) {
-          drawingLayerRef.current.setLatLngs(newPoints);
+          (drawingLayerRef.current as any).setLatLngs(newPoints);
         }
 
         // Notificar componente pai

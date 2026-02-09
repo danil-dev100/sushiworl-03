@@ -125,8 +125,7 @@ export async function POST(request: NextRequest) {
                   await prisma.order.update({
                     where: { id: order.id },
                     data: {
-                      paymentStatus: 'PAID',
-                      paidAt: new Date(),
+                      status: 'CONFIRMED',
                     },
                   });
                   console.log('[Webhook INBOUND] ✅ Pagamento confirmado para pedido:', order.orderNumber);
@@ -153,7 +152,6 @@ export async function POST(request: NextRequest) {
                     data: {
                       status: 'CANCELLED',
                       cancelledAt: new Date(),
-                      cancelReason: body.data.reason || 'Cancelado externamente via webhook',
                     },
                   });
                   console.log('[Webhook INBOUND] ✅ Pedido cancelado:', order.orderNumber);

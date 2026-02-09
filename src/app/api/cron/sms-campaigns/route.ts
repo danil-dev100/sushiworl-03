@@ -121,7 +121,7 @@ async function sendCampaign(campaign: any): Promise<{ sent: number; failed: numb
           where: { id: targetAudience.promotionId },
         });
         if (promotion) {
-          variables.CUPOM = promotion.code;
+          variables.CUPOM = promotion.code || '';
           variables.DESCONTO = promotion.discountType === 'PERCENTAGE'
             ? `${promotion.discountValue}%`
             : `€${promotion.discountValue.toFixed(2)}`;

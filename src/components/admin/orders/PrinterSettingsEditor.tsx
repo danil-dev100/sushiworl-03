@@ -9,6 +9,20 @@ import OrderReceiptPreview, { OrderReceiptConfig } from './OrderReceiptPreview';
 import PrintStyles from './PrintStyles';
 import { toast } from 'sonner';
 
+function formatItemOptions(selectedOptions: any): string {
+  if (!selectedOptions) return '';
+  const opts = Array.isArray(selectedOptions) ? selectedOptions : [];
+  return opts.map((opt: any) => {
+    const name = opt.optionName || opt.name || '';
+    const choices = opt.choices || [];
+    return choices.map((c: any) => {
+      const choiceName = c.choiceName || c.name || '';
+      const price = c.price || 0;
+      return price > 0 ? `${name}: ${choiceName} (+€${price.toFixed(2)})` : `${name}: ${choiceName}`;
+    }).join(', ');
+  }).filter(Boolean).join('; ');
+}
+
 interface PrinterSettingsEditorProps {
   initialConfig?: OrderReceiptConfig;
   onSave?: (config: OrderReceiptConfig) => void;
@@ -159,7 +173,7 @@ export default function PrinterSettingsEditor({ initialConfig, onSave }: Printer
             items: (latestOrder.orderItems || []).map((item: any) => ({
               quantity: item.quantity,
               name: item.name,
-              variant: item.selectedOptions ? JSON.stringify(item.selectedOptions) : '',
+              variant: item.selectedOptions ? formatItemOptions(item.selectedOptions) : '',
               notes: '',
               price: item.priceAtTime,
             })),

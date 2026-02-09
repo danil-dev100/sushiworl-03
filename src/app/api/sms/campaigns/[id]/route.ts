@@ -48,7 +48,7 @@ export async function GET(
     // Buscar logs
     const logs = await prisma.smsCampaignLog.findMany({
       where: { campaignId: id },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { sentAt: 'desc' },
       take: 100,
     });
 

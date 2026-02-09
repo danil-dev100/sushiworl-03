@@ -405,7 +405,7 @@ export function ObrigadoClient({ order }: ObrigadoClientProps) {
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 {statusConfig[currentStatus].description}
               </p>
-              {currentStatus !== 'DELIVERED' && currentStatus !== 'CANCELLED' && (
+              {!(['DELIVERED', 'CANCELLED'] as OrderStatus[]).includes(currentStatus) && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   ⚡ Atualização automática a cada 5 segundos
                 </p>

@@ -38,7 +38,7 @@ export async function POST(
         name: `${original.name} (Cópia)`,
         description: original.description,
         triggerType: original.triggerType,
-        triggerValue: original.triggerValue,
+        triggerValue: original.triggerValue ?? undefined,
         nodes: original.nodes || [],
         edges: original.edges || [],
         isActive: false, // Sempre começa desativada

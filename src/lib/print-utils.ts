@@ -2,6 +2,20 @@
  * Utilitários para geração de recibos de impressão
  */
 
+function formatSelectedOptions(selectedOptions: any): string {
+  if (!selectedOptions) return '';
+  const opts = Array.isArray(selectedOptions) ? selectedOptions : [];
+  return opts.map((opt: any) => {
+    const name = opt.optionName || opt.name || '';
+    const choices = opt.choices || [];
+    return choices.map((c: any) => {
+      const choiceName = c.choiceName || c.name || '';
+      const price = c.price || 0;
+      return price > 0 ? `${name}: ${choiceName} (+€${price.toFixed(2)})` : `${name}: ${choiceName}`;
+    }).join(', ');
+  }).filter(Boolean).join('; ');
+}
+
 export function renderOrderReceipt(
   orderData: any,
   companyInfo: any,
@@ -60,7 +74,7 @@ export function renderOrderReceipt(
     items: (orderData.orderItems || orderData.items || []).map((item: any) => ({
       quantity: item.quantity,
       name: item.name,
-      variant: item.selectedOptions ? JSON.stringify(item.selectedOptions) : '',
+      variant: item.selectedOptions ? formatSelectedOptions(item.selectedOptions) : '',
       notes: '',
       price: item.priceAtTime,
     })),

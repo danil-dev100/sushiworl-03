@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import { emailService } from '@/lib/email-service';
+import { Resend } from 'resend';
 
 export interface FlowExecutionContext {
   userId?: string;
@@ -342,19 +342,22 @@ export class FlowExecutionService {
 
     console.log(`📧 Enviando email para ${context.email} - Assunto: ${subject}`);
 
-    // Enviar email
-    const result = await emailService.sendEmail({
-      to: context.email,
+    // Enviar email via Resend (API key configurada no .env)
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey || resendApiKey === 'dummy-key-for-build') {
+      throw new Error('RESEND_API_KEY não configurada');
+    }
+
+    const resend = new Resend(resendApiKey);
+    const { data, error } = await resend.emails.send({
+      from: 'SushiWorld <pedidos@sushiworld.pt>',
+      to: [context.email],
       subject: subject || 'Mensagem automática - SushiWorld',
       html: htmlContent,
-      headers: {
-        'X-Flow-Id': node.id,
-        'X-Automation-Type': 'email-marketing',
-      }
     });
 
-    if (!result.success) {
-      throw new Error(result.error || 'Erro ao enviar email');
+    if (error) {
+      throw new Error(error.message || 'Erro ao enviar email via Resend');
     }
 
     console.log(`✅ Email enviado com sucesso para ${context.email}`);

@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
       actualDeliveryFee = matchedArea.deliveryType === 'FREE' ? 0 : matchedArea.deliveryFee;
 
       // Validar valor mínimo do pedido se configurado
-      if (matchedArea.minOrderValue && subtotal < matchedArea.minOrderValue) {
+      if (matchedArea.minOrderValue && (subtotal || 0) < matchedArea.minOrderValue) {
         return NextResponse.json(
           {
             error: `Pedido mínimo de €${matchedArea.minOrderValue.toFixed(2)} não atingido para esta área de entrega.`,

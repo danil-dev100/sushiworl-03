@@ -89,7 +89,7 @@ async function testOutboundWebhooks() {
         webhookId: webhook.id,
       },
       orderBy: {
-        createdAt: 'desc',
+        triggeredAt: 'desc',
       },
       take: 10,
     });

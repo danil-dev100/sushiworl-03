@@ -259,7 +259,7 @@ export function validateTemplateVariables(template: string): {
   invalid: { key: string; position: number }[];
 } {
   const variableRegex = /\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}/g;
-  const validKeys = new Set(AVAILABLE_VARIABLES.map(v => v.key));
+  const validKeys = new Set<string>(AVAILABLE_VARIABLES.map(v => v.key));
 
   const valid: { key: string; position: number }[] = [];
   const invalid: { key: string; position: number }[] = [];

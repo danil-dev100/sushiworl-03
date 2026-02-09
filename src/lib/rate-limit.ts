@@ -81,8 +81,8 @@ function getClientIp(request: NextRequest): string {
     return realIp.trim();
   }
 
-  // Fallback para IP do request (pode não estar disponível em serverless)
-  return request.ip || 'unknown';
+  // Fallback
+  return 'unknown';
 }
 
 /**

@@ -141,12 +141,18 @@ export class FlowExecutionService {
 
     console.log(`🔍 Verificando trigger match: trigger=${triggerEventType}, disparado=${context.triggeredEvent}`);
 
-    // Mapear eventos equivalentes (order_completed = order_created)
+    // Mapear eventos equivalentes
+    // order_completed = order_created; order_scheduled também dispara fluxos order_created
+    const orderEvents = ['order_created', 'order_completed', 'order_scheduled'];
     const normalizedTrigger = triggerEventType === 'order_completed' ? 'order_created' : triggerEventType;
     const normalizedEvent = context.triggeredEvent === 'order_completed' ? 'order_created' : context.triggeredEvent;
 
     // Verificar se o evento disparado corresponde ao evento do trigger
-    if (normalizedTrigger !== normalizedEvent) {
+    // Fluxos de order_created também aceitam order_scheduled (pedidos agendados são pedidos)
+    const isMatch = normalizedTrigger === normalizedEvent
+      || (normalizedTrigger === 'order_created' && normalizedEvent === 'order_scheduled');
+
+    if (!isMatch) {
       console.log(`❌ Evento não corresponde: ${normalizedTrigger} !== ${normalizedEvent}`);
       return false;
     }

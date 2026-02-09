@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -31,6 +31,8 @@ export default function CheckoutPage() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<string>('');
   const [scheduledTime, setScheduledTime] = useState<string>('');
+  // Ref para acesso síncrono aos dados de agendamento (evitar race condition com setState)
+  const scheduledRef = useRef<{ date: string; time: string }>({ date: '', time: '' });
 
   // Status do restaurante (verificação proativa)
   const [restaurantPaused, setRestaurantPaused] = useState(false);
@@ -448,11 +450,12 @@ export default function CheckoutPage() {
   }, []);
 
   const handleSchedule = (date: string, time: string) => {
+    // Guardar no ref ANTES de tudo (acesso síncrono no handleSubmit)
+    scheduledRef.current = { date, time };
     setScheduledDate(date);
     setScheduledTime(time);
     setShowScheduleModal(false);
 
-    // Reenviar o pedido com os dados de agendamento
     toast.success(`Pedido agendado para ${date} às ${time}`);
 
     // Disparar handleSubmit novamente
@@ -569,11 +572,13 @@ export default function CheckoutPage() {
         globalOptions: globalOptionsData,
       };
 
-      // Adicionar dados de agendamento se aplicável
-      if (scheduledDate && scheduledTime) {
+      // Adicionar dados de agendamento se aplicável (usar ref para acesso síncrono)
+      const schedDate = scheduledRef.current.date || scheduledDate;
+      const schedTime = scheduledRef.current.time || scheduledTime;
+      if (schedDate && schedTime) {
         orderData.isScheduled = true;
-        orderData.scheduledDate = scheduledDate;
-        orderData.scheduledTime = scheduledTime;
+        orderData.scheduledDate = schedDate;
+        orderData.scheduledTime = schedTime;
       }
 
       const response = await fetch('/api/orders', {

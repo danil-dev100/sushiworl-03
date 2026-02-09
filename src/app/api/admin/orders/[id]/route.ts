@@ -4,6 +4,7 @@ import { authOptions, canManageOrders } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { triggerWebhooks, formatOrderPayload, WebhookEvent } from '@/lib/webhooks';
 import { logUpdate } from '@/lib/audit-log';
+import { flowExecutionService } from '@/lib/flow-execution-service';
 
 export async function GET(
   request: NextRequest,
@@ -150,7 +151,10 @@ export async function PUT(
       );
     }
 
-    // TODO: Enviar notificação ao cliente (email/SMS)
+    // Processar fila de emails pendentes (lembretes de pedidos agendados, delays de fluxos)
+    flowExecutionService.processQueuedExecutions().catch(err => {
+      console.error('[Order API] Erro ao processar fila de emails:', err);
+    });
 
     return NextResponse.json(updatedOrder);
   } catch (error) {

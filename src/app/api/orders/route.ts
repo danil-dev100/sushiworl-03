@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import { emitNewOrderEvent } from '@/lib/socket-emitter';
 import { triggersService } from '@/lib/triggers-service';
+import { flowExecutionService } from '@/lib/flow-execution-service';
 import { isRestaurantOpen } from '@/lib/restaurant-status';
 import { validateScheduleDateTime } from '@/lib/scheduling';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
@@ -695,6 +696,17 @@ export async function POST(request: NextRequest) {
     } catch (triggerError) {
       console.error('Erro ao disparar trigger de email marketing:', triggerError);
       // Não falha a criação do pedido se o trigger falhar
+    }
+
+    // Processar fila de emails pendentes (delays de fluxos anteriores)
+    // Isto garante que lembretes de pedidos agendados são enviados sem depender apenas do cron diário
+    try {
+      const queueResult = await flowExecutionService.processQueuedExecutions();
+      if (queueResult.processed > 0) {
+        console.log(`📬 Fila de emails processada: ${queueResult.processed} enviados`);
+      }
+    } catch (queueError) {
+      console.error('Erro ao processar fila de emails:', queueError);
     }
 
     return NextResponse.json({

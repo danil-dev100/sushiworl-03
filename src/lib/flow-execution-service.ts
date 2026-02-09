@@ -26,51 +26,63 @@ export class FlowExecutionService {
    */
   async triggerEvent(eventType: string, context: FlowExecutionContext): Promise<void> {
     try {
-      console.log(`🔥 Evento disparado: ${eventType}`, context);
+      console.log(`🔥 Evento disparado: ${eventType}`, {
+        email: context.email,
+        orderId: context.orderId,
+        userId: context.userId,
+      });
 
-      // Buscar fluxos ativos que têm triggers para este evento
-      // Deduplicação usa email (funciona para guest e logado) em vez de userId
-      const identifier = context.email?.toLowerCase().trim();
+      // Buscar fluxos ativos e publicados
       const activeFlows = await prisma.emailAutomation.findMany({
         where: {
           isActive: true,
           isDraft: false,
         },
-        include: {
-          logs: identifier ? {
-            where: {
-              email: identifier,
-              trigger: eventType,
-              status: 'SUCCESS',
-              executedAt: {
-                gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Últimas 24h
-              },
-            },
-          } : false,
-        },
       });
 
       console.log(`📊 Encontrados ${activeFlows.length} fluxos ativos`);
 
-      for (const flow of activeFlows) {
-        // Verificar se este email já executou este fluxo nas últimas 24h
-        const recentExecutions = Array.isArray(flow.logs) ? flow.logs : [];
+      if (activeFlows.length === 0) {
+        console.log('⚠️ Nenhum fluxo ativo encontrado. Verifique no admin > Email Marketing.');
+        return;
+      }
 
-        if (recentExecutions.length > 0) {
-          console.log(`⏭️ ${identifier} já executou fluxo "${flow.name}" recentemente`);
-          continue;
+      const identifier = context.email?.toLowerCase().trim();
+
+      for (const flow of activeFlows) {
+        // Deduplicação por pedido: evita enviar o mesmo fluxo para o mesmo pedido
+        // (permite enviar para o mesmo email em pedidos diferentes)
+        if (context.orderId && identifier) {
+          const existingLog = await prisma.emailAutomationLog.findFirst({
+            where: {
+              automationId: flow.id,
+              email: identifier,
+              trigger: eventType,
+              status: 'SUCCESS',
+              // Buscar log que contém o orderId no nodeId (usado como referência)
+              nodeId: { contains: context.orderId },
+            },
+          });
+
+          if (existingLog) {
+            console.log(`⏭️ Fluxo "${flow.name}" já executado para pedido ${context.orderId}`);
+            continue;
+          }
         }
 
-        // Verificar se fluxo já está sendo executado (usa email como identificador)
-        if (this.executingFlows.has(`${flow.id}-${identifier}`)) {
+        // Verificar se fluxo já está sendo executado
+        const executionKey = `${flow.id}-${identifier}-${context.orderId || ''}`;
+        if (this.executingFlows.has(executionKey)) {
           console.log(`⏳ Fluxo ${flow.id} já está sendo executado para ${identifier}`);
           continue;
         }
 
-        // Executar fluxo em background, passando o eventType no contexto
-        this.executeFlow(flow, { ...context, triggeredEvent: eventType }).catch(error => {
-          console.error(`❌ Erro ao executar fluxo ${flow.id}:`, error);
-        });
+        // Executar fluxo com await para capturar erros
+        try {
+          await this.executeFlow(flow, { ...context, triggeredEvent: eventType });
+        } catch (error) {
+          console.error(`❌ Erro ao executar fluxo "${flow.name}" (${flow.id}):`, error);
+        }
       }
 
     } catch (error) {
@@ -82,7 +94,8 @@ export class FlowExecutionService {
    * Executa um fluxo específico
    */
   private async executeFlow(flow: any, context: FlowExecutionContext): Promise<void> {
-    const executionId = `${flow.id}-${context.userId || context.email}`;
+    const identifier = context.email?.toLowerCase().trim();
+    const executionId = `${flow.id}-${identifier}-${context.orderId || ''}`;
     this.executingFlows.add(executionId);
 
     try {
@@ -104,6 +117,8 @@ export class FlowExecutionService {
         id: triggerNode.id,
         event: triggerNode.data?.event,
         eventType: triggerNode.data?.eventType,
+        triggerType: triggerNode.data?.triggerType,
+        allDataKeys: Object.keys(triggerNode.data || {}),
       });
 
       // Verificar se trigger corresponde ao evento
@@ -317,6 +332,8 @@ export class FlowExecutionService {
     // Support both 'content' and 'customContent' field names
     const customContent = node.data?.content || node.data?.customContent;
 
+    console.log(`📧 Email node: templateId=${templateId}, hasCustomContent=${!!customContent}, subject="${subject}"`);
+
     if (!templateId && !customContent) {
       throw new Error('Nó de email precisa de template ou conteúdo personalizado');
     }
@@ -346,9 +363,10 @@ export class FlowExecutionService {
     // Substituir variáveis no assunto também
     subject = await this.replaceTemplateVariables(subject, context);
 
-    console.log(`📧 Enviando email para ${context.email} - Assunto: ${subject}`);
+    console.log(`📧 Enviando email para ${context.email} - Assunto: ${subject} - Conteúdo: ${htmlContent.length} chars`);
 
     // Enviar email via SMTP (configurado no painel admin > Email Marketing > SMTP)
+    console.log('📧 Inicializando serviço de email SMTP...');
     const result = await emailService.sendEmail({
       to: context.email,
       subject: subject || 'Mensagem automática - SushiWorld',
@@ -699,13 +717,18 @@ export class FlowExecutionService {
     errorMessage?: string
   ): Promise<void> {
     try {
+      // Incluir orderId no nodeId para deduplicação por pedido
+      const nodeRef = context.orderId
+        ? `${nodeId || ''}:order:${context.orderId}`
+        : nodeId || '';
+
       await prisma.emailAutomationLog.create({
         data: {
           automationId: flowId,
           userId: context.userId,
           email: context.email,
           trigger: context.triggeredEvent || 'system',
-          nodeId: nodeId || '',
+          nodeId: nodeRef,
           status: status.toUpperCase() as any,
           errorMessage,
         }

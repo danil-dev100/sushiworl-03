@@ -10,10 +10,9 @@ export const maxDuration = 60;
 export async function GET(request: NextRequest) {
   try {
     // Verificar autorização (Vercel Cron envia header especial)
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && process.env.NODE_ENV === 'production') {
-      // Em produção, verifica o CRON_SECRET; em dev, permite sem auth
-      if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production') {
+      const authHeader = request.headers.get('authorization');
+      if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }

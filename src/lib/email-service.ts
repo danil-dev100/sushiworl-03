@@ -57,7 +57,7 @@ export class EmailService {
           pass: this.config.smtpPassword,
         },
         tls: {
-          rejectUnauthorized: false, // Para desenvolvimento
+          rejectUnauthorized: process.env.NODE_ENV === 'production',
         },
         // Timeouts aumentados para ambiente serverless
         connectionTimeout: 30000, // 30 segundos

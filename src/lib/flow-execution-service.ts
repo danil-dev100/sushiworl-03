@@ -10,6 +10,16 @@ export interface FlowExecutionContext {
   triggeredEvent?: string; // Nome do evento que disparou o fluxo
 }
 
+// Previne XSS em templates de email: escapa caracteres HTML de dados do utilizador
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export class FlowExecutionService {
   private static instance: FlowExecutionService;
   private executingFlows: Set<string> = new Set();
@@ -603,8 +613,8 @@ export class FlowExecutionService {
   }
 
   private async replaceTemplateVariables(content: string, context: FlowExecutionContext): Promise<string> {
-    // Substituir variáveis básicas
-    content = content.replace(/\{\{email\}\}/g, context.email);
+    // Substituir variáveis básicas (escapar dados de utilizador contra XSS)
+    content = content.replace(/\{\{email\}\}/g, escapeHtml(context.email));
     content = content.replace(/\{\{user_id\}\}/g, context.userId || '');
 
     // Se tem dados do pedido no contexto, substituir variáveis do pedido
@@ -618,9 +628,9 @@ export class FlowExecutionService {
         });
 
         if (order) {
-          // Dados do cliente
-          content = content.replace(/\{\{customerName\}\}/g, order.customerName || '');
-          content = content.replace(/\{\{nome_cliente\}\}/g, order.customerName || '');
+          // Dados do cliente (escapar contra XSS)
+          content = content.replace(/\{\{customerName\}\}/g, escapeHtml(order.customerName || ''));
+          content = content.replace(/\{\{nome_cliente\}\}/g, escapeHtml(order.customerName || ''));
 
           // Dados do pedido
           content = content.replace(/\{\{orderNumber\}\}/g, order.orderNumber?.toString() || '');
@@ -655,11 +665,11 @@ export class FlowExecutionService {
           const address = typeof order.deliveryAddress === 'object' && order.deliveryAddress !== null
             ? (order.deliveryAddress as any).fullAddress || JSON.stringify(order.deliveryAddress)
             : String(order.deliveryAddress || '');
-          content = content.replace(/\{\{endereco_entrega\}\}/g, address);
+          content = content.replace(/\{\{endereco_entrega\}\}/g, escapeHtml(address));
 
           // Lista de produtos - formato HTML para melhor visualização
           const produtosHtml = order.orderItems
-            .map(item => `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;">${item.quantity}x ${item.name}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">€${item.priceAtTime.toFixed(2)}</td></tr>`)
+            .map(item => `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;">${item.quantity}x ${escapeHtml(item.name)}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">€${item.priceAtTime.toFixed(2)}</td></tr>`)
             .join('');
 
           let listaProdutosHtml = `<table style="width:100%;border-collapse:collapse;margin:8px 0;"><tbody>${produtosHtml}</tbody></table>`;
@@ -671,7 +681,7 @@ export class FlowExecutionService {
               opt.choices.map(choice => {
                 const qty = choice.quantity ? `${choice.quantity}x ` : '';
                 const price = choice.price > 0 ? `€${(choice.price * (choice.quantity || 1)).toFixed(2)}` : 'Grátis';
-                return `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;">${qty}${choice.choiceName}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">${price}</td></tr>`;
+                return `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;">${qty}${escapeHtml(choice.choiceName)}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">${price}</td></tr>`;
               })
             ).join('');
             if (opcoesHtml) {
@@ -683,7 +693,7 @@ export class FlowExecutionService {
           const additionalItems = order.checkoutAdditionalItems as Array<{ name: string; price: number }> | null;
           if (additionalItems && additionalItems.length > 0) {
             const adicionaisHtml = additionalItems
-              .map(item => `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;">${item.name}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">€${item.price.toFixed(2)}</td></tr>`)
+              .map(item => `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;">${escapeHtml(item.name)}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">€${item.price.toFixed(2)}</td></tr>`)
               .join('');
             listaProdutosHtml += `<div style="margin-top:12px;"><strong style="color:#FF6B00;">🛍️ Itens Adicionais:</strong><table style="width:100%;border-collapse:collapse;margin:8px 0;"><tbody>${adicionaisHtml}</tbody></table></div>`;
           }
@@ -693,7 +703,7 @@ export class FlowExecutionService {
 
           // Valores adicionais
           content = content.replace(/\{\{orderTotal\}\}/g, order.total.toFixed(2));
-          content = content.replace(/\{\{deliveryAddress\}\}/g, address);
+          content = content.replace(/\{\{deliveryAddress\}\}/g, escapeHtml(address));
 
           // Data/Hora Agendada (se for pedido agendado)
           if (order.isScheduled && order.scheduledFor) {
@@ -825,7 +835,20 @@ export class FlowExecutionService {
 
       for (const log of pendingLogs) {
         try {
-          const data = JSON.parse(log.errorMessage || '{}');
+          let data: any;
+          try {
+            data = JSON.parse(log.errorMessage || '{}');
+          } catch {
+            console.error(`[Queue] ❌ JSON inválido no log ${log.id}, ignorando`);
+            continue;
+          }
+
+          // Validar estrutura mínima esperada
+          if (!data.executeAfter || !data.context) {
+            console.error(`[Queue] ❌ Estrutura inválida no log ${log.id}, ignorando`);
+            continue;
+          }
+
           const executeAfter = new Date(data.executeAfter);
 
           // Ainda não é hora de executar

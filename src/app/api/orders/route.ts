@@ -455,6 +455,7 @@ export async function POST(request: NextRequest) {
     console.log('[Orders API] 💰 Total de itens adicionais:', additionalTotal);
 
     // Preparar dados do pedido
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- campos dinâmicos adicionados condicionalmente; Prisma valida no create()
     const orderData: any = {
       customerName: `${customerName} ${customerSurname || ''}`.trim(),
       customerEmail,

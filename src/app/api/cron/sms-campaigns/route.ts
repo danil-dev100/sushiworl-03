@@ -9,11 +9,11 @@ import { smsService, replaceMessageVariables, normalizePhoneNumber } from '@/lib
 export async function GET(request: NextRequest) {
   try {
     // Verificar autenticação do cron
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    if (process.env.NODE_ENV === 'production') {
+      const authHeader = request.headers.get('authorization');
+      if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+      }
     }
 
     console.log('[SMS Cron] Verificando campanhas agendadas...');

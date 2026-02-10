@@ -8,9 +8,11 @@ export const maxDuration = 60;
 export async function GET(request: NextRequest) {
   try {
     // Verificar autorização (Vercel Cron envia header especial)
-    const authHeader = request.headers.get('authorization');
-    if (process.env.NODE_ENV === 'production' && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (process.env.NODE_ENV === 'production') {
+      const authHeader = request.headers.get('authorization');
+      if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
 
     console.log('[Cron Email Queue] Processando fila de emails...');

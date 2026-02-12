@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     template: "%s | SushiWorld",
   },
   description:
-    "O melhor sushi delivery em Santa Iria da Azóia. Peça online sushi fresco, combinados, hots e sashimi. Entrega rápida na sua porta!",
+    "O melhor sushi delivery em Santa Iria da Azóia. Encomende online sushi fresco, combinados, hots e sashimi. Entrega ao domicílio rápida!",
   manifest: "/manifest.json",
   icons: {
     icon: [

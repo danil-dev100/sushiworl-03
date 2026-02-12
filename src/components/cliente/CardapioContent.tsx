@@ -184,7 +184,7 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
               <p className="text-lg sm:text-xl font-semibold text-[#333333] dark:text-[#f5f1e9]">
                 Nenhum produto encontrado
               </p>
-              <p className="mt-2 text-sm text-[#a16b45]">
+              <p className="mt-2 text-sm text-[#8b5e3c]">
                 Tente buscar por outro termo
               </p>
             </div>

@@ -81,6 +81,7 @@ const Header = () => {
 
           <Link
             href="/carrinho"
+            aria-label="Carrinho de compras"
             className="relative flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-[#FF6B00]/20 text-[#FF6B00] gap-2 text-sm font-bold min-w-0 px-2.5 hover:bg-[#FF6B00]/30 transition-colors"
           >
             <ShoppingCart className="h-5 w-5" />

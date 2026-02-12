@@ -174,7 +174,7 @@ export function ProductOptionsDialog({
               />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-[#a16b45]">{product.description}</p>
+              <p className="text-sm text-[#8b5e3c]">{product.description}</p>
               <p className="mt-2 text-lg font-bold text-[#333333]">
                 €{product.price.toFixed(2)}
               </p>
@@ -192,7 +192,7 @@ export function ProductOptionsDialog({
                   )}
                 </h3>
                 {option.description && (
-                  <p className="text-xs text-[#a16b45]">{option.description}</p>
+                  <p className="text-xs text-[#8b5e3c]">{option.description}</p>
                 )}
                 {option.isPaid && option.basePrice > 0 && (
                   <p className="text-xs font-semibold text-[#FF6B00]">
@@ -276,7 +276,7 @@ export function ProductOptionsDialog({
           {/* Total e Botão */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[#a16b45]">Total</p>
+              <p className="text-sm text-[#8b5e3c]">Total</p>
               <p className="text-2xl font-bold text-[#FF6B00]">
                 €{calculateTotal().toFixed(2)}
               </p>

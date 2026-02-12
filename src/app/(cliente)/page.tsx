@@ -11,15 +11,15 @@ import { prisma } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'SushiWorld Santa Iria | Sushi Delivery - Peça Online',
+  title: 'SushiWorld Santa Iria | Sushi Delivery - Encomende Online',
   description:
-    'Peça o melhor sushi de Santa Iria da Azóia no SushiWorld. Combinados, hots, sashimi, temakis e muito mais. Delivery rápido e saboroso direto à sua porta!',
+    'Encomende o melhor sushi em Santa Iria da Azóia. Entrega ao domicílio de combinados, hots, sashimi e temakis frescos. Restaurante japonês com delivery rápido na sua porta!',
   keywords:
-    'sushi delivery santa iria, sushi santa iria de azóia, comida japonesa santa iria, sushiworld, pedir sushi online, delivery sushi lisboa, sushi fresco, combinados sushi',
+    'sushi delivery santa iria, sushi santa iria da azóia, comida japonesa santa iria, sushiworld, encomendar sushi online, entrega ao domicílio sushi, sushi fresco, combinados sushi, restaurante japonês santa iria, sushi takeaway',
   openGraph: {
-    title: 'SushiWorld Santa Iria | Sushi Delivery - Peça Online',
+    title: 'SushiWorld Santa Iria | Sushi Delivery - Encomende Online',
     description:
-      'Peça o melhor sushi de Santa Iria da Azóia no SushiWorld. Combinados, hots, sashimi e muito mais. Delivery rápido e saboroso.',
+      'Encomende sushi fresco em Santa Iria da Azóia. Combinados, hots, sashimi e muito mais. Entrega ao domicílio rápida e saborosa.',
     images: [
       {
         url: '/images/og-image.jpg',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'SushiWorld Santa Iria | Sushi Delivery',
     description:
-      'Peça o melhor sushi de Santa Iria no SushiWorld. Combinados, hots, sashimi e muito mais.',
+      'Encomende sushi fresco em Santa Iria da Azóia. Combinados, hots, sashimi e muito mais.',
     images: ['/images/og-image.jpg'],
   },
   alternates: {

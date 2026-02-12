@@ -101,7 +101,7 @@ export function SimpleProductOptionsDialog({
         </h3>
 
         {/* Texto persuasivo */}
-        <p className="mt-3 text-sm text-[#a16b45] dark:text-[#f5f1e9]/70">
+        <p className="mt-3 text-sm text-[#8b5e3c] dark:text-[#f5f1e9]/70">
           {getPersuasiveText()}
         </p>
 

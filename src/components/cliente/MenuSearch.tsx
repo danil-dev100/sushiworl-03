@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,16 +11,21 @@ interface MenuSearchProps {
 
 export function MenuSearch({ onSearch }: MenuSearchProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleSearch = (value: string) => {
+  const handleSearch = useCallback((value: string) => {
     setSearchTerm(value);
-    onSearch(value);
-  };
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      onSearch(value);
+    }, 250);
+  }, [onSearch]);
 
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     setSearchTerm('');
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     onSearch('');
-  };
+  }, [onSearch]);
 
   return (
     <div className="sticky top-0 z-10 bg-[#f5f1e9] pb-4 pt-4 dark:bg-[#23170f]">

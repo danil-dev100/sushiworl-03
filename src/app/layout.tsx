@@ -3,11 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
 import { Toaster } from "@/components/ui/sonner";
-import { PixelScripts } from "@/components/tracking/PixelScripts";
-import { PWAInstaller } from "@/components/pwa/PWAInstaller";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { SitePopup } from "@/components/site/SitePopup";
-import CookieConsent from "@/components/cliente/CookieConsent";
+import { DeferredComponents } from "@/components/DeferredComponents";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -103,13 +100,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <PixelScripts />
-        <PWAInstaller />
         <SessionProvider>
           {children}
           <Toaster />
-          <SitePopup />
-          <CookieConsent />
+          <DeferredComponents />
         </SessionProvider>
         <SpeedInsights />
       </body>

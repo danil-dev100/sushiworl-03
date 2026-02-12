@@ -90,7 +90,7 @@ export default async function HeroBanner() {
           fill
           priority
           className="object-cover"
-          sizes="100vw"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1920px"
         />
       )}
       <div

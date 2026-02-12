@@ -137,6 +137,11 @@ export function CardapioContent({ produtosPorCategoria }: CardapioContentProps) 
 
         {/* Main Content */}
         <main className="flex-1 lg:py-8">
+          {/* H1 para SEO e acessibilidade */}
+          <h1 className="text-xl sm:text-2xl font-bold text-[#333333] dark:text-[#f5f1e9] pt-4 lg:pt-0 mb-2 lg:mb-4 px-4 lg:px-0">
+            Cardápio SushiWorld
+          </h1>
+
           {/* Menu Mobile - Carrossel de Categorias FIXO */}
           <div className="lg:hidden sticky top-[73px] z-40 bg-[#f5f1e9] dark:bg-[#23170f] -mx-4 px-4 py-3 border-b border-[#ead9cd] dark:border-[#4a3c30] shadow-sm">
             <div className="overflow-x-auto scrollbar-hide">

@@ -7,6 +7,8 @@ import { Trash2, Plus, Minus, Gift, AlertCircle } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { UpsellBanner } from '@/components/cliente/UpsellBanner';
+import { DownsellOffer } from '@/components/cliente/DownsellOffer';
 
 interface CartAdditionalItem {
   id: string;
@@ -578,6 +580,12 @@ export default function CarrinhoPage() {
                     </div>
                   ))}
 
+                  {/* Up-sell Banner */}
+                  <UpsellBanner
+                    productIds={items.map((i) => i.productId)}
+                    cartTotal={subtotalProdutos}
+                  />
+
                   {/* Opções Globais do Carrinho */}
                   {globalOptions.length > 0 && (
                     <div className="space-y-4 bg-white dark:bg-[#2a1e14] rounded-xl p-4 shadow-sm border border-[#ead9cd] dark:border-[#4a3c30]">
@@ -705,6 +713,12 @@ export default function CarrinhoPage() {
                       })}
                     </div>
                   )}
+
+                  {/* Down-sell Offer */}
+                  <DownsellOffer
+                    productIds={items.map((i) => i.productId)}
+                    cartTotal={subtotalProdutos}
+                  />
                 </main>
 
                 {/* Resumo */}

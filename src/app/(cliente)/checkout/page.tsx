@@ -8,6 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/trackEvent';
 import { ScheduleOrderModal } from '@/components/cliente/ScheduleOrderModal';
+import { OrderBumpSection } from '@/components/cliente/OrderBumpSection';
 
 interface CheckoutAdditionalItem {
   id: string;
@@ -1169,6 +1170,12 @@ export default function CheckoutPage() {
                           </button>
                         </div>
                       )}
+                      {/* Order Bump */}
+                      <OrderBumpSection
+                        productIds={items.map((i) => i.productId)}
+                        cartTotal={subtotal}
+                      />
+
                       <label className="flex flex-col">
                         <p className="pb-2 text-base font-medium leading-normal text-[#333333] dark:text-[#f5f1e9]">
                           Observações
